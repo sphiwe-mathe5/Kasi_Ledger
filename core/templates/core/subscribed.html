@@ -1,0 +1,372 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Point of Sale</title>
+    <!-- Add the HTML5 QR code scanner library -->
+    <script src="https://unpkg.com/html5-qrcode"></script>
+    <link rel="stylesheet" href="{% static 'css/main.css' %}">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap">
+    <style>
+        body {
+            font-family: "Poppins", sans-serif;
+            margin: 20px;
+            background-color: #fffff;
+        }
+
+        .container {
+            display: flex;
+            gap: 20px;
+            max-width: 1200px;
+            margin: 0 auto;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+        }
+
+        .scanner-section {
+            flex: 1;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            min-width: 300px;
+        }
+
+        .cart-section {
+            flex: 2;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+
+        }
+        h4{
+            font-size: 20px; 
+        }
+
+        #reader {
+            width: 100%;
+            min-height: 300px;
+        }
+
+        .table-container {
+            margin-top: 20px;
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+
+        th {
+            background-color: #fffff;
+        }
+
+        .total-section {
+            margin-top: 20px;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            display: flex;  
+            justify-content: space-between; 
+            align-items: center;  
+        }
+        
+        .total-section h3 {
+            margin: 0;  
+            font-size: 18px; 
+        }
+        
+        .total-amount {
+            font-size: 20px;
+            font-weight: bold;
+            color: #28a745;
+        }
+
+        .action-buttons {
+            margin-top: 20px;
+            display: flex;
+            gap: 10px;
+        }
+
+        button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+        .checkout-btn {
+            background-color: white;
+            color: #28a745;
+            border: 2px solid #28a745; 
+        }
+        .checkout-btn : hover {
+            background-color: #28a745;
+            color: #28a745;
+            border: 2px solid #28a745; 
+        }
+
+        .clear-btn {
+            background-color: #dc3545;
+            color: white;
+            margin-left: 450px
+        }
+
+        .remove-item {
+            color: #dc3545;
+            cursor: pointer;
+        }
+
+        #scanner-status {
+            margin-top: 10px;
+            padding: 10px;
+            border-radius: 4px;
+            text-align: center;
+        }
+
+        .success {
+            background-color: #d4edda;
+            color: #155724;
+        }
+
+        .error {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <a href="#" class="logo">KASI LEDGER</a>
+        <div class="quote_btn-container">
+            <a href="{% url 'contact' %}" class="sign-up"><span>Inventory</span></a>
+            <a href="{% url 'list_income_statements' %}" class="sign-up"><span>Statements</span></a>
+            <a href="{% url 'logout' %}" class="sign-up">
+                <i class="fa-solid fa-arrow-right-from-bracket"></i>
+            </a>
+        </div>
+    </nav>
+    <div class="container">
+        <div class="scanner-section">
+            <h4>Scanner</h4>
+            <div id="reader"></div>
+            <div id="scanner-status"></div>
+            <audio id="beepAudio">
+                <source src="{% static 'js/BEEP.wav' %}" type="audio/mpeg">
+            </audio>
+        </div>
+
+        <div class="cart-section">
+            <h4>Current Sale</h4>
+            <div class="table-container">
+                <table id="pos-table">
+                    <thead>
+                        <tr>
+                            <th>Product Name</th>
+                            <th>Price</th>
+                            <th>Quantity</th>
+                            <th>Total</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+
+            <div class="total-section">
+                <h3>Total Amount</h3>
+                <div class="total-amount">R0.00</div>
+            </div>
+
+            <div class="action-buttons">
+                <button class="checkout-btn" onclick="processSale()">Complete Sale</button>
+                <button class="clear-btn" onclick="clearCart()">Clear Cart</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let cart = {};
+        let lastScanTime = 0;
+        const scanCooldown = 2000; // 2 seconds cooldown between scans
+
+        // Initialize HTML5 QR code scanner
+        const html5QrcodeScanner = new Html5QrcodeScanner(
+            "reader", { fps: 10, qrbox: { width: 250, height: 250 } }
+        );
+
+        function onScanSuccess(decodedText, decodedResult) {
+            const currentTime = new Date().getTime();
+            if (currentTime - lastScanTime < scanCooldown) {
+                console.log('Scan too soon, ignoring');
+                return;
+            }
+            lastScanTime = currentTime;
+            
+            playBeep();
+            updateScannerStatus('Scanning...', 'success');
+            checkProduct(decodedText);
+        }
+
+        function onScanFailure(error) {
+            // Handle scan failure silently
+        }
+
+        // Render the scanner
+        html5QrcodeScanner.render(onScanSuccess, onScanFailure);
+
+        function updateScannerStatus(message, type) {
+            const statusDiv = document.getElementById('scanner-status');
+            statusDiv.textContent = message;
+            statusDiv.className = type;
+            setTimeout(() => {
+                statusDiv.textContent = '';
+                statusDiv.className = '';
+            }, 3000);
+        }
+
+        function playBeep() {
+            var audio = document.getElementById("beepAudio");
+            audio.play();
+        }
+
+        function checkProduct(barcode) {
+            $.ajax({
+                url: '{% url "check_product" %}',
+                type: 'GET',
+                data: { 'barcode': barcode },
+                success: function(response) {
+                    if (response.success) {
+                        if (response.product.quantity > 0) {
+                            addToCart(response.product);
+                            updateScannerStatus('Product added to cart!', 'success');
+                        } else {
+                            updateScannerStatus('Product out of stock!', 'error');
+                        }
+                    } else {
+                        updateScannerStatus('Product not found', 'error');
+                    }
+                },
+                error: function() {
+                    updateScannerStatus('Error checking product', 'error');
+                }
+            });
+        }
+
+        function addToCart(product) {
+            const maxQuantity = product.quantity;  // Get available quantity
+            
+            if (cart[product.barcode]) {
+                if (cart[product.barcode].quantity >= maxQuantity) {
+                    updateScannerStatus('Maximum available quantity reached!', 'error');
+                    return;
+                }
+                cart[product.barcode].quantity += 1;
+                cart[product.barcode].total = cart[product.barcode].quantity * product.price;
+                updateCartRow(product.barcode);
+            } else {
+                cart[product.barcode] = {
+                    name: product.name,
+                    price: product.price,
+                    quantity: 1,
+                    total: product.price,
+                    maxQuantity: maxQuantity
+                };
+                addCartRow(product.barcode);
+            }
+            updateTotal();
+        }
+
+        function addCartRow(barcode) {
+            const item = cart[barcode];
+            const row = `
+                <tr data-barcode="${barcode}">
+                    <td>${item.name}</td>
+                    <td>R${item.price.toFixed(2)}</td>
+                    <td>${item.quantity}</td>
+                    <td>R${item.total.toFixed(2)}</td>
+                    <td>
+                        <span class="remove-item" onclick="removeItem('${barcode}')">❌</span>
+                    </td>
+                </tr>
+            `;
+            $('#pos-table tbody').append(row);
+        }
+
+        function updateCartRow(barcode) {
+            const item = cart[barcode];
+            const row = $(`tr[data-barcode="${barcode}"]`);
+            row.find('td:nth-child(3)').text(item.quantity);
+            row.find('td:nth-child(4)').text(`R${item.total.toFixed(2)}`);
+        }
+
+        function updateTotal() {
+            const total = Object.values(cart).reduce((sum, item) => sum + item.total, 0);
+            $('.total-amount').text(`R${total.toFixed(2)}`);
+        }
+
+        function removeItem(barcode) {
+            delete cart[barcode];
+            $(`tr[data-barcode="${barcode}"]`).remove();
+            updateTotal();
+        }
+
+        function clearCart() {
+            cart = {};
+            $('#pos-table tbody').empty();
+            updateTotal();
+        }
+
+        function processSale() {
+            if (Object.keys(cart).length === 0) {
+                alert('Cart is empty');
+                return;
+            }
+
+            const saleData = {
+                items: Object.entries(cart).map(([barcode, item]) => ({
+                    barcode: barcode,
+                    quantity: item.quantity,
+                    price: item.price
+                })),
+                total_amount: parseFloat($('.total-amount').text().replace('R', '')),
+                csrfmiddlewaretoken: '{{ csrf_token }}'
+            };
+
+            $.ajax({
+                url: '{% url "process_sale" %}',
+                type: 'POST',
+                data: JSON.stringify(saleData),
+                contentType: 'application/json',
+                success: function(response) {
+                    if (response.success) {
+                        alert('Sale completed successfully!');
+                        clearCart();
+                        // Fetch latest products to update the inventory display
+                        if (typeof fetchLatestProducts === 'function') {
+                            fetchLatestProducts();
+                        }
+                    } else {
+                        alert('Error processing sale: ' + response.message);
+                    }
+                },
+                error: function() {
+                    alert('Error processing sale');
+                }
+            });
+        }
+    </script>
+</body>
+</html>

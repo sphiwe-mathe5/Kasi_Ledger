@@ -1,0 +1,207 @@
+{% load custom_filters %}
+{% load humanize %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create Income Statement</title>
+    <style>
+        :root {
+            --primary-color: #3498db;
+            --secondary-color: #2c3e50;
+            --background-color: #f4f7f8;
+            --form-background: #ffffff;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            line-height: 1.6;
+            color: var(--secondary-color);
+            background-color: var(--background-color);
+            margin: 0;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+
+        h1 {
+            width: 100%;
+            text-align: center;
+            color: var(--primary-color);
+            margin-bottom: 20px;
+        }
+
+        .form-container {
+            flex: 1;
+            min-width: 300px;
+            background-color: var(--form-background);
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .guide-container {
+            flex: 1;
+            min-width: 300px;
+            background-color: var(--form-background);
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        form {
+            display: grid;
+            gap: 15px;
+        }
+
+        label {
+            font-weight: bold;
+            margin-bottom: 5px;
+            display: block;
+        }
+
+        input[type="number"] {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 16px;
+        }
+
+        button {
+            background-color: var(--primary-color);
+            color: white;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s ease;
+        }
+
+        button:hover {
+            background-color: #2980b9;
+        }
+
+        .guide-container h2 {
+            color: var(--primary-color);
+            margin-top: 0;
+        }
+
+        .guide-container ul {
+            padding-left: 20px;
+        }
+
+        .guide-container li {
+            margin-bottom: 10px;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Create Income Statement</h1>
+        <div class="form-container">
+            <form method="post">
+                {% csrf_token %}
+    
+                <label for="month-select">Select Month:</label>
+                <select id="month-select" onchange="updateFinancials()">
+                    <option value="">--Select Month--</option>
+                    {% for month, month_name in month_choices %}
+                        <option value="{{ month }}">{{ month_name }}</option>
+                    {% endfor %}
+                </select>
+    
+                <label for="id_sales">Sales:</label>
+                <input type="number" name="sales" value="0" step="0.01" required id="id_sales">
+    
+                <label for="id_cost_of_sales">Cost of Sales:</label>
+                <input type="number" name="cost_of_sales" value="0" step="0.01" required id="id_cost_of_sales">
+                
+                <label for="id_rent">Rent:</label>
+                <input type="number" name="rent" value="0" step="0.01" required id="id_rent">
+                
+                <label for="id_utilities">Utilities:</label>
+                <input type="number" name="utilities" value="0" step="0.01" required id="id_utilities">
+                
+                <label for="id_salaries">Salaries:</label>
+                <input type="number" name="salaries" value="0" step="0.01" required id="id_salaries">
+                
+                <label for="id_marketing">Marketing:</label>
+                <input type="number" name="marketing" value="0" step="0.01" required id="id_marketing">
+                
+                <label for="id_insurance">Insurance:</label>
+                <input type="number" name="insurance" value="0" step="0.01" required id="id_insurance">
+                
+                <label for="id_other_income">Other income:</label>
+                <input type="number" name="other_income" value="0" step="0.01" required id="id_other_income">
+                
+                <label for="id_other_expenses">Other expenses:</label>
+                <input type="number" name="other_expenses" value="0" step="0.01" required id="id_other_expenses">
+                
+                <label for="id_interest">Interest:</label>
+                <input type="number" name="interest" value="0" step="0.01" required id="id_interest">
+                
+                <label for="id_tax">Tax:</label>
+                <input type="number" name="tax" value="0" step="0.01" required id="id_tax">
+                
+                <label for="id_dividends">Dividends:</label>
+                <input type="number" name="dividends" value="0" step="0.01" required id="id_dividends">
+                
+                <button type="submit">Create Income Statement</button>
+            </form>
+        </div>
+        <div class="guide-container">
+            <h2>How to Use This Form</h2>
+            <ul>
+                <li><strong>Sales:</strong> Enter the total revenue from your primary business activities.</li>
+                <li><strong>Cost of sales:</strong> Input the direct costs associated with producing your goods or services.</li>
+                <li><strong>Rent, Utilities, Salaries, Marketing, Insurance:</strong> Enter your operating expenses for each category.</li>
+                <li><strong>Other income:</strong> Include any additional revenue not part of your primary business activities.</li>
+                <li><strong>Other expenses:</strong> Add any additional expenses not covered in the other categories.</li>
+                <li><strong>Interest:</strong> Enter any interest paid on loans or other debts.</li>
+                <li><strong>Tax:</strong> Input the amount of income tax you expect to pay.</li>
+                <li><strong>Dividends:</strong> If applicable, enter any dividends paid to shareholders.</li>
+                <li>All fields are required. If you don't have a value for a particular field, leave it as 0.</li>
+                <li>Use decimal points for cents (e.g., 1000.50 for $1,000.50).</li>
+                <li>After filling out all fields, click "Create Income Statement" to generate your statement.</li>
+            </ul>
+        </div>
+    </div>
+    <script>
+        function updateFinancials() {
+            const monthSelect = document.getElementById('month-select');
+            const selectedMonth = monthSelect.value;
+            const salesInput = document.getElementById('id_sales');
+            const costInput = document.getElementById('id_cost_of_sales');
+
+            // Clear previous values
+            salesInput.value = '';
+            costInput.value = '';
+
+            // Get data from context
+            const monthlyTotals = JSON.parse('{{ monthly_totals|safe }}');
+
+            if (selectedMonth in monthlyTotals) {
+                salesInput.value = parseFloat(monthlyTotals[selectedMonth].price).toFixed(2);
+                costInput.value = parseFloat(monthlyTotals[selectedMonth].cost).toFixed(2);
+            }
+        }
+    </script>
+</body>
+</html>
+
+

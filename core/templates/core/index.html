@@ -1,0 +1,473 @@
+{% load static %}
+{% load socialaccount %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, shrink-to-fit=no">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link rel="stylesheet" href="{% static 'css/styless.css' %}">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap">
+    <title>Kasi Ledger</title>
+    <link rel="stylesheet" type="text/css" href="static/css/bootstrap.css" />
+    <link href="https://fonts.googleapis.com/css?family=Poppins:400,600,700&display=swap" rel="stylesheet" />
+    <link href="static/css/font-awesome.min.css" rel="stylesheet" />
+    <link href="static/css/responsive.css" rel="stylesheet" />
+</head>
+
+<body>
+  <div class="hero_area">
+    <header class="header_section long_section px-0">
+        <nav class="navbar navbar-expand-lg custom_nav-container ">
+            <a class="navbar-brand" href="index.html">
+                <span>Kasi Ledger</span>
+            </a>
+            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+                <span class=""> </span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarSupportedContent">
+                <div class="d-flex mx-auto flex-column flex-lg-row align-items-center">
+                </div>
+                <div class="quote_btn-container">
+                    {% if not user.is_authenticated %}
+                        <a href="{% url 'login' %}" class="sign-in"><span>Sign in</span></a>
+                        <a href="{% url 'register' %}" class="sign-up"><span>Sign Up</span></a>
+                    {% else %}
+                        <a href="{% url 'contact' %}" class="sign-up">Console</a>
+                        <div class="user-info d-flex align-items-center">
+                          <div class="user-icon" id="userIcon" onclick="togglePopup()">
+                              {% if user.profile_picture %}
+                                  <img src="{{ user.profile_picture }}" alt="Profile Picture" class="profile-picture">
+                              {% else %}
+                                  {{ user.first_name|slice:":1" }} 
+                              {% endif %}
+                          </div>
+                          <div id="userPopup" class="user-popup">
+                            <div class="popup-content">
+                              <p class="user-name"><strong>{{ user.first_name }} {{ user.last_name }}</strong></p>
+                              <p class="user-email">{{ user.email }}</p>
+                              <ol class="popup-menu">
+                                <li>
+                                  <a href="#" class="menu-item">
+                                    <i class="fa-solid fa-circle-chevron-up"></i>
+                                    <span>Upgrade Plan</span>
+                                  </a>
+                                </li>
+                                <li>
+                                  <a href="{% url 'profile' %}" class="menu-item">
+                                    <i class="fa-solid fa-gear"></i>
+                                    <span>Settings</span>
+                                  </a>
+                                </li>
+                                <li>
+                                  <a href="{% url 'logout' %}" class="menu-item">
+                                    <i class="fa-solid fa-right-from-bracket"></i>
+                                    <span>Log Out</span>
+                                  </a>
+                                </li>
+                              </ol>
+                            </div>
+                          </div>
+                    {% endif %}
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <section class="about_section layout_padding long_section">
+      <div class="container">
+        <div class="row">
+          <div class="col-md-6">
+            <div class="img-box">
+              <img src="static/images/about-img.png" alt="">
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="detail-box">
+              <div class="heading_container">
+                <h2>
+                  Welcome To Kasi Ledger
+                </h2>
+              </div>
+              <p>
+                The go-to inventory management and sales solution designed to
+                meet the needs of small businesses. We understand the challenges
+                of managing stock, tracking sales, and planning for future demand,
+                all while trying to streamline daily operations. <br><br>That’s why we created
+                Kasi Ledger, a user-friendly application that combines
+                advanced inventory tracking, real-time profit calculations, and 
+                predictive analytics in one powerful tool.<br><br> Kindly Read More Below
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="slider_section long_section">
+      <div id="customCarousel" class="carousel slide" data-ride="carousel">
+        <div class="carousel-inner">
+          <div class="carousel-item active">
+            <div class="container ">
+              <div class="row">
+                <div class="col-md-5">
+                  <div class="detail-box">
+                    <h1> Real Time<br>
+                      Inventory Tracking
+                    </h1>
+                    <p>
+                      Utilize your smartphone's barcode scanner for easy stock management. 
+                      Our user-friendly interface allows you to track incoming and outgoing 
+                      items, ensuring real-time inventory data is always accessible. Stay 
+                      informed about stock levels to avoid shortages and enhance profitability.
+                    </p>
+                    <div class="btn-box">
+                      <a href="" class="btn1">
+                        Try For Free
+                      </a>
+                      <a href="" class="btn2">
+                        Pricing
+                      </a>
+                    </div>
+                  </div>
+                </div>
+                <div class="col-md-7">
+                  <div class="img-bos">
+                    <img src="static/images/Barcode-amico.png" alt="">
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="carousel-item">
+            <div class="container ">
+              <div class="row">
+                <div class="col-md-5">
+                  <div class="detail-box">
+                    <h1>
+                      FinanciAL statements
+                    </h1>
+
+                    <p>
+                      Kasi Ledger  calculates profits as items are sold, 
+                      providing instant insights into daily earnings. It also generates 
+                      financial statements, including income statements and balance 
+                      sheets, giving you a  view of your business's financial health. 
+                      Monitor costs and sales in real-time to make informed decisions.
+                    </p>
+                    <div class="btn-box">
+                      <a href="" class="btn1">
+                        Contact Us
+                      </a>
+                      <a href="" class="btn2">
+                        About Us
+                      </a>
+                    </div>
+                  </div>
+                </div>
+                <div class="col-md-7">
+                  <div class="img-box">
+                    <img src="static\images\11116.jpg" alt="">
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="carousel-item">
+            <div class="container ">
+              <div class="row">
+                <div class="col-md-5">
+                  <div class="detail-box">
+                    <h1>
+                      Point of Sale Integration
+                    </h1>
+
+                    <p>
+                      Kasi Ledger seamlessly integrates with your Point of Sale system, 
+                      allowing for unified inventory and sales management. This integration 
+                      streamlines checkout processes and improves record-keeping for better 
+                      sales analysis and business management
+                    </p>
+                    <div class="btn-box">
+                      <a href="" class="btn1">
+                        Contact Us
+                      </a>
+                      <a href="" class="btn2">
+                        About Us
+                      </a>
+                    </div>
+                  </div>
+                </div>
+                <div class="col-md-7">
+                  <div class="img-box">
+                    <img src="static\images\4322932.jpg" alt="">
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="carousel-item">
+            <div class="container ">
+              <div class="row">
+                <div class="col-md-5">
+                  <div class="detail-box">
+                    <h1>
+                      Sales Forecasting<br>
+                      for Better Planning
+                    </h1>
+                    <p>
+                      Our app offers intelligent forecasting based on historical sales data, 
+                      predicting trends to help you prepare for busy periods or seasonal changes. 
+                      Focus on strategic planning rather than guessing.
+                    </p>
+                    <div class="btn-box">
+                      <a href="" class="btn1">
+                        Contact Us
+                      </a>
+                      <a href="" class="btn2">
+                        About Us
+                      </a>
+                    </div>
+                  </div>
+                </div>
+                <div class="col-md-7">
+                  <div class="img-box">
+                    <img src="static\images\5031659.jpg" alt="">
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <ol class="carousel-indicators">
+          <li data-target="#customCarousel" data-slide-to="0" class="active"></li>
+          <li data-target="#customCarousel" data-slide-to="1"></li>
+          <li data-target="#customCarousel" data-slide-to="2"></li>
+          <li data-target="#customCarousel" data-slide-to="3"></li>
+        </ol>
+      </div>
+    </section>
+  </div>
+  <div class="pricing-container">
+    <div class="pricing-card">
+        <div class="card-header">
+            <h2 class="card-title">Basic</h2>
+            <div class="card-price">R99.99<span>/month</span></div>
+        </div>
+        <ul class="card-features">
+            <li>1 User</li>
+            <li>10GB Storage</li>
+            <li>Point Of Sale Integration</li>
+            <li>Financial Statements</li>
+            <li>Inventory management</li>
+        </ul>
+        <button class="card-button">Choose Plan</button>
+    </div>
+    <div class="pricing-card popular">
+        <div class="card-header">
+            <h2 class="card-title">Pro</h2>
+            <div class="card-price">R199.99<span>/month</span></div>
+        </div>
+        <ul class="card-features">
+            <li>5 Users</li>
+            <li>50GB Storage</li>
+            <li>Priority Support</li>
+            <li>Point Of Sale Integration</li>
+            <li>Financial Statements</li>
+            <li>Sales Forecasting</li>
+            <li>Advanced Analytics</li>
+        </ul>
+        <button class="card-button">Choose Plan</button>
+    </div>
+    <div class="pricing-card">
+        <div class="card-header">
+            <h2 class="card-title">Enterprise</h2>
+            <div class="card-price">R299.99<span>/month</span></div>
+        </div>
+        <ul class="card-features">
+            <li>Unlimited Users</li>
+            <li>1TB Storage</li>
+            <li>24/7 Dedicated Support</li>
+            <li>Point Of Sale Integration</li>
+            <li>Financial Statements</li>
+            <li>Sales Forecasting</li>
+            <li>Supplier Connection</li>
+            <li>Custom barcode design</li>
+            <li>Data Visualization</li>
+        </ul>
+        <button class="card-button">Choose Plan</button>
+    </div>
+</div>
+
+
+
+
+<footer class="footer">
+  <div class="container2">
+    <div class="footer_inner">
+      <div class="c-footer">
+        <div class="layout">
+          <div class="layout_item w-50">
+            <div class="newsletter">
+              <h3 class="newsletter_title">Get exciting news about deployments, upcoming events and more.</h3>
+              <form action="">
+                <input type="text" placeholder="Email Address">
+                <button>
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24">
+                    <path fill="none" d="M0 0h24v24H0z" />
+                    <path d="M16.172 11l-5.364-5.364 1.414-1.414L20 12l-7.778 7.778-1.414-1.414L16.172 13H4v-2z" />
+                  </svg>
+                </button>
+              </form>
+            </div>
+          </div>
+
+          <div class="layout_item w-25">
+            <nav class="c-nav-tool">
+              <h4 class="c-nav-tool_title">Menu</h4>
+              <ul class="c-nav-tool_list">
+                <li>
+                  <a href="/pages/about-us" class="c-link">About Us</a>
+                </li>
+
+                <li>
+                  <a href="/blogs/community" class="c-link">Community</a>
+                </li>
+                <li>
+                  <a href="#" class="c-link">Events</a>
+                </li>
+                <li>
+                  <a href="#" class="c-link">Developers</a>
+                </li>
+              </ul>
+            </nav>
+
+          </div>
+
+          <div class="layout_item w-25">
+            <nav class="c-nav-tool">
+              <h4 class="c-nav-tool_title">Support</h4>
+              <ul class="c-nav-tool_list">
+
+                <li class="c-nav-tool_item">
+                  <a href="/pages/help" class="c-link">Help &amp; FAQ</a>
+                </li>
+
+                <li class="c-nav-tool_item">
+                  <a href="/pages/terms-conditions" class="c-link">Terms &amp; Conditions</a>
+                </li>
+
+                <li class="c-nav-tool_item">
+                  <a href="/pages/privacy-policy" class="c-link">Privacy Policy</a>
+                </li>
+
+                <li class="c-nav-tool_item">
+                  <a href="/pages/contact" class="c-link">Contact</a>
+                </li>
+              </ul>
+            </nav>
+
+          </div>
+        </div>
+        <div class="layout c-2">
+          <div class="layout_item w-50">
+            <ul class="flex">
+                <a href="{% url 'index' %}" class="logo"><img src="{% static 'images/sublogo.png' %}" alt="Logo" width="250" height="50"></a>
+              </li>
+            </ul>
+          </div>
+          <div class="layout_item w-25">
+            <ul class="flex">
+              <li>
+                <a href="#">
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="32" height="32">
+                    <path fill="none" d="M0 0h24v24H0z" />
+                    <path d="M12 2C6.477 2 2 6.477 2 12c0 4.991 3.657 9.128 8.438 9.879V14.89h-2.54V12h2.54V9.797c0-2.506 1.492-3.89 3.777-3.89 1.094 0 2.238.195 2.238.195v2.46h-1.26c-1.243 0-1.63.771-1.63 1.562V12h2.773l-.443 2.89h-2.33v6.989C18.343 21.129 22 16.99 22 12c0-5.523-4.477-10-10-10z" />
+                  </svg>
+                </a>
+              </li>
+              <li>
+                <a href="#">
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="32" height="32">
+                    <path fill="none" d="M0 0h24v24H0z" />
+                    <path d="M22.162 5.656a8.384 8.384 0 0 1-2.402.658A4.196 4.196 0 0 0 21.6 4c-.82.488-1.719.83-2.656 1.015a4.182 4.182 0 0 0-7.126 3.814 11.874 11.874 0 0 1-8.62-4.37 4.168 4.168 0 0 0-.566 2.103c0 1.45.738 2.731 1.86 3.481a4.168 4.168 0 0 1-1.894-.523v.052a4.185 4.185 0 0 0 3.355 4.101 4.21 4.21 0 0 1-1.89.072A4.185 4.185 0 0 0 7.97 16.65a8.394 8.394 0 0 1-6.191 1.732 11.83 11.83 0 0 0 6.41 1.88c7.693 0 11.9-6.373 11.9-11.9 0-.18-.005-.362-.013-.54a8.496 8.496 0 0 0 2.087-2.165z" />
+                  </svg>
+                </a>
+              </li>
+              <li>
+                <a href="#">
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="32" height="32">
+                    <path fill="none" d="M0 0h24v24H0z" />
+                    <path d="M12 2c2.717 0 3.056.01 4.122.06 1.065.05 1.79.217 2.428.465.66.254 1.216.598 1.772 1.153a4.908 4.908 0 0 1 1.153 1.772c.247.637.415 1.363.465 2.428.047 1.066.06 1.405.06 4.122 0 2.717-.01 3.056-.06 4.122-.05 1.065-.218 1.79-.465 2.428a4.883 4.883 0 0 1-1.153 1.772 4.915 4.915 0 0 1-1.772 1.153c-.637.247-1.363.415-2.428.465-1.066.047-1.405.06-4.122.06-2.717 0-3.056-.01-4.122-.06-1.065-.05-1.79-.218-2.428-.465a4.89 4.89 0 0 1-1.772-1.153 4.904 4.904 0 0 1-1.153-1.772c-.248-.637-.415-1.363-.465-2.428C2.013 15.056 2 14.717 2 12c0-2.717.01-3.056.06-4.122.05-1.066.217-1.79.465-2.428a4.88 4.88 0 0 1 1.153-1.772A4.897 4.897 0 0 1 5.45 2.525c.638-.248 1.362-.415 2.428-.465C8.944 2.013 9.283 2 12 2zm0 5a5 5 0 1 0 0 10 5 5 0 0 0 0-10zm6.5-.25a1.25 1.25 0 0 0-2.5 0 1.25 1.25 0 0 0 2.5 0zM12 9a3 3 0 1 1 0 6 3 3 0 0 1 0-6z" />
+                  </svg>
+                </a>
+              </li>
+            </ul>
+          </div>
+          <div class="layout_item w-25" style="display:flex;justify-content: end;align-items: center;">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="36" height="36">
+              <path fill="none" d="M0 0h24v24H0z" />
+              <path d="M12 2c5.52 0 10 4.48 10 10s-4.48 10-10 10S2 17.52 2 12 6.48 2 12 2zm1 10h3l-4-4-4 4h3v4h2v-4z" />
+            </svg>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="footer_copyright">
+      <p>&copy; 2024 Tech-Kasi Compani inc</p>
+    </div>
+  </div>
+</footer>
+
+
+    <script src="static/js/jquery-3.4.1.min.js"></script>
+    <!-- bootstrap js -->
+    <script src="static/js/bootstrap.js"></script>
+    <!-- custom js -->
+    <script src="static/js/custom.js"></script>
+    <script>
+        function toggleMenu() {
+            var navLinks = document.getElementById("nav-links");
+            navLinks.classList.toggle("show");
+        }
+        let toggleButton = document.getElementById('toggleBtn');
+        let toggleContainer = document.getElementById('toggleSlider');
+    
+        function showCategory(category) {
+            // Hide both categories
+            document.getElementById('animals').classList.remove('active-category');
+            document.getElementById('food').classList.remove('active-category');
+    
+            // Show the selected category
+            document.getElementById(category).classList.add('active-category');
+    
+            // Move the toggle button and adjust colors
+            if (category === 'food') {
+                toggleButton.style.transform = 'translateX(100%)';
+                toggleContainer.classList.add('active');
+            } else {
+                toggleButton.style.transform = 'translateX(0)';
+                toggleContainer.classList.remove('active');
+            }
+        }
+          function togglePopup() {
+              const popup = document.getElementById('userPopup');
+              if (popup.style.display === 'none' || popup.style.display === '') {
+                  popup.style.display = 'block'; // Show the popup
+              } else {
+                  popup.style.display = 'none'; // Hide the popup
+              }
+          }
+          
+          // Close the popup if clicking outside of it
+          window.onclick = function(event) {
+              const popup = document.getElementById('userPopup');
+              if (!event.target.matches('#userIcon') && !popup.contains(event.target)) {
+                  popup.style.display = 'none';
+              }
+          }
+    </script>
+</body>
+</html>

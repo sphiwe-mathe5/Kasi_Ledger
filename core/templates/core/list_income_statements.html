@@ -1,0 +1,100 @@
+{% load static %}
+{% load humanize %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{% static 'css/list.css' %}">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <title>Income Statements</title>
+</head>
+<body>
+    <nav class="navbar">
+        <a href="#" class="logo">KASI LEDGER</a>
+        <div class="quote_btn-container">
+            <a href="{% url 'create_income_statement' %}" class="sign-up"><span>Create Statements</span></a>
+            <a href="{% url 'logout' %}" class="sign-up">
+                <i class="fa-solid fa-arrow-right-from-bracket"></i>
+            </a>
+        </div>
+    </nav>
+    <h3>Income Statements</h3>
+    <div class="grid-container">
+    {% for statement in statements %}
+        <div class="statement-card">
+            <div class="date">{{ statement.created_at|date:"d F Y" }}</div>
+            <div class="income-statement">
+                <div class="statement-item">
+                    <span class="item-label">Sales:</span>
+                    <span class="item-value">{{ statement.sales |floatformat:2|intcomma }}</span>
+                </div>
+                <div class="statement-item">
+                    <span class="item-label">Cost of Sales:</span>
+                    <span class="item-value">({{ statement.cost_of_sales }})</span>
+                </div>
+                <div class="statement-item border-top">
+                    <span class="item-label font-semibold">Gross Profit:</span>
+                    <span class="item-value font-semibold">{{ statement.gross_profit }}</span>
+                </div>
+
+                <div class="statement-item">
+                    <span class="item-label font-semibold">Operating Expenses:</span>
+                    <span class="item-value font-semibold">({{ statement.operating_expenses |floatformat:2|intcomma }})</span> 
+                </div>
+                <div class="statement-item">
+                    <span class="item-label pl-12">Salaries and Wages:</span>
+                    <span class="item-value">{{ statement.salaries }}</span>
+                </div>
+                <div class="statement-item">
+                    <span class="item-label pl-12">Utilities:</span>
+                    <span class="item-value">{{ statement.utilities }}</span>
+                </div>
+                <div class="statement-item">
+                    <span class="item-label pl-12">Rent:</span>
+                    <span class="item-value">{{ statement.rent }}</span>
+                </div>
+                <div class="statement-item">
+                    <span class="item-label pl-12">Marketing:</span>
+                    <span class="item-value">{{ statement.marketing }}</span>
+                </div>
+                <div class="statement-item">
+                    <span class="item-label pl-12">Insurance:</span>
+                    <span class="item-value">{{ statement.insurance }}</span>
+                </div>
+                <div class="statement-item">
+                    <span class="item-label pl-12">Other Operating Expenses:</span>
+                    <span class="item-value">{{ statement.other_expenses }}</span>
+                </div>
+
+                <div class="statement-item border-top">
+                    <span class="item-label font-semibold">Operating Income:</span>
+                    <span class="item-value font-semibold">{{ statement.operating_income }}</span>
+                </div>
+
+                <div class="statement-item">
+                    <span class="item-label">Interest Expense:</span>
+                    <span class="item-value">({{ statement.interest }})</span>
+                </div>
+
+                <div class="statement-item border-top">
+                    <span class="item-label font-semibold">Income Before Tax:</span>
+                    <span class="item-value font-semibold">{{ statement.ebit }}</span>
+                </div>
+
+                <div class="statement-item">
+                    <span class="item-label">Income Tax Expense:</span>
+                    <span class="item-value">({{ statement.tax }})</span>
+                </div>
+
+                <div class="statement-item border-top">
+                    <span class="item-label font-lg">Net Profit:</span>
+                    <span class="item-value font-lg">{{ statement.net_profit }}</span>
+                </div>
+            </div>
+        </div>
+    {% endfor %}
+    </div> 
+</body>
+</html>

@@ -1,0 +1,177 @@
+{% load static %}
+{% load socialaccount %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, shrink-to-fit=no">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap">
+    <title>Kasi Ledger</title>
+    <link href='https://unpkg.com/boxicons@2.1.2/css/boxicons.min.css' rel='stylesheet'>
+    <link rel="stylesheet" href="{% static 'css/auth.css' %}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css" integrity="sha512-Kc323vGBEqzTmouAECnVceyQqyqdsSiqLQISBL29aUW4U/M7pSPA/gEUZQqv1cwx4OnYxTxve5UMg5GT6L4JJg==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <link href="https://fonts.googleapis.com/css?family=Poppins:400,600,700&display=swap" rel="stylesheet" />
+</head>
+<body>
+        <section class="container forms">
+            {% if messages %}
+            <div class="alerts">
+                {% for message in messages %}
+                    <div class="alert alert-{{ message.tags }}">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            </div>
+            {% endif %}
+    
+            <!-- Login Form -->
+            <div class="form login">
+                <div class="form-content">
+                    <form action="{% url 'login' %}" method="POST">
+                        {% csrf_token %}
+                        <div class="field input-field">
+                            
+                            <input type="email" name="email" placeholder="Enter Your Email" class="input" required>
+                        </div>
+    
+                        <div class="field input-field">
+                            <input type="password" name="password" placeholder="Enter Your Password" class="password" required>
+                            <i class='bx bx-hide eye-icon'></i>
+                        </div>
+        
+                        <div class="field button-field">
+                            <button type="submit">Sign in</button>
+                        </div>
+                    </form>
+                </div>
+    
+                <div class="media-options">
+                    <a href="{% provider_login_url 'google' %}" class="field google">
+                        <img width="23" height="23" src="https://img.icons8.com/color/48/google-logo.png" alt="google-logo"/>
+                        <span style="margin-left: 8px;">Continue with Google</span>
+                    </a>
+                </div>   
+
+                <div class="form-link">
+                    <a href="#" class="forgotpassword-link">Forgot password?</a>
+                </div>
+
+                <div class="form-link">
+                    <span>Don't have an account? <a href="#" class="link signup-link">Signup</a></span>
+                </div>
+            </div>
+    
+            <div class="form signup">
+                <div class="form-content">
+                    <form action="{% url 'signup' %}" method="POST">
+                        {% csrf_token %}
+                        <div class="field input-field">
+                            <input type="text" name="first_name" placeholder="First name" class="input" required>
+                        </div>
+                        <div class="field input-field">
+                            <input type="text" name="last_name" placeholder="Last name" class="input" required>
+                        </div>
+                        <div class="field input-field">
+                            <input type="email" name="email" placeholder="Email" class="input" required>
+                        </div>
+                        <div class="field input-field">
+                            <input type="password" name="password" placeholder="Create password" class="password" required>
+                            <i class='bx bx-hide eye-icon'></i>
+                        </div>
+                        <div class="field button-field">
+                            <button type="submit">Sign up</button>
+                        </div>
+                    </form>
+                </div>
+                <div class="media-options">
+                    <a href="{% provider_login_url 'google' %}" class="field google">
+                        <img width="25" height="25" src="https://img.icons8.com/color/48/google-logo.png" alt="google-logo"/>
+                        <span style="margin-left: 8px;">Continue with Google</span>
+                    </a>
+                </div>                
+
+                <div class="form-link">
+                    <span>Already have an account? <a href="#" class="link login-link">Sign in</a></span>
+                </div>
+            </div>
+    
+
+            <div class="form forgotpasswordform" style="display: none;">
+                <div class="form-content">
+                    <header>Forgot Password</header>
+                    <form action="{% url 'forgot_password' %}" method="POST">
+                        {% csrf_token %}
+                        <div class="field input-field">
+                            <input type="email" name="email" placeholder="Email" class="input" required>
+                        </div>
+                        <div class="field button-field newbtnbox">
+                            <button type="submit">Send</button>
+                            <button type="button" class="backbtn">Back</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </section>
+
+        <script src="https://accounts.google.com/gsi/client"></script>
+        <script>
+            
+            const forms = document.querySelector(".forms");
+            const pwShowHide = document.querySelectorAll(".eye-icon");
+            const links = document.querySelectorAll(".link");
+            const forgotPasswordLink = document.querySelector(".forgotpassword-link");
+            const forgotPasswordBox = document.querySelector(".forgotpasswordform");
+            const loginBox = document.querySelector(".login");
+            const registerBox = document.querySelector(".signup");
+            const backBtn = document.querySelector(".backbtn");
+
+            
+            pwShowHide.forEach(eyeIcon => {
+                eyeIcon.addEventListener("click", () => {
+                    let pwFields = eyeIcon.parentElement.parentElement.querySelectorAll(".password");
+                    
+                    pwFields.forEach(password => {
+                        if (password.type === "password") {
+                            password.type = "text";
+                            eyeIcon.classList.replace("bx-hide", "bx-show");
+                        } else {
+                            password.type = "password";
+                            eyeIcon.classList.replace("bx-show", "bx-hide");
+                        }
+                    });
+                });
+            });
+
+           
+            links.forEach(link => {
+                link.addEventListener("click", e => {
+                    e.preventDefault(); 
+                    forms.classList.toggle("show-signup"); 
+                });
+            });
+
+            
+            if (forgotPasswordLink) {
+                forgotPasswordLink.addEventListener("click", (e) => {
+                    e.preventDefault(); 
+                    console.log("Forgot Password link clicked");
+                    forgotPasswordBox.style.display = "block";
+                    registerBox.style.display = "none";
+                    loginBox.style.display = "none";
+                });
+            }
+
+            
+            if (backBtn) {
+                backBtn.addEventListener("click", (e) => {
+                    e.preventDefault(); 
+                    console.log("Back button clicked");
+                    forgotPasswordBox.style.display = "none";
+                    loginBox.style.display = "block";
+                    registerBox.style.display = "block"; 
+                });
+            }
+        </script>
+</body>
+</html>
+

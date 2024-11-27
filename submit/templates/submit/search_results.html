@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Search Results</title>
+    <style>
+        /* Add your styles here */
+    </style>
+</head>
+<body>
+    <h1>Search Results</h1>
+    <form method="GET" action="{% url 'search' %}">
+        <input type="text" name="query" value="{{ query }}" placeholder="Search for usernames, category, or location">
+        <button type="submit">Search</button>
+    </form>
+
+    <h2>Filter by Category</h2>
+    <form method="GET" action="{% url 'search' %}">
+        <button type="submit" name="category" value="singer">Singer</button>
+        <button type="submit" name="category" value="dj">DJ</button>
+        <button type="submit" name="category" value="other">Other</button>
+    </form>
+
+    <h2>Filter by Location</h2>
+    <form method="GET" action="{% url 'search' %}">
+        <input type="text" name="location" value="{{ location }}" placeholder="Search by location">
+        <button type="submit">Search</button>
+    </form>
+
+    {% if query or category or location %}
+        <h2>Users</h2>
+        {% if users %}
+            <ul>
+                {% for user in users %}
+                    <li><a href="{% url 'user-posts' user.username %}">{{ user.username }}</a></li>
+                {% endfor %}
+            </ul>
+        {% else %}
+            <p>No users found.</p>
+        {% endif %}
+
+        <h2>Profiles</h2>
+        {% if profiles %}
+            <ul>
+                {% for profile in profiles %}
+                    <li><a href="{% url 'user-posts' profile.user.username %}">{{ profile.user.username }}</a> - {{ profile.category }} - {{ profile.location }}</li>
+                {% endfor %}
+            </ul>
+        {% else %}
+            <p>No profiles found.</p>
+        {% endif %}
+    {% endif %}
+</body>
+</html>
+
+
+

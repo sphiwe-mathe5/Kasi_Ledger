@@ -1,0 +1,67 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link rel="stylesheet" href="{% static 'css/styles.css' %}">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap">
+<style>
+    .email-form {
+        max-width: 500px;
+        margin: 20px auto;
+        padding: 20px;
+        background: #f9f9f9;
+        border-radius: 8px;
+        box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+    .email-form h2 {
+        text-align: center;
+        color: #333;
+        margin-bottom: 20px;
+    }
+    .email-form label {
+        display: block;
+        margin-bottom: 5px;
+        color: #666;
+    }
+    .email-form input[type="email"],
+    .email-form select {
+        width: 100%;
+        padding: 8px;
+        margin-bottom: 15px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        box-sizing: border-box;
+    }
+    .email-form button {
+        width: 100%;
+        padding: 10px;
+        background-color: #3079ee;
+        color: white;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 16px;
+    }
+    .email-form button:hover {
+        background-color: #3079ee;
+    }
+</style>
+
+<div class="email-form">
+    <h2>Send Email</h2>
+    <form method="post">
+        {% csrf_token %}
+        <div>
+            <label for="{{ form.recipient.id_for_label }}">Recipient:</label>
+            {{ form.recipient }}
+        </div>
+        <div>
+            <label for="{{ form.template.id_for_label }}">Template:</label>
+            {{ form.template }}
+        </div>
+        <button type="submit">Send Email</button>
+    </form>
+</div>

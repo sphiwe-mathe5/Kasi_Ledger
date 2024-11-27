@@ -1,0 +1,464 @@
+{% load custom_filters %}
+{% load humanize %}
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Barcode Scanner</title>
+    <script src="https://unpkg.com/html5-qrcode"></script>
+    <link rel="stylesheet" href="{% static 'css/main.css' %}">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+</head>
+<body>
+    <nav class="navbar">
+        <a href="#" class="logo">KASI LEDGER</a>
+        <div class="quote_btn-container">
+            <a href="{% url 'list_income_statements' %}" class="sign-up"><span>Statements</span></a>
+            <a href="{% url 'logout' %}" class="sign-up">
+                <i class="fa-solid fa-arrow-right-from-bracket"></i>
+            </a>
+        </div>
+    </nav>
+    <div class="container">
+        <div class="grid">
+          <div class="card">
+            <div class="card-header">
+              <h5>Scanning Guide</h5>
+            </div>
+            <div class="card-content">
+              <ol class="list">
+                <li>Choose "Scan In" for new inventory or "Scan Out" for sales.</li>
+                <li>Position the product's barcode in front of your device's camera.</li>
+                <li>Hold steady until the scanner recognizes the code.</li>
+                <li>Verify the scanned information in the form.</li>
+                <li>Adjust details if necessary and submit.</li>
+              </ol>
+              <div id="reader" class="scanner-area"></div>
+              <div id="result" class="scanner-result"></div>
+            </div>
+          </div>
+    
+
+          <div class="card">
+            <div class="card-header">
+              <h5>Product Details</h5>
+            </div>
+            <div class="card-content">
+              <div class="top-info">
+                <p class="info-text">For every first scan of the day, refresh to download updates</p>
+                <button class="refresh-btn" onclick="window.location.reload()">
+                  <i class="fa-solid fa-arrows-rotate"></i>
+                </button>                
+              </div>
+            
+            <div id="productDetails">
+              <div class="form">
+                <div class="grid-2">
+                  <div class="input-group">
+                    <label for="productName">Product Name</label>
+                    <input type="text" id="productName" required />
+                  </div>
+                  <div class="input-group">
+                    <label for="productPrice">Selling Price (per unit)</label>
+                    <input type="number" id="productPrice" step="0.01" required />
+                  </div>
+                  <div class="input-group">
+                    <label for="productCost">Cost Price (per unit)</label>
+                    <input type="number" id="productCost" step="0.01" required />
+                  </div>
+                  <div class="input-group">
+                    <label for="productQuantity">Quantity</label>
+                    <input type="number" id="productQuantity" min="1" value="1" required />
+                  </div>
+                </div>
+    
+                <div class="input-group">
+                    <label for="productCategory">Category:</label>
+                    <div class="category-select">
+                    <select id="productCategory" required>
+                        <option value="">Select a category</option>
+                        {% for category in categories %}
+                            <option value="{{ category.id }}">{{ category.name }}</option>
+                        {% endfor %}
+                    </select>
+                    <button class="add-category-btn">Add Category</button>
+                    </div>
+                </div>
+              </div>
+            </div>
+
+              <div class="button-group">
+                <button class="scan-btn scan-out-btn" id="scanInBtn" onclick="setScanMode('in')">Scan In</button>
+                <button class="scan-btn scan-out-btn" id="scanOutBtn" onclick="setScanMode('out')">Scan Out</button>
+            </div>
+            <p><span id="currentMode">Scan In</span></p>
+        </div>
+          </div>
+        </div>
+    </div>
+    <audio id="beepAudio">
+        <source src="{% static 'js/BEEP.wav' %}" type="audio/mpeg">
+        Your browser does not support the audio element.
+    </audio>
+    
+    
+    <h1>Daily Transactions</h1>
+      
+    <div id="product-list">
+        {% if grouped_products %}
+          <ul>
+          </ul>
+          {% for month, month_data in grouped_products.items %}
+            <h2>{{ month|date:"F Y" }}</h2>
+            <p><b>Monthly Totals:</b> 
+                Sales: R{{ month_data.monthly_total.price|floatformat:2|intcomma }} | 
+                Cost: R{{ month_data.monthly_total.cost|floatformat:2|intcomma }} |
+                Profit/Loss: <span class="{% if month_data.monthly_total.profit_loss < 0 %}text-red{% else %}text-green{% endif %}">
+                    R{{ month_data.monthly_total.profit_loss|floatformat:2|intcomma }}
+                </span>
+            </p>
+            {% for item in out_of_stock_per_month %}
+
+                {{ item.count }} product{% if item.count != 1 %}s{% endif %} sold out in {{ item.month|date:"F" }}
+
+            {% empty %}
+            No out of stock products found.
+            {% endfor %}
+            {% if month_data.dates %}
+              {% for date, data in month_data.dates.items %}
+                <h3>{{ date|date:"d F Y" }}</h3>
+                <p>Number of Transactions Per Day: <span class="product-count">{{ data.total_count }}</span></p>
+                <div class="table-container" data-date="{{ date|date:'Y-m-d' }}">
+                <table class="product-table">
+                    <thead>
+                        <tr>
+                        <th>Product Name</th>
+                        <th>Barcode</th>
+                        <th>Status</th>
+                        <th>Category</th>
+                        <th>Quantity</th>
+                        <th>Sales (Total)</th>
+                        <th>Cost (Total)</th>
+                        <th>Date Sold</th>
+                        <th>Date Added</th>
+                        <th>Profit/Loss</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for product in data.products %}
+                        <tr id="product-{{ product.id }}">
+                            <td>{{ product.name }} ({{ product.original_quantity }})</td>
+                            <td>{{ product.barcode|default:"-" }}</td>
+                            <td>{{ product.status|default:"-" }}</td>
+                            <td>{{ product.category|default:"-" }}</td>
+                            <td>{{ product.quantity }}</td>
+                            <td>R{{ product.price|floatformat:2|intcomma }}</td>
+                            <td>R{{ product.cost|floatformat:2|intcomma }}</td>
+                            <td>
+                            {% if product.status == 'IN' %}
+                                -
+                            {% else %}
+                                {{ product.last_modified|date:"d M Y H:i"|default:"-" }}
+                            {% endif %}
+                            </td>
+                            <td>{{ product.date_added|date:"d M Y H:i" }}</td>
+                            <td class="{% if product.profit_loss < 0 %}text-red{% else %}text-green{% endif %}">
+                                R {{ product.profit_loss_message|intcomma }}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                        <tr class="total-row">
+                        <td colspan="5"><strong>Daily Total</strong></td>
+                        <td style="color: green;"><strong>R{{ data.daily_total.price|floatformat:2|intcomma}}</strong></td>
+                        <td style="color: red;"><strong>R{{ data.daily_total.cost|floatformat:2|intcomma}}</strong></td>
+                        <td colspan="2"></td>
+                        <td style="color: {% if data.daily_total.profit_loss < 0 %} red {% else %} green {% endif %};">
+                            <strong>R{{ data.daily_total.profit_loss|floatformat:2|intcomma }}</strong>
+                        </td>                                                
+                        </tr>
+                    </tbody>
+                    </table>
+                  {% if data.total_count > 10 and not data.show_all %}
+                    <div class="pagination">
+                      <form method="GET" action="{{ request.path }}">
+                        {% for key, value in request.GET.items %}
+                          {% if key != 'show_all' and key != 'date' %}
+                            <input type="hidden" name="{{ key }}" value="{{ value }}">
+                          {% endif %}
+                        {% endfor %}
+                        <input type="hidden" name="show_all" value="true">
+                        <input type="hidden" name="date" value="{{ date|date:'Y-m-d' }}">
+                        <button type="submit" class="see-all-btn">See all products ({{ data.total_count }})</button>
+                      </form>
+                    </div>
+                  {% endif %}
+                </div>
+              {% endfor %}
+            {% else %}
+              <p>No dates for this month.</p>
+            {% endif %}
+          {% empty %}
+            <p>No months available.</p>
+          {% endfor %}
+        {% else %}
+          <p>No grouped products available.</p>
+        {% endif %}
+      </div>
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <script>
+        let scanMode = 'in';
+        let lastScanTime = 0;
+        const scanCooldown = 2000; // 2 seconds cooldown between scans
+        
+        function setScanMode(mode) {
+            scanMode = mode;
+            document.getElementById('scanInBtn').style.fontWeight = mode === 'in' ? 'bold' : 'normal';
+            document.getElementById('scanOutBtn').style.fontWeight = mode === 'out' ? 'bold' : 'normal';
+            document.getElementById('currentMode').textContent = `Current Mode: ${mode.charAt(0).toUpperCase() + mode.slice(1)}`;
+            document.getElementById('productDetails').style.display = mode === 'in' ? 'block' : 'none';
+        }
+        
+        function onScanSuccess(decodedText, decodedResult) {
+            const currentTime = new Date().getTime();
+            if (currentTime - lastScanTime < scanCooldown) {
+                console.log('Scan too soon, ignoring');
+                return;
+            }
+            lastScanTime = currentTime;
+        
+            if (scanMode === 'in' && !validateInputs()) {
+                alert('Please fill in all product details before scanning in.');
+                return;
+            }
+            
+            playBeep();
+            
+            if (scanMode === 'bulk') {
+                saveBulkProducts(decodedText);
+            } else {
+                saveProduct(decodedText, scanMode);
+            }
+        }
+        
+        function onScanFailure(error) {
+            // console.warn(`Code scan error = ${error}`);
+        }
+        
+        let html5QrcodeScanner = new Html5QrcodeScanner(
+            "reader",
+            { fps: 30, qrbox: {width: 450, height: 450} },
+            false
+        );
+        html5QrcodeScanner.render(onScanSuccess, onScanFailure);
+        
+        function playBeep() {
+            var audio = document.getElementById("beepAudio");
+            audio.play();
+        }
+        
+        function validateInputs() {
+            if (scanMode !== 'in') return true; // Only validate for 'in' mode
+            let productName = document.getElementById('productName').value;
+            let productPrice = document.getElementById('productPrice').value;
+            let productCost = document.getElementById('productCost').value;
+            let productCategory = document.getElementById('productCategory').value;
+            return productName && productPrice && productCost && productCategory;
+        }
+        
+        function saveProduct(barcode, action) {
+            let data = {
+                'barcode': barcode,
+                'action': action,
+                'csrfmiddlewaretoken': '{{ csrf_token }}'
+            };
+        
+            if (action === 'in') {
+                let quantity = parseInt(document.getElementById('productQuantity').value);
+                let pricePerUnit = parseFloat(document.getElementById('productPrice').value);
+                let costPerUnit = parseFloat(document.getElementById('productCost').value);
+        
+                data.name = document.getElementById('productName').value;
+                data.price = (quantity * pricePerUnit).toFixed(2);
+                data.cost = (quantity * costPerUnit).toFixed(2);
+                data.quantity = quantity;
+                
+                data.category = document.getElementById('productCategory').value;
+            } else if (action === 'out') {
+                data.quantity = 1; // Default to scanning out 1 item
+                
+            }
+        
+            $.ajax({
+                url: '{% url "subscribe" %}',
+                type: 'POST',
+                data: data,
+                success: function(response) {
+                    if (response.success) {
+                        $('#result').html(`<p>Barcode: <strong>${barcode}</strong> (${response.status})</p>`);
+                        
+                        alert(response.message);
+                        if (action === 'in') {
+                            // Clear input fields after successful save
+                            document.getElementById('productName').value = '';
+                            document.getElementById('productPrice').value = '';
+                            document.getElementById('productCost').value = '';
+                            document.getElementById('productQuantity').value = '1';
+                            document.getElementById('productCategory').value = '';
+                        }
+                        // Refresh the product list to show the new product
+                        fetchLatestProducts();
+                    } else {
+                        alert('Error: ' + response.message);
+                    }
+                },
+                error: function() {
+                    alert('Error communicating with the server.');
+                }
+            });
+        }
+        
+        $(document).ready(function() {
+            let lastUpdate = new Date().toISOString();
+        
+            function formatDate(dateString) {
+                const date = new Date(dateString);
+                const day = String(date.getDate()).padStart(2, '0');
+                const month = date.toLocaleString('default', { month: 'short' });
+                const year = date.getFullYear();
+                const hours = String(date.getHours()).padStart(2, '0');
+                const minutes = String(date.getMinutes()).padStart(2, '0');
+                return `${day} ${month} ${year} ${hours}:${minutes}`;
+            }
+        
+            function updateProduct(product) {
+                const today = new Date().toISOString().split('T')[0];
+                const productDate = new Date(product.date_added).toISOString().split('T')[0];
+                
+                if (productDate === today) {
+                    const tableContainer = $(`.table-container[data-date="${today}"]`);
+                    if (tableContainer.length) {
+                        const productElement = tableContainer.find(`#product-${product.id}`);
+                        const productHtml = `
+                            <td>${product.name} ${(product.original_quantity)}</td>
+                            <td>${product.barcode || '-'}</td>
+                            <td>${product.status === 'IN' ? 'In Stock' : 'Out of Stock'}</td>
+                            <td>${product.category || '-'}</td>
+                            <td>${product.quantity}</td>
+                            <td>R${parseFloat(product.price).toFixed(2)}</td>
+                            <td>R${parseFloat(product.cost).toFixed(2)}</td>
+                            <td>${product.status === 'IN' ? '-' : formatDate(product.last_modified)}</td>
+                            <td>${formatDate(product.date_added)}</td>
+                            <td>${product.profit_loss_message || '-'}</td>
+                        `;
+            
+                        if (productElement.length) {
+                            productElement.html(productHtml);
+                        } else {
+                            const newRow = `<tr id="product-${product.id}">${productHtml}</tr>`;
+                            tableContainer.find('.product-table tbody').prepend(newRow);
+                        }
+            
+                        updateTotals(tableContainer);
+                    }
+                }
+            }
+        
+            function updateTotals(tableContainer) {
+                let dailyTotalPrice = 0;
+                let dailyTotalCost = 0;
+                let dailyTotalProfitLoss = 0;
+                
+                // Get today's date in YYYY-MM-DD format for comparison
+                const today = new Date().toISOString().split('T')[0];
+                
+                // Only sum items from today
+                tableContainer.find('.product-table tbody tr:not(.total-row)').each(function() {
+                    const rowDate = $(this).find('td:eq(8)').text(); // Assuming date_added is in this column
+                    const rowDateFormatted = new Date(rowDate).toISOString().split('T')[0];
+                    
+                    // Only include in totals if the item was added today
+                    if (rowDateFormatted === today) {
+                        const price = parseFloat($(this).find('td:eq(5)').text().replace('R', '').replace(/,/g, '')) || 0;
+                        const cost = parseFloat($(this).find('td:eq(6)').text().replace('R', '').replace(/,/g, '')) || 0;
+                        const quantity = parseInt($(this).find('td:eq(4)').text()) || 0;
+                        
+                        // Multiply by quantity for total
+                        dailyTotalPrice += price * quantity;
+                        dailyTotalCost += cost * quantity;
+                        dailyTotalProfitLoss = dailyTotalPrice - dailyTotalCost;
+                    }
+                });
+            
+                // Update the totals row with proper formatting
+                const totalRow = tableContainer.find('.total-row');
+        
+                updateMonthlyTotals();
+            }
+        
+            function updateMonthlyTotals() {
+                $('.table-container').each(function() {
+                    const monthYear = $(this).closest('section').find('h2').text();
+                    let monthlyTotalPrice = 0;
+                    let monthlyTotalCost = 0;
+                    let monthlyTotalProfitLoss = 0;
+        
+                    $(this).find('.total-row').each(function() {
+                        monthlyTotalPrice += parseFloat($(this).find('td:eq(1)').text().replace('R', '')) || 0;
+                        monthlyTotalCost += parseFloat($(this).find('td:eq(2)').text().replace('R', '')) || 0;
+                        monthlyTotalProfitLoss += parseFloat($(this).find('td:eq(4)').text().replace('R', '')) || 0;
+                    });
+        
+                    const monthlyTotalsElement = $(this).closest('section').find('.monthly-totals');
+                    monthlyTotalsElement.html(`
+                        Monthly Totals: 
+                        Price: R${monthlyTotalPrice.toFixed(2)} | 
+                        Cost: R${monthlyTotalCost.toFixed(2)} |
+                        Profit/Loss: R${monthlyTotalProfitLoss.toFixed(2)}
+                    `);
+                });
+            }
+        
+            function fetchLatestProducts() {
+                $.ajax({
+                    url: "{% url 'enquire' %}",
+                    data: { last_update: lastUpdate },
+                    success: function(data) {
+                        data.products.forEach(updateProduct);
+                        if (data.products.length > 0) {
+                            lastUpdate = data.server_time;
+                        }
+                    },
+                    complete: function() {
+                        setTimeout(fetchLatestProducts, 5000); // Poll every 5 seconds
+                    }
+                });
+            }
+        
+            fetchLatestProducts();
+        });
+
+
+        document.addEventListener('DOMContentLoaded', function() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const showAll = urlParams.get('show_all');
+            const date = urlParams.get('date');
+          
+            if (showAll === 'true' && date) {
+              const targetElement = document.querySelector(`.table-container[data-date="${date}"]`);
+              if (targetElement) {
+                targetElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
+              }
+            }
+        });
+        
+        setScanMode('in');
+    </script>
+</body>
+</html>
+    
+

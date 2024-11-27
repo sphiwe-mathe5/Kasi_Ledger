@@ -1,0 +1,936 @@
+@import url("https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap");
+
+:root {
+  --primary-color: #ff833e;
+  --primary-color-dark: #db6f35;
+  --blue-color: #3079ee;
+  --text-dark: #333333;
+  --text-light: #767268;
+  --white: #ffffff;
+  --max-width: 1200px;
+  --header-font: "Bebas Neue", sans-serif;
+}
+
+/*{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Barcode Scanner</title>
+    <script src="https://unpkg.com/html5-qrcode"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+</head>
+<body>
+   <h1>Barcode Scanner</h1>
+    <div>
+        <button id="scanInBtn" onclick="setScanMode('in')">Scan In</button>
+        <button id="scanOutBtn" onclick="setScanMode('out')">Scan Out</button>
+    </div>
+    <p>Current mode: <span id="currentMode">Scan In</span></p>
+    <div id="reader" width="600px"></div>
+    <div id="result"></div>
+    
+    <audio id="beepAudio">
+        <source src="{% static 'js\BEEP.wav' %}" type="audio/mpeg">
+        Your browser does not support the audio element.
+    </audio>
+
+    <script>
+        let scanMode = 'in';  // Default scan mode
+
+        function setScanMode(mode) {
+            scanMode = mode;
+            document.getElementById('scanInBtn').style.fontWeight = mode === 'in' ? 'bold' : 'normal';
+            document.getElementById('scanOutBtn').style.fontWeight = mode === 'out' ? 'bold' : 'normal';
+            document.getElementById('currentMode').textContent = mode === 'in' ? 'Scan In' : 'Scan Out';
+        }
+
+        function onScanSuccess(decodedText, decodedResult) {
+            $('#result').html(`<p>Barcode: <strong>${decodedText}</strong></p>`);
+            playBeep();
+            saveBarcode(decodedText, scanMode);
+        }
+
+        function onScanFailure(error) {
+            // console.warn(`Code scan error = ${error}`);
+        }
+
+        let html5QrcodeScanner = new Html5QrcodeScanner(
+            "reader",
+            { fps: 30, qrbox: {width: 450, height: 450} },
+            false
+        );
+        html5QrcodeScanner.render(onScanSuccess, onScanFailure);
+
+        function playBeep() {
+            var audio = document.getElementById("beepAudio");
+            audio.play();
+        }
+
+        function saveBarcode(barcode, action) {
+            $.ajax({
+                url: '{% url "subscribe" %}',
+                type: 'POST',
+                data: {
+                    'barcode': barcode,
+                    'action': action,
+                    'csrfmiddlewaretoken': '{{ csrf_token }}'
+                },
+                success: function(response) {
+                    if (response.success) {
+                        alert(response.message);
+                        if (response.status === 'OUT') {
+                            $('#result').html(`<p>Barcode: <strong>${barcode}</strong> (Out of Stock)</p>`);
+                        }
+                    } else {
+                        alert('Error: ' + response.message);
+                    }
+                },
+                error: function() {
+                    alert('Error communicating with the server.');
+                }
+            });
+        }
+    </script>
+</body>
+</html>*/
+/*class Product(models.Model):
+    barcode = models.CharField(max_length=100, unique=True, default='12345')
+    name = models.CharField(max_length=200)
+    status = models.CharField(max_length=10,choices=[('IN', 'In Stock'),('OUT', 'Out of Stock')],default='IN')
+    price = models.DecimalField(max_digits=10,decimal_places=2,default='12345')
+    cost = models.DecimalField(max_digits=10,decimal_places=2,default='12345')
+    category = models.ForeignKey(Category,on_delete=models.SET_NULL,null=True,blank=True)
+    last_modified = models.DateTimeField(auto_now=True)
+    date_added = models.DateTimeField(default=timezone.now)
+
+with this model can you can you create a html tag which will count the number of products that are out and relate it to that certain month like products out of stock in october def contact(request):
+    show_all = request.GET.get('show_all') == 'true'
+    target_date = request.GET.get('date')
+    out_of_stock_count = Product.objects.filter(status='OUT').count()
+
+    categories = Category.objects.all()
+
+    products = Product.objects.annotate(
+        month=TruncMonth('date_added'),
+        date=TruncDate('date_added')).order_by('-date_added')
+
+    grouped_products = defaultdict(lambda: defaultdict(list))
+    for product in products:
+        try:
+            product.profit_loss_message = product.calculate_profit_loss()
+        except Exception as e:
+            print(
+                f"Error calculating profit/loss for product {product.name}: {str(e)}"
+            )
+            product.profit_loss_message = "Error calculating profit/loss"
+
+        grouped_products[product.month][product.date].append(product)
+
+    # Convert defaultdict to regular dict for template rendering
+    grouped_products_dict = {}
+    for month, dates in grouped_products.items():
+        grouped_products_dict[month] = {}
+        for date, product_list in dates.items():
+            date_str = date.strftime('%Y-%m-%d')
+            if show_all and target_date and date_str == target_date:
+                grouped_products_dict[month][date] = {
+                    'products': product_list,
+                    'total_count': len(product_list),
+                    'show_all': True
+                }
+            else:
+                grouped_products_dict[month][date] = {
+                    'products': product_list[:10],
+                    'total_count': len(product_list),
+                    'show_all': False
+                }
+
+    context = {
+        'categories': categories,
+        'grouped_products': grouped_products_dict,
+        'out_of_stock_count': out_of_stock_count,
+    }
+
+    return render(request, 'core/contact.html', context)*/
+img {
+  display: flex;
+  width: 100%;
+}
+
+a {
+  text-decoration: none;
+  transition: 0.3s;
+}
+
+body {
+  font-family: "Poppins", sans-serif;
+  overflow-x: hidden;
+  background: #fafafa;
+  color: #333333;
+  margin-top: 5rem;
+
+}
+
+nav {
+  position: fixed;
+  isolation: isolate;
+  width: 100%;
+  z-index: 0;
+  margin-top: -80px;
+}
+
+.nav__header {
+  padding: 1rem;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background-color: var(--primary-color);
+}
+
+.nav__logo a {
+  font-size: 1.75rem;
+  font-weight: 400;
+  font-family: var(--header-font);
+  color: var(--white);
+}
+
+.nav__menu__btn {
+  font-size: 1.5rem;
+  color: var(--white);
+  cursor: pointer;
+}
+
+.nav__links {
+  position: absolute;
+  top: 64px;
+  left: 0;
+  width: 100%;
+  padding: 2rem;
+  list-style: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  gap: 2rem;
+  background-color: var(--primary-color);
+  transition: 0.5s;
+  z-index: -1;
+  transform: translateY(-100%);
+}
+
+.nav__links.open {
+  transform: translateY(0);
+}
+
+.nav__links a {
+  font-weight: 500;
+  color: var(--white);
+}
+
+.nav__links a:hover {
+  color: var(--text-dark);
+}
+
+.nav__btns {
+  display: none;
+}
+
+.header__container {
+  max-width: var(--max-width);
+  margin: auto;
+  padding-block: 8rem 2rem;
+  padding-inline: 1rem;
+  display: grid;
+  gap: 2rem;
+  overflow-x: hidden;
+}
+
+.header__image {
+  position: relative;
+  isolation: isolate;
+}
+
+.header__image::before {
+  position: absolute;
+  content: "";
+  width: 190%;
+  max-width: 650px;
+  aspect-ratio: 1;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background-size: cover;
+  background-position: center center;
+  background-repeat: no-repeat;
+  border-radius: 100%;
+  opacity: 0.5;
+  z-index: -1;
+}
+
+.header__image img {
+  max-width: 520px;
+  margin-inline: auto;
+}
+
+.header__image__card {
+  position: absolute;
+  padding: 0.75rem 1rem;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 1.1rem;
+  font-weight: 500;
+  color: var(--text-dark);
+  background-color: var(--white);
+  white-space: nowrap;
+  border-radius: 5px;
+  box-shadow: 5px 5px 20px rgba(0, 0, 0, 0.2);
+  z-index: 1;
+}
+
+.header__image__card span {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: var(--primary-color);
+}
+
+.header__image__card-1 {
+  top: 25%;
+  left: 0;
+  transform: translate(-50%, -50%);
+}
+
+.header__image__card-2 {
+  top: 10%;
+  right: 2rem;
+  transform: translateY(-50%);
+}
+
+.header__image__card-3 {
+  top: 60%;
+  left: 0;
+  transform: translateY(-50%);
+}
+
+.header__image__card-4 {
+  top: 70%;
+  right: 0;
+  transform: translateY(-50%);
+}
+
+.header__content h1 {
+  margin-top: 4rem;
+  font-size: 5rem;
+  font-weight: 400;
+  font-family: var(--header-font);
+  color: var(--text-dark);
+  line-height: 5.5rem;
+  text-align: center;
+}
+
+.header__content h1 span {
+  color: #3079ee;
+}
+
+.header__content p {
+  margin-bottom: 2rem;
+  columns: var(--text-light);
+  line-height: 1.75rem;
+  text-align: center;
+}
+
+.header__content form {
+  margin-bottom: 4rem;
+  padding: 1.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-direction: column;
+  gap: 1rem 0;
+  border-radius: calc(1rem + 10px);
+  box-shadow: 5px 5px 20px rgba(0, 0, 0, 0.1);
+}
+
+.header__content .input__row {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex: 1;
+}
+
+.header__content .input__group {
+  flex: 1;
+}
+
+.header__content .input__group h5 {
+  margin-bottom: 5px;
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: var(--text-light);
+}
+
+.header__content .input__group > div {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.header__content input {
+  width: 100%;
+  outline: none;
+  border: none;
+  font-size: 1rem;
+  background-color: transparent;
+}
+
+.header__content input::placeholder {
+  font-weight: 600;
+  color: var(--text-dark);
+}
+
+.header__content .input__group span {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--primary-color);
+}
+
+.header__content button {
+  width: 100%;
+  padding: 1rem 2rem;
+  outline: none;
+  border: none;
+  font-size: 1rem;
+  white-space: nowrap;
+  color: var(--white);
+  background-color: var(--primary-color);
+  border-radius: 10px;
+  transition: 0.3s;
+  cursor: pointer;
+}
+
+.header__content button:hover {
+  background-color: var(--primary-color-dark);
+}
+
+.header__content .bar {
+  font-size: 0.9rem;
+  color: var(--text-light);
+  text-align: center;
+}
+
+.btn-primary {
+  background-color: #3079ee;
+  color: #fff;
+  border: 2px solid #3079ee;
+  padding: 10px 20px;
+  text-decoration: none;
+  border-radius: 20px; /* Makes the button rounded */
+  transition: background-color 0.3s, border-color 0.3s;
+}
+
+.btn-primary:hover {
+  background-color: #2980b9;
+  border-color: #2980b9;
+}
+
+.btn-secondary {
+  background-color: transparent;
+  color: #2c3e50;
+  border: none;
+  padding: 10px 20px;
+  text-decoration: none;
+  transition: color 0.3s
+}
+
+.btn-secondary:hover {
+  color: var(--blue-color);
+}
+
+
+.container {
+  width: 80%;
+  margin: auto;
+  padding: 20px;
+}
+
+h1 {
+  text-align: center;
+  margin-bottom: 40px;
+  color: #333;
+}
+
+.cards {
+  display: flex;
+  justify-content: space-around;
+  flex-wrap: wrap;
+}
+
+.card {
+  background: #fff;
+  border-radius: 10px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  margin: 20px;
+  padding: 20px;
+  text-align: center;
+  width: 30%;
+  transition: transform 0.3s;
+}
+
+.card img {
+  width: 100px;
+  height: 100px;
+  object-fit: cover;
+  border-radius: 50%;
+  margin-bottom: 20px;
+}
+
+.card h2 {
+  margin: 10px 0;
+  color: #3498db;
+}
+
+.card p {
+  color: #666;
+}
+
+.card:hover {
+  transform: scale(1.05);
+}
+
+
+@media (width > 768px) {
+  nav {
+    position: static;
+    padding-block: 2rem 0;
+    padding-inline: 1rem;
+    max-width: var(--max-width);
+    margin-inline: auto;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 2rem;
+  }
+
+  .nav__header {
+    flex: 1;
+    padding: 0;
+    background-color: transparent;
+  }
+
+  .nav__logo a {
+    color: var(--text-dark);
+  }
+
+  .nav__logo a span {
+    color: var(--blue-color);
+  }
+
+  .nav__menu__btn {
+    display: none;
+  }
+
+  .nav__links {
+    position: static;
+    padding: 0;
+    flex-direction: row;
+    background-color: transparent;
+    transform: none;
+  }
+
+  .nav__links a {
+    padding-block: 5px;
+    color: var(--text-dark);
+    border-bottom: 4px solid transparent;
+  }
+
+  .nav__links a:hover {
+    border-color: var(--blue-color);
+  }
+
+  .nav__btns {
+    display: flex;
+    flex: 1;
+  }
+
+  .nav__btns .btn {
+    padding: 0.75rem 1.5rem;
+    outline: none;
+    border: none;
+    font-size: 1rem;
+    white-space: nowrap;
+    border-radius: 20px;
+    transition: 0.3s;
+    cursor: pointer;
+  }
+
+  .sign__up {
+    color: var(--text-dark);
+    background-color: transparent;
+  }
+
+
+  .sign__up:hover {
+    color: var(--blue-color);
+  }
+
+  .sign__in {
+    color: var(--white);
+    background-color: var(--blue-color);
+  }
+
+  .sign__in:hover {
+    background-color: var(--primary-color-dark);
+  }
+
+  .header__container {
+    padding-block: 2rem;
+    grid-template-columns: repeat(2, 1fr);
+    align-items: center;
+  }
+
+  .header__image {
+    grid-area: 1/2/2/3;
+  }
+
+  .header__content :is(h1, p, .bar) {
+    text-align: left;
+  }
+}
+
+@media (width > 1024px) {
+  .header__content form {
+    flex-direction: row;
+  }
+
+  .header__content button {
+    width: fit-content;
+  }
+}
+
+/*{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    <title>{% if title %}{{ title }} - Creatives Finder{% else %}Creatives Finder{% endif %}</title>
+    <style>
+        * {
+          margin: 0;
+          padding: 0;
+          box-sizing: border-box;
+      }
+      body {
+          font-family: "Poppins", sans-serif;
+          background-color: #ffff;
+          line-height: 1.6;
+      }
+      
+
+      .main-content {
+          margin-top: 60px;
+          padding: 20px;
+      }
+      .content-section {
+          max-width: 1200px;
+          margin: 0 auto;
+      }
+      .section-title {
+          font-size: 20px;
+          margin-bottom: 20px;
+          color: #030303;
+      }
+      .post-grid {
+          display: grid;
+          grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+          gap: 20px;
+      }
+      .post-item {
+          background-color: #ffffff;
+          border-radius: 4px;
+          overflow: hidden;
+          box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+      }
+      .post-thumbnail {
+          width: 110%;
+          height: 0;
+          padding-bottom: 90.85%; 
+          position: relative;
+          overflow: hidden;
+      }
+      .post-thumbnail img, .post-thumbnail video {
+          position: absolute;
+          top: 0;
+          left: 0;
+          width: 100%;
+          height: 100%;
+          object-fit: cover;
+      }
+      .post-content {
+          padding: 12px;
+      }
+      .post-title {
+          font-size: 16px;
+          font-weight: 500;
+          color: #030303;
+          text-decoration: none;
+          display: block;
+          margin-bottom: 8px;
+      }
+      .post-metadata {
+          display: flex;
+          align-items: center;
+          font-size: 14px;
+          color: #606060;
+      }
+      .post-author {
+          text-decoration: none;
+          color: #606060;
+          margin-right: 8px;
+      }
+      .post-date {
+          font-size: 12px;
+      }
+
+      .pagination {
+          display: flex;
+          justify-content: center;
+          margin-top: 40px;
+      }
+      .pagination-btn {
+          background-color: #f8f8f8;
+          border: none;
+          color: #606060;
+          padding: 8px 16px;
+          margin: 0 4px;
+          cursor: pointer;
+          border-radius: 2px;
+          font-size: 14px;
+          text-decoration: none;
+      }
+      .pagination-btn:hover {
+          background-color: #e8e8e8;
+      }
+      .pagination-btn.active {
+          background-color: #065fd4;
+          color: #ffffff;
+      }
+  </style>
+</head>
+<body>
+  <nav>
+      <div class="nav__header">
+          <div class="nav__logo">
+              <a href="#">Creatives<span>Finder</span></a>
+          </div>
+          <div class="nav__menu__btn" id="menu-btn">
+              <span><i class="ri-menu-line"></i></span>
+          </div>
+      </div>
+      <ul class="nav__links" id="nav-links">
+          {% if user.is_authenticated %}
+              <li class="nav-item">
+                  <a class="nav-link" href="{% url 'profile' %}">
+                      <img class="profilepic" src="{{ user.profile.image.url }}" style="width: 50px; height: 50px; border-radius: 50%;">
+                  </a>
+              </li>
+              <li><a href="{% url 'post-create' %}">New Post</a></li>
+              <li class="nav-item"><a class="nav-link" href="{% url 'logout' %}">Logout</a></li>
+          {% else %}
+              <li><a href="#">How it Works</a></li>
+              <li><a href="{% url 'login' %}">Login</a></li>
+              <li><a href="{% url 'register' %}">Register</a></li>
+          {% endif %}
+      </ul>
+  </nav>
+
+  <main class="main-content">
+      <div class="content-section">
+          <h1 class="section-title">Posts by {{ view.kwargs.username }} ({{ page_obj.paginator.count }})</h1>
+          <div class="post-grid">
+              {% for post in posts %}
+              <div class="post-item">
+                  <div class="post-thumbnail">
+                      {% if post.video %}
+                          <video controls>
+                              <source src="{{ post.video.url }}" type="video/mp4">
+                              Your browser does not support the video tag.
+                          </video>
+                      {% else %}
+                          <img src="{{ post.author.profile.image.url }}" alt="Post thumbnail">
+                      {% endif %}
+                  </div>
+                  <div class="post-content">
+                      <a href="{% url 'post-detail' post.id %}" class="post-title">{{ post.title }}</a>
+                      <div class="post-metadata">
+                          <a class="post-author" href="{% url 'user-posts' post.author.username %}">{{ post.author }}</a>
+                          <span class="post-date">{{ post.date_posted|date:"F d, Y" }}</span>
+                      </div>
+                  </div>
+              </div>
+              {% endfor %}
+          </div>
+      </div>
+
+      {% if is_paginated %}
+          <div class="pagination">
+              {% if page_obj.has_previous %}
+                  <a class="pagination-btn" href="?page=1">First</a>
+                  <a class="pagination-btn" href="?page={{ page_obj.previous_page_number }}">Previous</a>
+              {% endif %}
+              
+              {% for num in page_obj.paginator.page_range %}
+                  {% if page_obj.number == num %}
+                      <a class="pagination-btn active" href="?page={{ num }}">{{ num }}</a>
+                  {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                      <a class="pagination-btn" href="?page={{ num }}">{{ num }}</a>
+                  {% endif %}
+              {% endfor %}
+              
+              {% if page_obj.has_next %}
+                  <a class="pagination-btn" href="?page={{ page_obj.next_page_number }}">Next</a>
+                  <a class="pagination-btn" href="?page={{ page_obj.paginator.num_pages }}">Last</a>
+              {% endif %}
+          </div>
+      {% endif %}
+  </main>
+  <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
+</body>
+</html>
+
+/*   <script src="https://cdnjs.cloudflare.com/ajax/libs/ffmpeg.js/0.10.1/ffmpeg.min.js"></script>
+    <script src="https://unpkg.com/@ffmpeg/ffmpeg@0.11.6/dist/ffmpeg.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const videoInput = document.querySelector('input[type="file"][name="video"]');
+            const videoTrimmer = document.getElementById('video-trimmer');
+            const videoPreview = document.getElementById('video-preview');
+            const startTrim = document.getElementById('start-trim');
+            const endTrim = document.getElementById('end-trim');
+            const trimButton = document.getElementById('trim-video');
+            const postForm = document.getElementById('post-form');
+        
+            let videoFile = null;
+            let ffmpeg = null;
+    
+            // Initialize FFmpeg
+            (async function() {
+                try {
+                    ffmpeg = FFmpeg.createFFmpeg({ log: true });
+                    await ffmpeg.load();
+                    console.log('FFmpeg loaded successfully');
+                } catch (error) {
+                    console.error('Failed to load FFmpeg:', error);
+                    alert('Error loading video processing library.');
+                }
+            })();
+            
+            videoInput.addEventListener('change', function(e) {
+                videoFile = e.target.files[0];
+                if (videoFile) {
+                    videoTrimmer.style.display = 'block';
+                    videoPreview.src = URL.createObjectURL(videoFile);
+                }
+            });
+            
+            trimButton.addEventListener('click', async function() {
+                if (!ffmpeg.isLoaded()) {
+                    console.error('FFmpeg is not loaded yet');
+                    return;
+                }
+            
+                // Proceed with trimming...
+            });
+            
+        
+            videoPreview.addEventListener('loadedmetadata', function() {
+                startTrim.max = endTrim.max = videoPreview.duration;
+                endTrim.value = videoPreview.duration;
+            });
+        
+            startTrim.addEventListener('input', updateVideoPreview);
+            endTrim.addEventListener('input', updateVideoPreview);
+        
+            function updateVideoPreview() {
+                videoPreview.currentTime = startTrim.value;
+            }
+        
+            trimButton.addEventListener('click', trimVideo);
+        
+            async function fetchFile(file) {
+                try {
+                    const data = await file.arrayBuffer();
+                    return new Uint8Array(data);
+                } catch (error) {
+                    console.error('Error fetching file data:', error);
+                    alert('Error reading video file.');
+                    return null;
+                }
+            }
+    
+            async function trimVideo() {
+                if (!videoFile) {
+                    alert('Please upload a video first.');
+                    return;
+                }
+            
+                const startTime = parseFloat(startTrim.value);
+                const endTime = parseFloat(endTrim.value);
+            
+                if (startTime >= endTime) {
+                    alert('Invalid trim range');
+                    return;
+                }
+            
+                trimButton.disabled = true;
+                trimButton.textContent = 'Trimming...';
+            
+                try {
+                    console.log('Starting video trim process');
+                    console.log('Video file:', videoFile);
+                    console.log('Start time:', startTime);
+                    console.log('End time:', endTime);
+            
+                    console.log('Writing file to FFmpeg filesystem');
+                    ffmpeg.FS('writeFile', 'input.mp4', await fetchFile(videoFile));
+            
+                    console.log('Running FFmpeg command');
+                    await ffmpeg.run('-i', 'input.mp4', '-ss', `${startTime}`, '-to', `${endTime}`, '-c', 'copy', 'output.mp4');
+            
+                    console.log('Reading trimmed file');
+                    const data = ffmpeg.FS('readFile', 'output.mp4');
+                    const trimmedBlob = new Blob([data.buffer], { type: 'video/mp4' });
+            
+                    console.log('Updating form with trimmed video');
+                    const container = new DataTransfer();
+                    container.items.add(new File([trimmedBlob], videoFile.name, { type: 'video/mp4' }));
+                    videoInput.files = container.files;
+            
+                    console.log('Trim process completed successfully');
+                    alert('Video trimmed successfully!');
+                    
+                    videoPreview.src = URL.createObjectURL(trimmedBlob);
+                } catch (error) {
+                    console.error('Error during video trimming:', error);
+                    alert('An error occurred while trimming the video. Please try again.');
+                } finally {
+                    trimButton.disabled = false;
+                    trimButton.textContent = 'Trim Video';
+                }
+            }
+        
+            postForm.addEventListener('submit', function(e) {
+                if (videoFile && !videoInput.files[0]) {
+                    e.preventDefault();
+                    alert('Please trim the video before submitting.');
+                }
+            });
+        });
+    </script>
