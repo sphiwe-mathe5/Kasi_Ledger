@@ -51,28 +51,29 @@ class UserRegisterForm(UserCreationForm):
     def save(self, commit=True):
         user = super().save(commit=False)
         user.email = self.cleaned_data['email']
+        user.company_name = self.cleaned_data['company_name']
         if commit:
             user.save()
             Profile.objects.update_or_create(
                 user=user,
                 defaults={
                     'pricing_plan': self.cleaned_data['pricing_plan'],
-                    'company_name': self.cleaned_data.get('company_name')
                 }
             )
         return user
 
 class UserUpdateForm(forms.ModelForm):
     email = forms.EmailField()
+    company_name = forms.CharField()
 
     class Meta:
         model = User
-        fields = ['email']
+        fields = ['email', 'company_name']
 
 class ProfileUpdateForm(forms.ModelForm):
     class Meta:
         model = Profile
-        fields = ['pricing_plan', 'company_name']
+        fields = ['pricing_plan']
 
 
 class SearchForm(forms.Form):

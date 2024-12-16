@@ -2,11 +2,11 @@ import os
 from pathlib import Path
 from decouple import config, Csv
 
-from pathlib import Path
+
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 SECRET_KEY = config('SECRET_KEY')
-DEBUG = False
+DEBUG = True
 ALLOWED_HOSTS = config('ALLOWED_HOSTS', default='.vercel.app,127.0.0.1,.com').split(',')
 ADMIN_PATH = config('ADMIN_PATH')
 
@@ -136,11 +136,7 @@ USE_I18N = True
 USE_TZ = True
 
 STATIC_URL = '/static/'
-
-
 STATICFILES_DIRS = [os.path.join(BASE_DIR, "project/static")]
-
-
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 
 
@@ -167,3 +163,8 @@ ADMIN_EMAIL = config('ADMIN_EMAIL')
 LOGIN_REDIRECT_URL = '/'
 LOGOUT_REDIRECT_URL = '/'
 LOGIN_URL = 'login'
+
+
+PAYSTACK_SECRET_KEY = config('PAYSTACK_SECRET_KEY')
+PAYSTACK_PUBLIC_KEY = config('PAYSTACK_PUBLIC_KEY')
+SITE_URL = 'http://127.0.0.1:8000'

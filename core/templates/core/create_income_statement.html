@@ -1,3 +1,4 @@
+{% load static %}
 {% load custom_filters %}
 {% load humanize %}
 <!DOCTYPE html>
@@ -5,6 +6,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link rel="stylesheet" href="{% static 'css/list.css' %}">
     <title>Create Income Statement</title>
     <style>
         :root {
@@ -14,14 +18,6 @@
             --form-background: #ffffff;
         }
 
-        body {
-            font-family: 'Arial', sans-serif;
-            line-height: 1.6;
-            color: var(--secondary-color);
-            background-color: var(--background-color);
-            margin: 0;
-            padding: 20px;
-        }
 
         .container {
             max-width: 1200px;
@@ -34,8 +30,9 @@
         h1 {
             width: 100%;
             text-align: center;
-            color: var(--primary-color);
+            color: black;
             margin-bottom: 20px;
+            font-size: medium;
         }
 
         .form-container {
@@ -111,6 +108,12 @@
     </style>
 </head>
 <body>
+    <nav class="navbar">
+        <a href="{% url 'index' %}"  class="logo">KASI LEDGER</a>
+        <div class="quote_btn-container">
+            <a href="{% url 'list_income_statements' %}" class="sign-up"><span>Statements</span></a>
+        </div>
+    </nav>
     <div class="container">
         <h1>Create Income Statement</h1>
         <div class="form-container">
@@ -176,8 +179,8 @@
                 <li><strong>Tax:</strong> Input the amount of income tax you expect to pay.</li>
                 <li><strong>Dividends:</strong> If applicable, enter any dividends paid to shareholders.</li>
                 <li>All fields are required. If you don't have a value for a particular field, leave it as 0.</li>
-                <li>Use decimal points for cents (e.g., 1000.50 for $1,000.50).</li>
-                <li>After filling out all fields, click "Create Income Statement" to generate your statement.</li>
+                <li>Use decimal points for cents (e.g., 1000.50 for R 1,000.50).</li>
+                <li>After filling out all fields, click "Create Income Statement" to generate your statement. <a href="{% url 'guide' %}" class="forgotpassword-link">Read Detailed Guide</a></li>
             </ul>
         </div>
     </div>
@@ -187,20 +190,21 @@
             const selectedMonth = monthSelect.value;
             const salesInput = document.getElementById('id_sales');
             const costInput = document.getElementById('id_cost_of_sales');
+    
 
-            // Clear previous values
             salesInput.value = '';
             costInput.value = '';
+    
 
-            // Get data from context
-            const monthlyTotals = JSON.parse('{{ monthly_totals|safe }}');
-
+            const monthlyTotals = JSON.parse('{{ monthly_totals_json|safe }}');
+    
             if (selectedMonth in monthlyTotals) {
                 salesInput.value = parseFloat(monthlyTotals[selectedMonth].price).toFixed(2);
                 costInput.value = parseFloat(monthlyTotals[selectedMonth].cost).toFixed(2);
             }
         }
     </script>
+       
 </body>
 </html>
 

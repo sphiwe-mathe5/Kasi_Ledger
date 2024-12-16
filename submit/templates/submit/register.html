@@ -1,278 +1,97 @@
+{% load static %} {% load socialaccount %}
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-
-    <title>Product Scanner</title>
-    <style>
-        /* General Styles */
-        * {
-          margin: 0;
-          padding: 0;
-          box-sizing: border-box;
-        }
-        
-        body {
-          font-family: Arial, sans-serif;
-          background-color: #f9f9f9;
-          color: #333;
-        }
-        
-        .container {
-          width: 100%;
-          max-width: 1280px;
-          margin: 0 auto;
-          padding: 20px;
-        }
-        
-        .grid {
-          display: grid;
-          grid-template-columns: 1fr 1fr;
-          gap: 20px;
-        }
-        
-        .card {
-          background-color: white;
-          border: 1px solid #ddd;
-          border-radius: 8px;
-        }
-        
-        .card-header {
-          padding: 20px;
-          border-top-left-radius: 8px;
-          border-top-right-radius: 8px;
-        }
-        
-        .card-header h2 {
-          font-size: 1.5rem;
-          font-weight: 600;
-        }
-        
-        .card-content {
-          padding: 20px;
-        }
-        
-        .sub-title {
-          font-size: 1.25rem;
-          font-weight: 600;
-          margin-bottom: 10px;
-        }
-        
-        .list {
-          list-style-type: decimal;
-          padding-left: 20px;
-          margin-bottom: 20px;
-        }
-        
-        .list li {
-          margin-bottom: 10px;
-        }
-        
-        .scanner-area, .scanner-result {
-          margin-top: 20px;
-        }
-        
-        .top-info {
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-          margin-bottom: 20px;
-        }
-        
-        .info-text {
-          font-size: 0.875rem;
-          color: #666;
-        }
-        
-        .refresh-btn {
-          background: none;
-          border: none;
-          font-size: 1.5rem;
-          color: #007bff;
-          cursor: pointer;
-        }
-        
-        .form .grid-2 {
-          display: grid;
-          grid-template-columns: 1fr 1fr;
-          gap: 20px;
-        }
-        
-        .input-group {
-          margin-bottom: 20px;
-        }
-        
-        .input-group label {
-          display: block;
-          font-size: 0.875rem;
-          font-weight: 600;
-          margin-bottom: 8px;
-        }
-        
-        .input-group input, .category-select select {
-          width: 100%;
-          padding: 10px;
-          border: 1px solid #ddd;
-          border-radius: 8px;
-          font-size: 1rem;
-        }
-        
-        .category-select {
-          display: flex;
-          width: 82%;
-          justify-content: space-between;
-          align-items: center;
-          gap: 10px;
-        }
-        
-        .add-category-btn {
-          background-color: #ffffffff;
-          color: black;
-          border: 1px solid #ddd;
-          padding: 4px 60px;
-          border-radius: 8px;
-          cursor: pointer;
-        }
-        
-        .button-group {
-          display: flex;
-          gap: 10px;
-          margin-top: 20px;
-        }
-        
-        .scan-btn {
-          background-color: black;
-          color: white;
-          border: none;
-          padding: 10px 20px;
-          border-radius: 8px;
-          cursor: pointer;
-        }
-        
-        .scan-out-btn {
-          background-color: #ffffff;
-          color: black;
-          border: 1px solid black;
-        }
-        
-        .current-mode {
-          font-size: 0.875rem;
-          color: #666;
-          margin-top: 10px;
-        }
-        .refresh-btn {
-            background-color: transparent; 
-            border: 2px solid grey; 
-            padding: 8px; 
-            border-radius: 4px; 
-            display: inline-flex; 
-            justify-content: center; 
-            align-items: center;
-            cursor: pointer; 
-        }
-        .refresh-btn i {
-            font-size: 1.25rem
-            color: grey;
-        }
-        .refresh-btn:hover {
-            border-color: #007bff;
-        }
-          
-        .refresh-btn:hover i {
-            color: #007bff;
-        }  
-    </style>
-</head>
-<body>
-    <div class="container">
-        <div class="grid">
-          <div class="card">
-            <div class="card-header">
-              <h2>Scanning Guide</h2>
-            </div>
-            <div class="card-content">
-              <h3 class="sub-title">How to Scan Products</h3>
-              <ol class="list">
-                <li>Choose "Scan In" for new inventory or "Scan Out" for sales.</li>
-                <li>Position the product's barcode in front of your device's camera.</li>
-                <li>Hold steady until the scanner recognizes the code.</li>
-                <li>Verify the scanned information in the form.</li>
-                <li>Adjust details if necessary and submit.</li>
-              </ol>
-              <div id="reader" class="scanner-area"></div>
-              <div id="result" class="scanner-result"></div>
-            </div>
-          </div>
-    
-
-          <div class="card">
-            <div class="card-header">
-              <h2>Product Details</h2>
-            </div>
-            <div class="card-content">
-              <div class="top-info">
-                <p class="info-text">For every first scan of the day, refresh to download updates</p>
-                <button class="refresh-btn" onclick="window.location.reload()">
-                  <i class="fa-solid fa-arrows-rotate"></i>
-                </button>                
-              </div>
-    
-              <div class="form">
-                <div class="grid-2">
-                  <div class="input-group">
-                    <label for="productName">Product Name</label>
-                    <input type="text" id="productName" required />
-                  </div>
-                  <div class="input-group">
-                    <label for="productPrice">Selling Price (per unit)</label>
-                    <input type="number" id="productPrice" step="0.01" required />
-                  </div>
-                  <div class="input-group">
-                    <label for="productCost">Cost Price (per unit)</label>
-                    <input type="number" id="productCost" step="0.01" required />
-                  </div>
-                  <div class="input-group">
-                    <label for="productQuantity">Quantity</label>
-                    <input type="number" id="productQuantity" min="1" value="1" required />
-                  </div>
-                </div>
-    
-                <div class="input-group">
-                    <label for="productCategory">Category:</label>
-                    <div class="category-select">
-                    <select id="productCategory" required>
-                        <option value="">Select a category</option>
-                        {% for category in categories %}
-                            <option value="{{ category.id }}">{{ category.name }}</option>
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, shrink-to-fit=no" />
+        <link
+            rel="stylesheet"
+            href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap"
+        />
+        <title>Kasi Ledger - Sign Up</title>
+        <link href="https://unpkg.com/boxicons@2.1.2/css/boxicons.min.css" rel="stylesheet" />
+        <link rel="stylesheet" href="{% static 'css/auth.css' %}" />
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css" />
+        <link href="https://fonts.googleapis.com/css?family=Poppins:400,600,700&display=swap" rel="stylesheet" />
+    </head>
+    <body>
+        <section class="container forms">
+            <div class="form signup">
+                <div class="form-content">
+                    {% if messages %}
+                    <div class="alerts">
+                        {% for message in messages %}
+                        <div class="alert alert-{{ message.tags }}" style="color: red">{{ message }}</div>
                         {% endfor %}
-                    </select>
-                    <button class="add-category-btn">Add Category</button>
                     </div>
+                    {% endif %}
+                    <form action="{% url 'signup' %}" method="POST">
+                        {% csrf_token %}
+                        <div class="field input-field">
+                            <input type="text" name="company_name" placeholder="Company Name" class="input" required />
+                        </div>
+                        <div class="field input-field">
+                            <input type="email" name="email" placeholder="Email" class="input" required />
+                        </div>
+                        <div class="field input-field">
+                            <input
+                                type="admin_password"
+                                name="admin_password"
+                                placeholder="Create Admin password"
+                                class="admin_password"
+                                required
+                            />
+                        </div>
+                        <div class="field input-field">
+                            <input
+                                type="password"
+                                name="password"
+                                placeholder="Create password"
+                                class="password"
+                                required
+                            />
+                            <i class="bx bx-hide eye-icon"></i>
+                        </div>
+                        <div class="field button-field">
+                            <button type="submit">Sign up</button>
+                        </div>
+                    </form>
                 </div>
-              </div>
-
-
-              <div class="button-group">
-                <button class="scan-btn" onclick="setScanMode('in')">Scan In</button>
-                <button class="scan-btn scan-out-btn" onclick="setScanMode('out')">Scan Out</button>
-              </div>
-    
-              <p class="current-mode">Current mode: <span id="currentMode">Scan In</span></p>
+                <div class="media-options">
+                    <a href="{% provider_login_url 'google' %}" class="field google">
+                        <img
+                            width="25"
+                            height="25"
+                            src="https://img.icons8.com/color/48/google-logo.png"
+                            alt="google-logo"
+                        />
+                        <span style="margin-left: 8px">Continue with Google</span>
+                    </a>
+                </div>
+                <div class="form-link">
+                    <span
+                        >Already have an account? <a href="{% url 'login' %}" class="link login-link">Sign in</a></span
+                    >
+                </div>
             </div>
-          </div>
-        </div>
-      </div>
-    
-      <script>
-        function setScanMode(mode) {
-          const currentModeElement = document.getElementById('currentMode');
-          if (currentModeElement) {
-            currentModeElement.textContent = mode === 'in' ? 'Scan In' : 'Scan Out';
-          }
-        }
-      </script>
-    
-</body>
+        </section>
+        <script src="https://accounts.google.com/gsi/client"></script>
+        <script>
+            const pwShowHide = document.querySelectorAll(".eye-icon");
+            pwShowHide.forEach((eyeIcon) => {
+                eyeIcon.addEventListener("click", () => {
+                    let pwFields = eyeIcon.parentElement.parentElement.querySelectorAll(".password");
+                    pwFields.forEach((password) => {
+                        if (password.type === "password") {
+                            password.type = "text";
+                            eyeIcon.classList.replace("bx-hide", "bx-show");
+                        } else {
+                            password.type = "password";
+                            eyeIcon.classList.replace("bx-show", "bx-hide");
+                        }
+                    });
+                });
+            });
+        </script>
+    </body>
 </html>

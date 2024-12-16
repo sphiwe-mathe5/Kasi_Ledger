@@ -1,0 +1,708 @@
+{% load static %}
+{% load humanize %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{% static 'css/list.css' %}">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <title>Detailed Guide</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+        }
+        .tab-container {
+            width: 80%;
+            margin: 50px auto;
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+        .tabs {
+            display: flex;
+            border-bottom: 2px solid #ddd;
+        }
+        .tab {
+            padding: 10px 20px;
+            cursor: pointer;
+            flex: 1;
+            text-align: center;
+            background-color: #f1f1f1;
+            transition: background-color 0.3s;
+        }
+        .tab:hover {
+            background-color: #ddd;
+        }
+        .tab.active {
+            background-color: #007bff;
+            color: white;
+        }
+        .tab-content {
+            padding: 20px;
+            display: none;
+        }
+        .tab-content p {
+            margin: 0;
+        }
+        .detailed-guide {
+            background-color: #f9f9f9;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 20px;
+            margin-top: 30px;
+            font-family: Arial, sans-serif;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        :root {
+            --primary-color: #2c3e50;
+            --secondary-color: #3498db;
+            --accent-color: #e74c3c;
+            --success-color: #2ecc71;
+            --text-color: #333;
+            --light-bg: #f8f9fa;
+        }
+        .guide-container {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            padding: 30px;
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+        h1 {
+            color: var(--primary-color);
+            border-bottom: 3px solid var(--secondary-color);
+            padding-bottom: 10px;
+        }
+        h2 {
+            color: var(--secondary-color);
+            margin-top: 30px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #eee;
+        }
+        h3 {
+            color: var(--primary-color);
+            margin-top: 20px;
+        }
+        .section {
+            margin-bottom: 20px;
+            padding: 20px;
+            background: var(--light-bg);
+            border-radius: 6px;
+            border-left: 4px solid #3498db;
+        }
+        .important-note {
+            background-color: #fff3cd;
+            border-left: 4px solid #ffc107;
+            padding: 5px;
+            margin: 5px 0;
+        }
+        .warning-note {
+            background-color: #ffe6e6;
+            border-left: 4px solid var(--accent-color);
+            padding: 15px;
+            margin: 15px 0;
+        }
+        .steps {
+            padding-left: 20px;
+        }
+        .steps li {
+            margin-bottom: 10px;
+        }
+        .feature-box {
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            padding: 15px;
+            margin: 10px 0;
+        }
+        .profit-section {
+            background: #e8f5e9;
+            border-left: 4px solid var(--success-color);
+            padding: 20px;
+            margin: 20px 0;
+        }
+        .troubleshooting {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 6px;
+            padding: 15px;
+            margin: 15px 0;
+        }
+        .camera-setup {
+            background: #e3f2fd;
+            border-left: 4px solid #2196f3;
+            padding: 15px;
+            margin: 15px 0;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+        th, td {
+            padding: 12px;
+            border: 1px solid #ddd;
+            text-align: left;
+        }
+        th {
+            background-color: var(--secondary-color);
+            color: white;
+        }
+        tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+        .product-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+            font-size: 14px;
+            background: white;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        .product-table th {
+            background-color: #3498db;
+            color: white;
+            font-weight: 600;
+            padding: 12px;
+            text-align: left;
+            border: 1px solid #ddd;
+        }
+        .product-table td {
+            padding: 12px;
+            border: 1px solid #ddd;
+        }
+        .product-table tbody tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+        .product-table tbody tr:hover {
+            background-color: #f5f5f5;
+        }
+        .status-in {
+            color: #2ecc71;
+            font-weight: bold;
+        }
+        .status-out {
+            color: #e74c3c;
+            font-weight: bold;
+        }
+        .profit {
+            color: #2ecc71;
+            font-weight: bold;
+        }
+        .loss {
+            color: #e74c3c;
+            font-weight: bold;
+        }
+        .success {
+            color: #155724;
+            background-color: #d4edda;
+            border-left: 4px solid #28a745;
+            padding: 10px;
+            margin: 10px 0;
+        }
+        .automated {
+            background-color: #e8f4f8;
+            border-left: 4px solid #2ecc71;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 4px;
+        }
+        .definition {
+            background-color: #fff3cd;
+            border-left: 4px solid #ffc107;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 4px;
+        }
+        .field-list {
+            margin-left: 20px;
+        }
+        @media (max-width: 768px) {
+            .tab-container {
+                width: 100%;
+                margin: 20px;
+            }
+            .tabs {
+                flex-direction: column;
+            }
+            .tab {
+                padding: 12px 15px;
+                font-size: 14px;
+            }
+            .tab.active {
+                background-color: #007bff;
+                color: white;
+            }
+            .tab-content {
+                padding: 15px;
+            }
+            .guide-container {
+                padding: 20px;
+            }
+            h1 {
+                font-size: 22px;
+            }
+            h2 {
+                font-size: 18px;
+            }
+            h3 {
+                font-size: 16px;
+            }
+            .section {
+                padding: 15px;
+            }
+            .steps {
+                padding-left: 15px;
+            }
+            .product-table {
+                font-size: 12px;
+            }
+            table {
+                width: 100%;
+                overflow-x: auto;
+                display: block;
+            }
+            th, td {
+                padding: 10px;
+            }
+        }
+        @media (max-width: 480px) {
+            .tab-container {
+                margin: 10px;
+            }
+            .tab {
+                padding: 10px;
+                font-size: 12px;
+            }
+            .tab-content {
+                padding: 10px;
+            }
+            h1 {
+                font-size: 20px;
+            }
+            h2 {
+                font-size: 16px;
+            }
+            h3 {
+                font-size: 14px;
+            }
+            .product-table th, .product-table td {
+                padding: 8px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <a href="{% url 'index' %}"  class="logo">KASI LEDGER</a>
+        <div class="quote_btn-container">
+            <a href="{% url 'logout' %}" class="sign-up">
+                <i class="fa-solid fa-arrow-right-from-bracket"></i>
+            </a>
+        </div>
+    </nav>
+        <div class="tab-container">
+          <div class="tabs">
+            <div class="tab" id="tab1" onclick="showTab(1)">Inventory Management</div>
+            <div class="tab" id="tab2" onclick="showTab(2)">Point Of Sale</div>
+            <div class="tab" id="tab3" onclick="showTab(3)">Income Statement</div>
+          </div>
+          <div class="tab-content" id="content1">
+            <div class="detailed-guide">
+                <div class="definition">
+                <h3>Detailed Scanning and Inventory Management Guide</h3>
+                <p>What is the main Purpose ?<br><br>
+                    The Inventory Management System on Kasi Ledger allows you to 
+                    Utilize your smartphone's/PC's barcode scanner for easy stock management. 
+                    Our user-friendly interface allows you to track incoming and outgoing 
+                    items, ensuring real-time inventory data is always accessible. Stay 
+                    informed about stock levels to avoid shortages and enhance profitability. 
+                    All you do is to upload your products, this helps you to know how much 
+                    inventory you have without the need of manual stock counting<br><br>
+                    Since the system uses the WEB, it allows you to use any device whether it's 
+                    a Laptop or your Personal Smart Phone, allowing you to have access to you 
+                    Business Information at anytime.<br><br>
+                    Below is a step to step guide on how to use this system</p>
+                </div>
+                <div class="section">
+                    <h2>Accessing the Inventory Page</h2>
+                    <ol class="steps">
+                        <li>Navigate from home page to inventory section kasiledger/inventory</li>
+                        <li>Enter admin credentials when prompted</li>
+                        <li>System validates authentication</li>
+                        <li>Access granted to inventory interface</li>
+                    </ol>
+                </div>
+                <div class="section">
+                  <h2>Security and Access Control For the Inventory Page</h2>
+                  <div class="important-note">
+                      <h3>Admin Authentication</h3>
+                      <p>One of the issues we aim to address is theft, which is why we have secured the inventory page with an 
+                        admin password. This password is set by a trusted person within your organization. In most cases, if 
+                        untrusted individuals gain access to the inventory page, they could enter incorrect product details, 
+                        potentially leading to theft, especially within the organization. Managers may choose to share the 
+                        general login password with employees to grant access to various pages, but the admin password should 
+                        remain protected, based on management's decision, to prevent theft-related issue.
+                      </p>
+                      <ul>
+                          <li>Access restricted to authorized personnel only</li>
+                          <li>Admin password required for inventory page access</li>
+                          <li>Security measures prevent unauthorized modifications</li>
+                          <li>Helps maintain accurate inventory records</li>
+                          <li>Reduces risk of internal theft</li>
+                      </ul>
+                  </div>
+              </div>
+              <div class="section">
+                  <h2>Camera Setup and Scanning</h2>
+                  <div class="camera-setup">
+                      <h3>Scanner Setup</h3>
+                      <p>Once You have accessed the inventory page, you can begin to scan in inventory starting with Setting up Your Camera,
+                        Your Camera set up is done on your web browser(Google Chrome, Microsoft Edge and more).
+                      </p>
+                      <ul>
+                          <li>Browser will request camera permissions</li>
+                          <li>Grant necessary permissions when prompted</li>
+                          <li>Ensure adequate lighting in scanning area</li>
+                      </ul>
+                  </div>
+                  <div class="troubleshooting">
+                      <h3>Troubleshooting Scanner Issues</h3>
+                      <ul>
+                          <li>Check browser camera permissions</li>
+                          <li>Verify device camera functionality</li>
+                          <li>Refresh page after granting permissions</li>
+                          <li>Try alternative browser if issues persist</li>
+                      </ul>
+                  </div>
+              </div>
+              <div class="section">
+                  <h2>Product Details Entry </h2>
+                  <div class="feature-box">
+                      <h3>Required Product Information</h3>
+                      <p>Once The camera is set up, you are ready to scan in products, where every field is required. 
+                      </p>
+                      <ul>
+                          <li>Product Name (unique identifier)</li>
+                          <li>Price Per Unit (selling price)</li>
+                          <li>Cost Per Unit (purchase cost)</li>
+                          <li>Initial Quantity (Single or Bulk)</li>
+                          <li>Product Category</li>
+                          <li>Product Barcode Scanned by the Camera</li>
+                      </ul>
+                  </div>
+              </div>
+              <div class="section">
+                  <h2>Product Category</h2>
+                  <div class="feature-box">
+                      <h3>Setting Up Categories</h3>
+                      <ol class="steps">
+                          <li>Access category management section</li>
+                          <li>Click "Add Category"</li>
+                          <li>Enter category details</li>
+                          <li>Save new category</li>
+                      </ol>
+                  </div>
+              </div>
+              <div class="section">
+                  <h2>Scanning Process</h2>
+                  <ol class="steps">
+                      <li>Complete all product details first</li>
+                      <li>Open scanner in browser</li>
+                      <li>Position barcode 4-6 inches from camera</li>
+                      <li>Wait for confirmation beep sound</li>
+                      <li>Verify scanned product in table</li>
+                  </ol>
+                  <div class="warning-note">
+                      <strong>Important:</strong> Products can only be deleted during initial scanning out phase.
+                  </div>
+              </div>
+              <div class="feature-box"> 
+              <table class="product-table">
+                <thead>
+                    <tr>
+                        <th>Product Name</th>
+                        <th>Barcode</th>
+                        <th>Status</th>
+                        <th>Category</th>
+                        <th>Quantity</th>
+                        <th>Sales (Total)</th>
+                        <th>Cost (Total)</th>
+                        <th>Date Sold</th>
+                        <th>Date Added</th>
+                        <th>Profit/Loss</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Blue Jeans (5)</td>
+                        <td>567890123456</td>
+                        <td class="status-out">OUT</td>
+                        <td>Clothing</td>
+                        <td>0</td>
+                        <td>R899.00</td>
+                        <td>R599.00</td>
+                        <td>2024-12-13</td>
+                        <td>2024-12-01</td>
+                        <td class="profit">R200.00</td>
+                    </tr>
+                    <tr>
+                        <td>Black Label(15)</td>
+                        <td>123456789012</td>
+                        <td class="status-in">IN</td>
+                        <td>Beverages</td>
+                        <td>2</td>
+                        <td>R300.00</td>
+                        <td>R150.00</td>
+                        <td>-</td>
+                        <td>2024-12-12</td>
+                        <td class="profit">R180.00</td>
+                    </tr>
+                    <tr>
+                        <td>Selati Sugar(10)</td>
+                        <td>456789012345</td>
+                        <td class="status-in">IN</td>
+                        <td>Clothing</td>
+                        <td>8</td>
+                        <td>R 400.00</td>
+                        <td>R200.00</td>
+                        <td>-</td>
+                        <td>2024-12-11</td>
+                        <td class="profit">R200.00</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+              <div class="section">
+                  <h2>Inventory Management Features</h2>
+                    <div class="profit-section">
+                        <h3>Automatic Calculations</h3>
+                        <p>The system calculates profitd and losses based you product entry on product details (Price per unit, Cost per unit
+                            and Quantity. 
+                        </p>
+                        <ul>
+                            <li>Profit per unit (Price - Cost)</li>
+                            <li>Total potential profit (Profit × Quantity)</li>
+                            <li>Projected revenue for full stock sale</li>
+                            <li>Monthly profit projections</li>
+                            <li>Daily sales tracking</li>
+                        </ul>
+                    </div>
+                </div>
+                  <div class="feature-box">
+                      <h3>Search and Filter Options</h3>
+                      <ul>
+                          <li>Search by category</li>
+                          <li>Search by product name</li>
+                          <li>Filter by stock status (IN/OUT)</li>
+                      </ul>
+                  </div>
+                  <div class="feature-box">
+                      <h3>Time-Based Analysis</h3>
+                      <table>
+                          <thead>
+                              <tr>
+                                  <th>Period</th>
+                                  <th>Features</th>
+                              </tr>
+                          </thead>
+                          <tbody>
+                              <tr>
+                                  <td>Daily</td>
+                                  <td>Sales tracking, stock movements, profit calculations</td>
+                              </tr>
+                              <tr>
+                                  <td>Monthly</td>
+                                  <td>Profit summaries, trend analysis, inventory reports</td>
+                              </tr>
+                              <tr>
+                                  <td>Custom</td>
+                                  <td>Filtered date ranges, custom reports, profit projections</td>
+                              </tr>
+                          </tbody>
+                      </table>
+                  </div>
+              </div>
+              <div class="section">
+                  <h2>Stock Status Management</h2>
+                  <div class="important-note">
+                      <ul>
+                          <li>Automatic "IN" status for quantity > 0</li>
+                          <li>Automatic "OUT" status for quantity = 0</li>
+                          <li>Stock reduction only through sales interface</li>
+                          <li>No manual stock reduction on inventory page</li>
+                      </ul>
+                  </div>
+              </div>
+              <div class="section">
+                  <h2>Best Practices</h2>
+                  <div class="feature-box">
+                      <h3>Regular Maintenance</h3>
+                      <ul>
+                          <li>Verify inventory counts regularly</li>
+                          <li>Cross-reference physical stock</li>
+                          <li>Monitor profit calculations</li>
+                          <li>Track sales against projections</li>
+                          <li>Keep detailed session logs</li>
+                      </ul>
+                  </div>
+              </div>
+          </div>              
+        </div>
+        <div class="tab-container">
+          <div class="tab-content" id="content2">
+            <div class="detailed-guide">
+            <div class="definition">
+                <h3>Detailed Scanning and Point Of Sale Guide</h3>
+                <p>What is the main Purpose ?<br><br>
+                    The Point Of Sale system works hand in hand with the inventory management, it's function is to
+                    process sales to daily customers, by scanning the products out which significantly reduces
+                    overall quantity from your inventory.<br><br> The  system facilitates sales transactions in retail or 
+                    service environments. It enables your business to process sales quickly, 
+                    and manage customer interactions seamlessly, all while integrating with your inventory and financial 
+                    systems for real-time updates</p><br>
+                </div>
+                <div class="section">
+                    <h2>Prerequisites</h2>
+                    <div class="step">
+                        <p>Ensure all products are already registered in the Inventory Management System before proceeding with sales.</p>
+                    </div>
+                </div>
+                <div class="section">
+                    <h2>Processing a Sale</h2>
+                    <div class="step">
+                        <h3>1. Scanner Setup</h3>
+                        <p>Enable your browser camera to scan product barcodes.</p>
+                    </div>
+              </div>
+              <div class="section">
+                  <div class="camera-setup">
+                    <h3>2. Product Scanning</h3>
+                    <p>Scan the product barcode to automatically populate product details in the sales table. 
+                        The information will match exactly what was uploaded in the Inventory Management System.</p>
+                  </div>
+                  <div class="section">
+                    <div class="important-note">
+                        <p><strong>Important:</strong> If a product is:</p>
+                        <ul>
+                            <li>Not in inventory</li>
+                            <li>Marked as out of stock</li>
+                        </ul>
+                        <p>You will receive a "Product Not Found" message.</p>
+                    </div>
+                </div>
+              </div>
+              <div class="section">
+                  <div class="feature-box">
+                    <h3>3. Completing the Sale</h3>
+                    <ol>
+                        <li>Enter the customer's email address for receipt delivery</li>
+                        <li>Click "Process Sale" button</li>
+                        <li>Wait for processing (this takes a few seconds)</li>
+                    </ol>
+                  </div>
+              </div>
+              <div class="section">
+                  <div class="feature-box">
+                    <h3>4. Receipt Handling</h3>
+                    <p>After processing:</p>
+                    <ul>
+                        <li>You'll see an option to save the receipt</li>
+                        <li>The system automatically sends the receipt to the customer's email</li>
+                    </ul>
+                  </div>
+              </div>
+              <div class="success">
+                <p>A confirmation message will appear: "Receipt sent to [customer's email]"</p>
+            </div>
+            </div>
+          </div>              
+        </div>
+          </div>
+          <div class="tab-container">
+            <div class="tab-content" id="content3">
+              <div class="detailed-guide">
+              <div class="definition">
+                  <h3>Detailed Scanning and Income statement Guide</h3>
+                  <p>What is the main Purpose ?<br><br>
+                      An Income Statement, also known as a Profit and Loss Statement, 
+                      is a financial document that summarizes a company's revenues, costs, 
+                      and expenses during a specific period. It shows how revenue is transformed 
+                      into net income, providing a clear picture of a company's profitability.</p><br>
+                      Tools to generate key financial reports, such as Income Statements, which show your business's 
+                      profitability by summarizing revenues, costs, and expenses over a specific period. This helps 
+                      you assess performance, track growth, and make informed financial decisions
+                  </div>
+                <h2>Components of the Income Statement</h2>
+                <div class="automated">
+                    <h3>Automated Fields</h3>
+                    <p>These fields are automatically calculated based on monthly transactions:</p>
+                    <ul class="field-list">
+                        <li><strong>Sales:</strong> Total revenue from all sales transactions for the month. This is automatically calculated from your sales records.</li>
+                        <li><strong>Cost of Sales:</strong> Total cost of goods sold for the month. This is automatically pulled from your purchase and inventory records.</li>
+                    </ul>
+                </div>
+                <div class="section">
+                    <h3>Operating Expenses</h3>
+                    <p>These expenses need to be manually entered:</p>
+                    <ul class="field-list">
+                        <li><strong>Rent:</strong> Monthly rental payments for business premises</li>
+                        <li><strong>Utilities:</strong> Electricity, water, gas, internet, etc.</li>
+                        <li><strong>Salaries:</strong> Employee wages and related costs</li>
+                        <li><strong>Marketing:</strong> Advertising and promotional expenses</li>
+                        <li><strong>Insurance:</strong> Business insurance premiums</li>
+                    </ul>
+                </div>
+                <div class="section">
+                    <h3>Other Financial Items</h3>
+                    <ul class="field-list">
+                        <li><strong>Other Income:</strong> Revenue from sources other than main business activities</li>
+                        <li><strong>Other Expenses:</strong> Miscellaneous expenses not covered in operating expenses</li>
+                        <li><strong>Interest:</strong> Interest payments on loans or debt</li>
+                        <li><strong>Tax:</strong> Business tax expenses</li>
+                        <li><strong>Dividends:</strong> Profit distributed to shareholders</li>
+                    </ul>
+                </div>
+                <div class="section">
+                    <h3>System Fields</h3>
+                    <ul class="field-list">
+                        <li><strong>Profile:</strong> Links the income statement to a specific business profile</li>
+                        <li><strong>Created At:</strong> Timestamp when the record was created</li>
+                        <li><strong>Updated At:</strong> Timestamp of the last update to the record</li>
+                    </ul>
+                </div>
+                <div class="section">
+                    <h3>Important Notes</h3>
+                    <ul class="field-list">
+                        <li>All monetary fields can handle values up to 12 digits with 2 decimal places</li>
+                        <li>Sales and Cost of Sales are automatically calculated monthly - no manual input needed</li>
+                        <li>Regular updates to operating expenses ensure accurate financial reporting</li>
+                        <li>The system maintains an audit trail through created_at and updated_at timestamps</li>
+                    </ul>
+                </div>
+        </div>
+          </div>
+        </div>
+        <script>
+          function showTab(tabNumber) {
+            // Hide all tab contents
+            const contents = document.querySelectorAll('.tab-content');
+            contents.forEach(content => content.style.display = 'none');
+            // Remove the active class from all tabs
+            const tabs = document.querySelectorAll('.tab');
+            tabs.forEach(tab => tab.classList.remove('active'));
+            // Show the selected tab's content and highlight the tab
+            document.getElementById('content' + tabNumber).style.display = 'block';
+            document.getElementById('tab' + tabNumber).classList.add('active');
+          }
+          window.onload = () => showTab(1);
+        </script>
+</body>
+</html>

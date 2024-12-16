@@ -3,6 +3,7 @@ from django.utils import timezone
 from django.contrib.auth.models import User
 from django.urls import reverse
 from django.db import models
+import random
 from submit.models import Profile, CustomUser
 
 
@@ -52,7 +53,7 @@ class Product(models.Model):
         return f"{self.name} ({self.barcode}) - {self.status}"
 
     def save(self, *args, **kwargs):
-        if not self.id:  # Only on creation
+        if not self.id:  
             self.unit_price = self.price / self.quantity if self.quantity else 0
         super().save(*args, **kwargs)
 
@@ -83,6 +84,28 @@ class Product(models.Model):
         self.save()
 
 
+class Sale(models.Model):
+    transaction_id = models.CharField(max_length=50, unique=True)
+    date_created = models.DateTimeField(auto_now_add=True)
+    total = models.DecimalField(max_digits=10, decimal_places=2)
+
+    def __str__(self):
+        return f"Sale {self.transaction_id}"
+
+
+class SaleItem(models.Model):
+    sale = models.ForeignKey(Sale, related_name='items', on_delete=models.CASCADE)
+    product_name = models.CharField(max_length=200)  
+    product_barcode = models.CharField(max_length=100)
+    quantity = models.IntegerField()
+    unit_price = models.DecimalField(max_digits=10, decimal_places=2)
+    subtotal = models.DecimalField(max_digits=10, decimal_places=2)
+
+    def save(self, *args, **kwargs):
+        self.subtotal = self.quantity * self.unit_price
+        super().save(*args, **kwargs)
+
+
 class Transaction(models.Model):
     ACTION_CHOICES = [
         ('IN', 'Stock In'),
@@ -106,19 +129,28 @@ class Transaction(models.Model):
 
 class IncomeStatement(models.Model):
     sales = models.DecimalField(max_digits=12, decimal_places=2, default=0)
-    cost_of_sales = models.DecimalField(max_digits=12, decimal_places=2, default=0)
+    cost_of_sales = models.DecimalField(max_digits=12,
+                                        decimal_places=2,
+                                        default=0)
     rent = models.DecimalField(max_digits=12, decimal_places=2, default=0)
     utilities = models.DecimalField(max_digits=12, decimal_places=2, default=0)
     salaries = models.DecimalField(max_digits=12, decimal_places=2, default=0)
     marketing = models.DecimalField(max_digits=12, decimal_places=2, default=0)
     insurance = models.DecimalField(max_digits=12, decimal_places=2, default=0)
-    other_income = models.DecimalField(max_digits=12, decimal_places=2, default=0)
-    other_expenses = models.DecimalField(max_digits=12, decimal_places=2, default=0)
+    other_income = models.DecimalField(max_digits=12,
+                                       decimal_places=2,
+                                       default=0)
+    other_expenses = models.DecimalField(max_digits=12,
+                                         decimal_places=2,
+                                         default=0)
     interest = models.DecimalField(max_digits=12, decimal_places=2, default=0)
     tax = models.DecimalField(max_digits=12, decimal_places=2, default=0)
     dividends = models.DecimalField(max_digits=12, decimal_places=2, default=0)
 
-    profile = models.ForeignKey(Profile, on_delete=models.CASCADE, null=True, blank=True)
+    profile = models.ForeignKey(Profile,
+                                on_delete=models.CASCADE,
+                                null=True,
+                                blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -132,11 +164,11 @@ class IncomeStatement(models.Model):
         return self.gross_profit() - self.operating_expenses()
 
     def ebit(self):
-        # EBIT: Earnings Before Interest and Taxes
+        
         return self.operating_income() - self.interest
 
     def net_profit(self):
-        # Net Profit = EBIT - Taxes - Dividends
+        
         return self.ebit() - self.tax - self.dividends
 
     def __str__(self):
@@ -144,5 +176,30 @@ class IncomeStatement(models.Model):
 
 
 
+class Barcode(models.Model):
+    code = models.CharField(max_length=13, unique=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    
+    @staticmethod
+    def generate_unique_code():
+        while True:
+            # Generate a 12-digit number (EAN-13 format without check digit)
+            code = ''.join([str(random.randint(0, 9)) for _ in range(12)])
+            
+            # Calculate check digit
+            total = 0
+            for i in range(12):
+                if i % 2 == 0:
+                    total += int(code[i])
+                else:
+                    total += int(code[i]) * 3
+            check_digit = (10 - (total % 10)) % 10
+            
+            # Append check digit to create full EAN-13
+            full_code = code + str(check_digit)
+            
+            # Check if code already exists
+            if not Barcode.objects.filter(code=full_code).exists():
+                return full_code
 
-#<a href="https://www.freepik.com/search">Icon by pojok d</a>  <a href="https://www.freepik.com/search">Icon by Nuaba</a> <a href="https://www.freepik.com/search">Icon by Freepik</a><a href="https://www.freepik.com/search">Icon by Dewi Sari</a>
+

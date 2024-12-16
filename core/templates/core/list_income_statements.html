@@ -12,16 +12,14 @@
 </head>
 <body>
     <nav class="navbar">
-        <a href="#" class="logo">KASI LEDGER</a>
+        <a href="{% url 'index' %}"  class="logo">KASI LEDGER</a>
         <div class="quote_btn-container">
             <a href="{% url 'create_income_statement' %}" class="sign-up"><span>Create Statements</span></a>
-            <a href="{% url 'logout' %}" class="sign-up">
-                <i class="fa-solid fa-arrow-right-from-bracket"></i>
-            </a>
         </div>
     </nav>
     <h3>Income Statements</h3>
     <div class="grid-container">
+    {% if statements %}
     {% for statement in statements %}
         <div class="statement-card">
             <div class="date">{{ statement.created_at|date:"d F Y" }}</div>
@@ -95,6 +93,11 @@
             </div>
         </div>
     {% endfor %}
+    {% else %}
+    <div class="no-statements">
+        <p>"No income statements created yet"</p>
+    </div>
+    {% endif %}
     </div> 
 </body>
 </html>

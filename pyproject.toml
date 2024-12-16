@@ -27,6 +27,9 @@ jwt = "^1.3.1"
 pyjwt = "^2.9.0"
 scikit-learn = "^1.5.2"
 pandas = "^2.2.3"
+reportlab = "^4.2.5"
+weasyprint = "^63.0"
+python-barcode = "^0.15.1"
 
 
 [build-system]

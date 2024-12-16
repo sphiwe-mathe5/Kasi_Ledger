@@ -138,3 +138,58 @@ h3 {
     font-family: Arial, sans-serif;
     transition: all 0.3s ease;
   }
+
+
+
+  @media (max-width: 768px) {
+    .grid-container {
+        grid-template-columns: 1fr; /* Stack the cards in one column */
+        padding: 10px;
+    }
+
+    .statement-card {
+        padding: 15px;
+    }
+
+    .date {
+        font-size: 14px;
+    }
+
+    .statement-item {
+        font-size: 13px;
+    }
+
+    .font-lg {
+        font-size: 1.1rem; /* Adjust size of net profit on smaller screens */
+    }
+
+    .font-semibold {
+        font-weight: 600;
+    }
+}
+
+@media (max-width: 480px) {
+    .grid-container {
+        padding: 5px;
+    }
+
+    .statement-card {
+        padding: 10px;
+    }
+
+    .statement-item {
+        font-size: 12px;
+    }
+
+    .font-lg {
+        font-size: 1rem; /* Smaller font for very small screens */
+    }
+    .logo {
+        font-size: 19px;
+    }
+    .quote_btn-container a {
+        padding: 1px 5px;
+        margin: 0 -0.14rem;
+
+    }
+}

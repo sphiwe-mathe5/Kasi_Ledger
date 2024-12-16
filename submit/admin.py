@@ -1,6 +1,7 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
 from .models import CustomUser, Profile, Service, PasswordResetRequest
+from .models import SubscriptionPlan, Subscription
 
 class CustomUserAdmin(UserAdmin):
     model = CustomUser
@@ -25,3 +26,5 @@ admin.site.register(CustomUser, CustomUserAdmin)
 admin.site.register(Profile)
 admin.site.register(Service)
 admin.site.register(PasswordResetRequest)
+admin.site.register(SubscriptionPlan)
+admin.site.register(Subscription)

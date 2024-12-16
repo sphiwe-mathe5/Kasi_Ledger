@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        body { font-family: Arial, sans-serif; }
+        .receipt { max-width: 600px; margin: auto; padding: 20px; }
+        table { width: 100%; border-collapse: collapse; }
+        th, td { padding: 8px; text-align: left; }
+        .total { font-weight: bold; }
+        .header { text-align: center; }
+        .profile-info { margin: 20px 0; }
+        .profile-name { font-size: 1.2em; margin-bottom: 5px; }
+        .profile-email { color: #666; margin-top: 5px; }
+    </style>
+</head>
+<body>
+    <div class="receipt">
+        <h2 class="header">Purchase Receipt</h2>
+        <div class="profile-info">
+            <p><strong>From : {{ user.company_name }}</strong></p>
+            <p class="profile-email">{{ user.email }} - refer to this email for any queries</p>
+        </div>
+        <p>Date: {{ date }}</p>
+        <hr>
+        <table>
+            <tr>
+                <th>Item</th>
+                <th>Quantity</th>
+                <th>Price</th>
+                <th>Total</th>
+            </tr>
+            {% for item in items %}
+            <tr>
+                <td>{{ item.name }}</td>
+                <td>{{ item.quantity }}</td>
+                <td>R{{ item.price|floatformat:2 }}</td>
+                <td>R{{ item.total|floatformat:2 }}</td>
+            </tr>
+            {% endfor %}
+            <tr><td colspan="4"><hr></td></tr>
+            <tr class="total">
+                <td colspan="3">Total:</td>
+                <td>R{{ total|floatformat:2 }}</td>
+            </tr>
+        </table>
+        <hr>
+        <p class="header">Thank you for your purchase!</p>
+    </div>
+</body>
+</html>
