@@ -42,7 +42,7 @@ from django.db.models import Count
 from django.views.decorators.csrf import csrf_exempt
 from .models import Product, Sale, SaleItem, Barcode
 from decimal import Decimal, InvalidOperation
-import winsound
+#import winsound
 from django.urls import reverse, reverse_lazy
 import random
 from django.db.models import Q
