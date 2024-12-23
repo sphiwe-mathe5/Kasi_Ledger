@@ -58,7 +58,7 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'allauth.account.middleware.AccountMiddleware',
 ]
-#AUTH_USER_MODEL = 'submit.CustomUser'
+AUTH_USER_MODEL = 'submit.CustomUser'
 ROOT_URLCONF = 'core.project.urls'
 SITE_ID=2
 SOCIALACCOUNT_LOGIN_ON_GET = True  
