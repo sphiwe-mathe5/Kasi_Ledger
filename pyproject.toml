@@ -30,6 +30,10 @@ pandas = "^2.2.3"
 reportlab = "^4.2.5"
 weasyprint = "^63.0"
 python-barcode = "^0.15.1"
+boto = "^2.49.0"
+django-axes = "^7.0.1"
+django-otp = "^1.5.4"
+psycopg2-binary = "^2.9.10"
 
 
 [build-system]

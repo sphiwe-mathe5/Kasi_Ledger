@@ -206,8 +206,13 @@
               </thead>
               <tbody>
                   {% for product in data.products %}
-                  <tr id="product-{{ product.id }}">
-                      <td>{{ product.name }} ({{ product.original_quantity }})</td>
+                  <tr class="product-row" id="product-{{ product.id }}">
+                    <td style="position: relative;">
+                        {{ product.name }} ({{ product.original_quantity }})
+                        <a href="{% url 'delete_product' product.id %}" class="delete-btn" onclick="return confirm('Are you sure you want to delete this product?');">
+                            <i class="fas fa-trash"></i>
+                        </a>
+                    </td>
                       <td>{{ product.barcode|default:"-" }}</td>
                       <td>{{ product.status|default:"-" }}</td>
                       <td>{{ product.category|default:"-" }}</td>

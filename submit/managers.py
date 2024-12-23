@@ -6,10 +6,10 @@ class CustomUserManager(BaseUserManager):
             raise ValueError('The Email field must be set')
         email = self.normalize_email(email)
         
-        # Generate username from email if not provided
+        
         if 'username' not in extra_fields:
             username = email.split('@')[0]
-            # Make sure username is unique
+            
             base_username = username
             counter = 1
             while self.model.objects.filter(username=username).exists():

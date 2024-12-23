@@ -16,14 +16,13 @@ INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
-    #'whitenoise.runserver_nostatic',
+    'whitenoise.runserver_nostatic',
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'core',
     'submit',
     'emails',
-    #'channels',
     'crispy_forms',
     'django.contrib.humanize',
     "django.contrib.sites",
@@ -53,14 +52,14 @@ MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
-    #'whitenoise.middleware.WhiteNoiseMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'allauth.account.middleware.AccountMiddleware',
 ]
-AUTH_USER_MODEL = 'submit.CustomUser'
+#AUTH_USER_MODEL = 'submit.CustomUser'
 ROOT_URLCONF = 'core.project.urls'
 SITE_ID=2
 SOCIALACCOUNT_LOGIN_ON_GET = True  
@@ -93,20 +92,25 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                'submit.context_processors.subscription_status',
             ],
         },
     },
 ]
 
 
-
-
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'ENGINE': config('DATABASE_ENGINE'),
+        'NAME': config('DATABASE_NAME'),
+        'USER': config('DATABASE_USER'),
+        'PASSWORD': config('DATABASE_PASSWORD'),
+        'HOST': config('DATABASE_HOST'),
+        'PORT': config('DATABASE_PORT'),
     }
 }
+
+
 
 
 AUTH_PASSWORD_VALIDATORS = [
@@ -138,9 +142,7 @@ USE_TZ = True
 STATIC_URL = '/static/'
 STATICFILES_DIRS = [os.path.join(BASE_DIR, "project/static")]
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
-
-
-#STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
+STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 
 
 MEDIA_URL = '/media/'
@@ -159,7 +161,6 @@ DEFAULT_FROM_EMAIL = config('ADMIN_EMAIL')
 EMAIL_USE_SSL = config('EMAIL_USE_SSL')
 ADMIN_EMAIL = config('ADMIN_EMAIL')
 
-#python manage.py send_marketing_emails email1@example.com email2@example.com email3@example.com
 LOGIN_REDIRECT_URL = '/'
 LOGOUT_REDIRECT_URL = '/'
 LOGIN_URL = 'login'
@@ -168,3 +169,4 @@ LOGIN_URL = 'login'
 PAYSTACK_SECRET_KEY = config('PAYSTACK_SECRET_KEY')
 PAYSTACK_PUBLIC_KEY = config('PAYSTACK_PUBLIC_KEY')
 SITE_URL = 'http://127.0.0.1:8000'
+SITE_URL = 'https://kasiledger.com' 

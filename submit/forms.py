@@ -3,22 +3,8 @@ from django.contrib.auth.models import User
 from django.contrib.auth.forms import UserCreationForm
 from django.core.exceptions import ValidationError
 from .models import Profile, CustomUser, PRICING_CHOICES
-from .models import Service
 from django import forms
 
-
-CATEGORY_CHOICES = [
-    ('singer', 'Singer'),
-    ('rapper', 'Rapper'),
-    ('dancer', 'Dancer'),
-    ('producers', 'Producers'),
-    ('dj', 'DJ'),
-    ('fashion', 'Fashion'),
-    ('actor', 'Actor'),
-    ('photographer', 'Photographer'),
-    ('artist', 'Artist'),
-    ('other', 'Other'),
-]
 
 
 class UserRegisterForm(UserCreationForm):
@@ -79,8 +65,3 @@ class ProfileUpdateForm(forms.ModelForm):
 class SearchForm(forms.Form):
     query = forms.CharField(label='Search', max_length=100)
 
-
-class ServiceForm(forms.ModelForm):
-    class Meta:
-        model = Service
-        fields = ['description']

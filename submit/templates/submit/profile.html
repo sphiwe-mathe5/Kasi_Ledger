@@ -1,4 +1,5 @@
 {% load crispy_forms_tags %}
+
 <!DOCTYPE html>
 <html lang="en">
     <head>
@@ -185,6 +186,37 @@
                     width: 100%;
                 }
             }
+
+            .subscription-status {
+                padding: 10px;
+                background-color: #f8f9fa;
+                border-radius: 4px;
+                margin: 10px 0;
+            }
+            
+            .status-badge {
+                display: inline-flex;
+                align-items: center;
+                padding: 5px 10px;
+                border-radius: 20px;
+                font-size: 14px;
+                font-weight: 500;
+            }
+            
+            .status-dot {
+                width: 8px;
+                height: 8px;
+                border-radius: 50%;
+                margin-left: 8px;
+            }
+            
+            .status-dot.active {
+                background-color: #28a745;
+            }
+            
+            .status-dot.inactive {
+                background-color: #dc3545;
+            }
         </style>
     </head>
     <body>
@@ -204,10 +236,13 @@
                     <p class="profile-email">{{ user.email }}</p>
                 </div>
                 <form method="POST" enctype="multipart/form-data" class="profile-form">
-                    {% csrf_token %} {{ u_form.as_p }} {{ p_form.as_p }} {% if messages %} {% for message in messages
-                    %}
-                    <div class="alert alert-{{ message.tags }}">{{ message }}</div>
-                    {% endfor %} {% endif %}
+                    {% csrf_token %} 
+                    {{ u_form.as_p }} {{ p_form.as_p }} 
+                    {% if messages %} 
+                    {% for message in messages%}
+                        <div class="alert alert-{{ message.tags }}">{{ message }}</div>
+                    {% endfor %} 
+                    {% endif %}
                     <button class="btn btn-primary" type="submit">Update Profile</button>
                 </form>
                 <div class="action-buttons">
@@ -216,6 +251,23 @@
                     {% endif %}
                 </div>
             </div>
+        </div>
+
+        <div class="subscription-status">
+            {% if user.is_authenticated %}
+                {% if user_subscription %}
+                    <div class="status-badge {% if user_subscription.status == 'active' %}status-active{% endif %}">
+                        {{ user_subscription.plan }} Plan
+                        {% if user_subscription.status == 'active' %}
+                            <span class="status-dot active"></span>
+                        {% else %}
+                            <span class="status-dot inactive"></span>
+                        {% endif %}
+                    </div>
+                {% else %}
+                    <div class="status-badge">Free Plan</div>
+                {% endif %}
+            {% endif %}
         </div>
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
     </body>

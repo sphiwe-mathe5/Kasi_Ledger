@@ -42,6 +42,14 @@
                 <td colspan="3">Total:</td>
                 <td>R{{ total|floatformat:2 }}</td>
             </tr>
+            <tr class="payment">
+                <td colspan="3">Money Rendered:</td>
+                <td>R{{ money_rendered|floatformat:2 }}</td>
+            </tr>
+            <tr class="change">
+                <td colspan="3">Change:</td>
+                <td>R{{ change|floatformat:2 }}</td>
+            </tr>
         </table>
         <hr>
         <p class="header">Thank you for your purchase!</p>

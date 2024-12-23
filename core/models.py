@@ -183,10 +183,10 @@ class Barcode(models.Model):
     @staticmethod
     def generate_unique_code():
         while True:
-            # Generate a 12-digit number (EAN-13 format without check digit)
+            
             code = ''.join([str(random.randint(0, 9)) for _ in range(12)])
             
-            # Calculate check digit
+            
             total = 0
             for i in range(12):
                 if i % 2 == 0:
@@ -195,10 +195,10 @@ class Barcode(models.Model):
                     total += int(code[i]) * 3
             check_digit = (10 - (total % 10)) % 10
             
-            # Append check digit to create full EAN-13
+            
             full_code = code + str(check_digit)
             
-            # Check if code already exists
+            
             if not Barcode.objects.filter(code=full_code).exists():
                 return full_code
 

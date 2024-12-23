@@ -5,7 +5,7 @@ from django.conf import settings
 from django.conf.urls.static import static
 from core import views
 from core.project.settings import ADMIN_PATH
-from core.views import index, subscribe,inbox,  enquire, guide, generate_barcodes, download_receipt, list_income_statements, subscribed, contact, terms, unsubscribed, optout, PostCreateView
+from core.views import index, subscribe,  enquire, guide, delete_product, generate_barcodes, list_income_statements, subscribed, contact, terms, unsubscribed, optout, PostCreateView
 
 
 
@@ -19,25 +19,18 @@ urlpatterns = [
     path('generate/', views.generate_barcodes, name='generate_barcodes'),
     path('api/check-product/', views.check_product, name='check_product'),
     path('api/process-sale/', views.process_sale, name='process_sale'),
-    path('inbox/', inbox, name='inbox'),
+    path('product/delete/<int:product_id>/', views.delete_product, name='delete_product'),
     path('', include('submit.urls')),
-    path('download-receipt/', views.download_receipt, name='download_receipt'),
     path('emails/', include('emails.urls')),
     path('enquire/', enquire, name='enquire'),
     path('guide/', guide, name='guide'),
     path('income-statement/create/',views.create_income_statement,name='create_income_statement'),
     path('income-statement/<int:pk>/',views.view_income_statement,name='view_income_statement'),
-    
-    path('bulk_subscribe/', views.bulk_subscribe, name='bulk_subscribe'),
     path('Income statements/', list_income_statements, name='list_income_statements'),
-    #path('scan-barcode/', views.barcode_scanner, name='scan_barcode'),
     path('optout/', optout, name='optout'),
     path('post/new/', PostCreateView.as_view(), name='post-create'),
-
-    #path('download-receipt/<str:transaction_id>/', download_receipt, name='download_receipt'),
     path('inventory/', contact, name='contact'),
     path('terms/', terms, name='terms'),
-    #path('unsubscribe/', unsubscribe, name='unsubscribe'),
     path('unsubscribed/', unsubscribed, name='unsubscribed'),
     path('password-reset/',
          auth_views.PasswordResetView.as_view(

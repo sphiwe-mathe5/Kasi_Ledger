@@ -118,32 +118,51 @@ class Profile(models.Model):
 
 
 class SubscriptionPlan(models.Model):
-    name = models.CharField(max_length=100)  
-    price = models.DecimalField(max_digits=10, decimal_places=2)  
+    name = models.CharField(max_length=100)
+    price = models.DecimalField(max_digits=10, decimal_places=2)
     description = models.TextField()
     features = models.JSONField()
+    is_active = models.BooleanField(default=True)
+    paystack_plan_code = models.CharField(max_length=100, blank=True)
     
     def __str__(self):
         return f"{self.name} - R{self.price}/month"
 
 class Subscription(models.Model):
+    STATUS_CHOICES = (
+        ('active', 'Active'),
+        ('cancelled', 'Cancelled'),
+        ('past_due', 'Past Due'),
+        ('unpaid', 'Unpaid'),
+    )
+
     user = models.OneToOneField(CustomUser, on_delete=models.CASCADE)
     plan = models.ForeignKey(SubscriptionPlan, on_delete=models.PROTECT)
-    active = models.BooleanField(default=False)
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='active')
     paystack_subscription_code = models.CharField(max_length=100, blank=True)
     paystack_email_token = models.CharField(max_length=100, blank=True)
     next_payment_date = models.DateTimeField(null=True, blank=True)
+    cancelled_at = models.DateTimeField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
     def is_active(self):
-        return self.active and self.next_payment_date > timezone.now()
+        return (
+            self.status == 'active' and 
+            self.next_payment_date > timezone.now()
+        )
 
-class Service(models.Model):
-    profile = models.ForeignKey(Profile,
-                                on_delete=models.CASCADE,
-                                related_name='services')
-    description = models.TextField()
+    def cancel(self):
+        if self.status == 'active':
+            self.status = 'cancelled'
+            self.cancelled_at = timezone.now()
+            self.save()
 
-    def __str__(self):
-        return f'Service {self.name} by {self.profile.user.username}'
+class PaymentHistory(models.Model):
+    subscription = models.ForeignKey(Subscription, on_delete=models.CASCADE)
+    amount = models.DecimalField(max_digits=10, decimal_places=2)
+    paystack_reference = models.CharField(max_length=100)
+    status = models.CharField(max_length=20)
+    paid_at = models.DateTimeField()
+    created_at = models.DateTimeField(auto_now_add=True)
+
