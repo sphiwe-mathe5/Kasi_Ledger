@@ -21,7 +21,6 @@ urlpatterns = [
     path('api/process-sale/', views.process_sale, name='process_sale'),
     path('product/delete/<int:product_id>/', views.delete_product, name='delete_product'),
     path('', include('submit.urls')),
-    path('emails/', include('emails.urls')),
     path('enquire/', enquire, name='enquire'),
     path('guide/', guide, name='guide'),
     path('income-statement/create/',views.create_income_statement,name='create_income_statement'),
