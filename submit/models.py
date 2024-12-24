@@ -149,7 +149,7 @@ class Subscription(models.Model):
     def is_active(self):
         return (
             self.status == 'active' and 
-            self.next_payment_date > timezone.now()
+            (self.next_payment_date is None or self.next_payment_date > timezone.now())
         )
 
     def cancel(self):
