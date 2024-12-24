@@ -7,6 +7,7 @@ from .forms import SearchForm
 from .models import Profile
 from django.utils import timezone
 import json
+import datetime
 import hmac
 import hashlib
 import logging
@@ -312,51 +313,51 @@ def webhook(request):
         event = payload.get('event')
         data = payload.get('data', {})
         
-        # Handle both charge.success and subscription.create events
-        if event in ['charge.success', 'subscription.create']:
+        if event == 'subscription.create':
             try:
-                # For subscription.create event
-                if event == 'subscription.create':
-                    # Get customer email from the payload
-                    customer_email = data.get('customer', {}).get('email')
-                    
-                    # Find the user by email
-                    try:
-                        user = CustomUser.objects.get(email=customer_email)
-                    except CustomUser.DoesNotExist:
-                        print(f"User not found for email: {customer_email}")
-                        return HttpResponse(status=400)
+                # Get customer email from the payload
+                customer_email = data.get('customer', {}).get('email')
+                
+                # Find the user by email
+                try:
+                    user = CustomUser.objects.get(email=customer_email)
+                except CustomUser.DoesNotExist:
+                    print(f"User not found for email: {customer_email}")
+                    return HttpResponse(status=400)
 
-                    # Get the plan details
-                    plan_data = data.get('plan', {})
-                    try:
-                        plan = SubscriptionPlan.objects.get(paystack_plan_code=plan_data.get('plan_code'))
-                    except SubscriptionPlan.DoesNotExist:
-                        print(f"Plan not found for code: {plan_data.get('plan_code')}")
-                        return HttpResponse(status=400)
+                # Get the plan details
+                plan_data = data.get('plan', {})
+                try:
+                    plan = SubscriptionPlan.objects.get(paystack_plan_code=plan_data.get('plan_code'))
+                except SubscriptionPlan.DoesNotExist:
+                    print(f"Plan not found for code: {plan_data.get('plan_code')}")
+                    return HttpResponse(status=400)
 
-                    # Create or update subscription
-                    subscription = Subscription.objects.get_or_create(
-                        user=user,
-                        defaults={'plan': plan}
-                    )[0]
+                # Create or update subscription
+                subscription = Subscription.objects.get_or_create(
+                    user=user,
+                    defaults={'plan': plan}
+                )[0]
 
-                    # Update subscription details
-                    subscription.status = 'active'
-                    subscription.paystack_subscription_code = data.get('subscription_code')
-                    subscription.paystack_email_token = data.get('email_token')
-                    
-                    # Convert next_payment_date string to datetime
-                    next_payment_str = data.get('next_payment_date')
-                    if next_payment_str:
-                        subscription.next_payment_date = timezone.datetime.strptime(
-                            next_payment_str, 
-                            '%Y-%m-%dT%H:%M:%S.%fZ'
-                        ).replace(tzinfo=timezone.UTC)
-                    
-                    subscription.save()
-                    
-                    print(f"Updated subscription: {subscription.id} with next payment date: {subscription.next_payment_date}")
+                # Update subscription details
+                subscription.status = 'active'
+                subscription.paystack_subscription_code = data.get('subscription_code')
+                subscription.paystack_email_token = data.get('email_token')
+                
+                # Convert next_payment_date string to datetime
+                next_payment_str = data.get('next_payment_date')
+                if next_payment_str:
+                    # Parse the ISO format datetime string and make it timezone-aware
+                    next_payment_date = datetime.datetime.strptime(
+                        next_payment_str.split('.')[0], 
+                        '%Y-%m-%dT%H:%M:%S'
+                    )
+                    next_payment_date = timezone.make_aware(next_payment_date)
+                    subscription.next_payment_date = next_payment_date
+                
+                subscription.save()
+                
+                print(f"Updated subscription: {subscription.id} with next payment date: {subscription.next_payment_date}")
 
             except Exception as e:
                 print(f"Error processing {event}: {str(e)}")
@@ -367,7 +368,7 @@ def webhook(request):
     except Exception as e:
         print(f"Webhook error: {str(e)}")
         return HttpResponse(status=500)
-        
+
 def handle_successful_charge(payload):
     with transaction.atomic():
         data = payload.get('data', {})
