@@ -283,16 +283,19 @@ def initialize_payment(request, plan_id):
     except Exception as e:
         print(f"Payment initialization error: {str(e)}")
         return JsonResponse({"error": str(e)}, status=400)
+
 @csrf_exempt
 @require_http_methods(["POST"])
 def webhook(request):
     try:
+        print("Webhook received")
         paystack_signature = request.headers.get("X-Paystack-Signature")
         
         if not paystack_signature:
+            print("No Paystack signature")
             return HttpResponse(status=400)
 
-        
+        # Verify webhook signature
         computed_signature = hmac.new(
             settings.PAYSTACK_SECRET_KEY.encode('utf-8'),
             request.body,
@@ -300,51 +303,71 @@ def webhook(request):
         ).hexdigest()
         
         if computed_signature != paystack_signature:
+            print("Invalid signature")
             return HttpResponse(status=400)
 
         payload = json.loads(request.body)
-        print(f"Webhook payload: {payload}")  
+        print(f"Webhook payload: {payload}")
         
         event = payload.get('event')
         data = payload.get('data', {})
         
-        if event == 'charge.success':
-            metadata = data.get('metadata', {})
-            user_id = metadata.get('user_id')
-            plan_id = metadata.get('plan_id')
-            
-            
-            subscription_code = data.get('authorization', {}).get('authorization_code')
-            email_token = data.get('customer', {}).get('email_token')
-            
-            subscription = Subscription.objects.get_or_create(
-                user_id=user_id,
-                defaults={'plan_id': plan_id}
-            )[0]
-            
-            subscription.status = 'active'
-            subscription.paystack_subscription_code = subscription_code
-            subscription.paystack_email_token = email_token
-            subscription.next_payment_date = timezone.now() + timezone.timedelta(days=30)
-            subscription.save()
-            
-            
-            PaymentHistory.objects.create(
-                subscription=subscription,
-                amount=Decimal(data.get('amount', 0)) / 100,
-                paystack_reference=data.get('reference'),
-                status='success',
-                paid_at=timezone.now()
-            )
-            
-            print(f"Created/Updated subscription: {subscription.id} with code: {subscription_code}")
+        # Handle both charge.success and subscription.create events
+        if event in ['charge.success', 'subscription.create']:
+            try:
+                # For subscription.create event
+                if event == 'subscription.create':
+                    # Get customer email from the payload
+                    customer_email = data.get('customer', {}).get('email')
+                    
+                    # Find the user by email
+                    try:
+                        user = CustomUser.objects.get(email=customer_email)
+                    except CustomUser.DoesNotExist:
+                        print(f"User not found for email: {customer_email}")
+                        return HttpResponse(status=400)
+
+                    # Get the plan details
+                    plan_data = data.get('plan', {})
+                    try:
+                        plan = SubscriptionPlan.objects.get(paystack_plan_code=plan_data.get('plan_code'))
+                    except SubscriptionPlan.DoesNotExist:
+                        print(f"Plan not found for code: {plan_data.get('plan_code')}")
+                        return HttpResponse(status=400)
+
+                    # Create or update subscription
+                    subscription = Subscription.objects.get_or_create(
+                        user=user,
+                        defaults={'plan': plan}
+                    )[0]
+
+                    # Update subscription details
+                    subscription.status = 'active'
+                    subscription.paystack_subscription_code = data.get('subscription_code')
+                    subscription.paystack_email_token = data.get('email_token')
+                    
+                    # Convert next_payment_date string to datetime
+                    next_payment_str = data.get('next_payment_date')
+                    if next_payment_str:
+                        subscription.next_payment_date = timezone.datetime.strptime(
+                            next_payment_str, 
+                            '%Y-%m-%dT%H:%M:%S.%fZ'
+                        ).replace(tzinfo=timezone.UTC)
+                    
+                    subscription.save()
+                    
+                    print(f"Updated subscription: {subscription.id} with next payment date: {subscription.next_payment_date}")
+
+            except Exception as e:
+                print(f"Error processing {event}: {str(e)}")
+                return HttpResponse(status=500)
             
         return HttpResponse(status=200)
         
     except Exception as e:
         print(f"Webhook error: {str(e)}")
         return HttpResponse(status=500)
-
+        
 def handle_successful_charge(payload):
     with transaction.atomic():
         data = payload.get('data', {})
