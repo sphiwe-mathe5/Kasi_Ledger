@@ -387,8 +387,34 @@ def handle_successful_charge(payload):
             logger.error(f"Error processing successful charge: {str(e)}")
             return HttpResponse(status=500)
 
-from django.db import transaction  
-
+from django.db import transaction 
+ 
+def payment_callback(request):
+    reference = request.GET.get('reference')
+    trxref = request.GET.get('trxref')
+    
+    # Log the callback
+    print(f"Payment callback received - Reference: {reference}")
+    
+    # Verify the payment status
+    headers = {
+        "Authorization": f"Bearer {settings.PAYSTACK_SECRET_KEY}",
+        "Content-Type": "application/json"
+    }
+    
+    verify_url = f"https://api.paystack.co/transaction/verify/{reference}"
+    response = requests.get(verify_url, headers=headers)
+    
+    if response.status_code == 200:
+        response_data = response.json()
+        if response_data['status'] and response_data['data']['status'] == 'success':
+            messages.success(request, "Payment successful! Your subscription is being processed.")
+        else:
+            messages.error(request, "Payment verification failed.")
+    else:
+        messages.error(request, "Could not verify payment.")
+    
+    return redirect('subscription_settings')
 
 @login_required
 def cancel_subscription(request):
