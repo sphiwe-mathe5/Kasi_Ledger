@@ -9,12 +9,11 @@ from django import forms
 
 class UserRegisterForm(UserCreationForm):
     email = forms.EmailField()
-    pricing_plan = forms.ChoiceField(choices=PRICING_CHOICES)
     company_name = forms.CharField(max_length=100, required=False)
 
     class Meta:
         model = CustomUser
-        fields = ['email', 'password1', 'password2', 'pricing_plan', 'company_name']  # Removed username
+        fields = ['email', 'password1', 'password2', 'company_name'] 
 
 
     def clean_password1(self):
@@ -43,7 +42,6 @@ class UserRegisterForm(UserCreationForm):
             Profile.objects.update_or_create(
                 user=user,
                 defaults={
-                    'pricing_plan': self.cleaned_data['pricing_plan'],
                 }
             )
         return user
@@ -56,10 +54,7 @@ class UserUpdateForm(forms.ModelForm):
         model = User
         fields = ['email', 'company_name']
 
-class ProfileUpdateForm(forms.ModelForm):
-    class Meta:
-        model = Profile
-        fields = ['pricing_plan']
+
 
 
 class SearchForm(forms.Form):

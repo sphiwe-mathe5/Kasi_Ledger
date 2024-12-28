@@ -9,6 +9,7 @@
     <title>Barcode Scanner</title>
     <script src="https://unpkg.com/html5-qrcode"></script>
     <link rel="stylesheet" href="{% static 'css/main.css' %}">
+    <link rel="icon" href="{% static 'images/kasicon.png' %}">
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
@@ -58,6 +59,25 @@
       <a href="{% url 'list_income_statements' %}" class="sign-up"><span>Statements</span></a>
   </div>
 </nav>
+
+<div id="subscriptionModal" class="submodal"></div>
+
+<div id="limitReachedModal" class="limit-modal">
+  <div class="limit-modal-content">
+      <div class="limit-modal-icon">⚠️</div>
+      <h3 class="limit-modal-title">Product Limit Reached</h3>
+      <p class="limit-modal-message">
+          You have reached your product limit (<span id="productLimit"></span>).
+          <br><br>
+          Consider Upgrading to <a href="{% url 'subscription_plans' %}" class="forgotpassword-link">Pro Plan</a> For unlimited Product Uploads
+          <br><br>
+          Your limit will reset on <span id="resetDate"></span>
+          (<span id="daysUntilReset"></span> days remaining).
+      </p>
+      <button class="limit-modal-button" onclick="closeLimitModal()">Got it</button>
+  </div>
+</div>
+
 <div class="container">
 <div class="grid">
   <div class="card">

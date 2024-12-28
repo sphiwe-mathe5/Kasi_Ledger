@@ -227,31 +227,79 @@ function saveProduct(barcode, action) {
     type: "POST",
     data: data,
     success: function (response) {
-      if (response.success) {
-        playBeep();
-        $("#result").html(
-          `<p>Barcode: <strong>${barcode}</strong> (${response.status})</p>`
-        );
+        if (response.success) {
+            playBeep();
+            $("#result").html(
+                `<p>Barcode: <strong>${barcode}</strong> (${response.status})</p>`
+            );
 
-        alert(response.message);
-        if (action === "in") {
-          
-          document.getElementById("productName").value = "";
-          document.getElementById("productPrice").value = "";
-          document.getElementById("productCost").value = "";
-          document.getElementById("productQuantity").value = "1";
-          document.getElementById("productCategory").value = "";
+            alert(response.message);
+            if (action === "in") {
+                document.getElementById("productName").value = "";
+                document.getElementById("productPrice").value = "";
+                document.getElementById("productCost").value = "";
+                document.getElementById("productQuantity").value = "1";
+                document.getElementById("productCategory").value = "";
+            }
+            
+            fetchLatestProducts();
+        } else {
+            if (response.details) {
+                switch(response.details.type) {
+                    case 'no_subscription':
+                    case 'inactive_subscription':
+                        showSubscriptionModal(response.details);
+                        break;
+                    case 'limit_reached':
+                        showLimitModal(response.details);
+                        break;
+                    default:
+                        alert("Error: " + response.message);
+                }
+            } else {
+                alert("Error: " + response.message);
+            }
         }
-        
-        fetchLatestProducts();
-      } else {
-        alert("Error: " + response.message);
-      }
     },
     error: function () {
-      alert("Error communicating with the server.");
+        alert("Error communicating with the server.");
     },
-  });
+});
+}
+
+
+function showSubscriptionModal(details) {
+  const modalContent = `
+      <div class="submodal-content">
+          <div class="submodal-icon">🔔</div>
+          <h3 class="submodal-title">${details.title}</h3>
+          <p class="submodal-message">${details.description}</p>
+          <a href="${details.action_url}" class="submodal-button">${details.action_text}</a>
+      </div>
+  `;
+  
+  $("#subscriptionModal")
+      .html(modalContent)
+      .show();
+}
+
+function showLimitModal(details) {
+  document.getElementById("productLimit").textContent = details.limit;
+  document.getElementById("resetDate").textContent = details.reset_date;
+  document.getElementById("daysUntilReset").textContent = details.days_until_reset;
+  document.getElementById("limitReachedModal").style.display = "block";
+}
+
+function closeLimitModal() {
+  document.getElementById("limitReachedModal").style.display = "none";
+}
+
+
+window.onclick = function(event) {
+  var modal = document.getElementById("limitReachedModal");
+  if (event.target == modal) {
+      modal.style.display = "none";
+  }
 }
 
 document.addEventListener("DOMContentLoaded", function () {

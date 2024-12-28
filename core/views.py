@@ -18,12 +18,14 @@ from django.contrib.auth.models import User
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.core.mail import send_mail
 from django.conf import settings
+from django.core.mail import send_mail, EmailMessage
+from django.core.mail import EmailMultiAlternatives
 from django.contrib.auth.hashers import check_password 
 from django.contrib import messages
 from django.db.models.functions import TruncMonth, TruncDate
 from core.forms import CategoryForm
-from .models import Product, Category, Transaction
-from submit.models import Profile
+from .models import Product, Category, Transaction, EmailTemplate, SentEmail
+from submit.models import Profile, Subscription, SubscriptionPlan, ProductPeriod
 from reportlab.lib import colors
 from reportlab.lib.pagesizes import letter
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
@@ -42,7 +44,7 @@ from django.db.models import Count
 from django.views.decorators.csrf import csrf_exempt
 from .models import Product, Sale, SaleItem, Barcode
 from decimal import Decimal, InvalidOperation
-#import winsound
+
 from django.urls import reverse, reverse_lazy
 import random
 from django.db.models import Q
@@ -57,6 +59,13 @@ import os
 from functools import wraps
 from django.core.exceptions import PermissionDenied
 from django.views.decorators.http import require_GET
+
+from django.core.mail import send_mail
+from django.template.loader import render_to_string
+from django.contrib import messages
+from .forms import EmailForm
+from django.contrib.auth.decorators import user_passes_test
+from django.core.exceptions import PermissionDenied
 
 
 from django.views.generic import (
@@ -88,6 +97,63 @@ def subscribe(request):
             })
 
         if action == 'in':
+
+            subscription = Subscription.objects.filter(
+                user=user, 
+                status__in=['active', 'cancelled']  
+            ).first()
+            
+            if not subscription:
+                return JsonResponse({
+                    'success': False,
+                    'message': 'Subscription required',
+                    'details': {
+                        'type': 'no_subscription',
+                        'title': 'Subscription Required',
+                        'description': 'You need to subscribe to a plan to use this feature. Choose between our Free or Pro plans.',
+                        'action_url': reverse('subscription_plans'),  
+                        'action_text': 'View Plans'
+                    }
+                })
+            
+            
+            active_subscription = Subscription.objects.filter(
+                user=user, 
+                status='active'
+            ).first()
+            
+            if not active_subscription:
+                return JsonResponse({
+                    'success': False,
+                    'message': 'Inactive subscription',
+                    'details': {
+                        'type': 'inactive_subscription',
+                        'title': 'Inactive Subscription',
+                        'description': 'Your subscription is currently inactive. Please reactivate your subscription to continue.',
+                        'action_url': reverse('subscription_settings'),  
+                        'action_text': 'Manage Subscription'
+                    }
+                })
+
+            
+            current_period = ProductPeriod.get_or_create_current_period(profile)
+            
+            if current_period.product_count >= active_subscription.plan.product_limit:
+                days_until_reset = (current_period.end_date - timezone.now()).days
+                return JsonResponse({
+                    'success': False,
+                    'message': 'Product limit reached',
+                    'details': {
+                        'type': 'limit_reached',
+                        'limit': active_subscription.plan.product_limit,
+                        'days_until_reset': days_until_reset,
+                        'reset_date': current_period.end_date.strftime('%B %d, %Y')
+                    }
+                })
+
+            
+            current_period.product_count += 1
+            current_period.save()
             
             existing_product = Product.objects.filter(barcode=barcode).first()
             if existing_product:
@@ -320,7 +386,7 @@ def process_sale(request):
                     'total': float(item_total)
                 })
 
-            # Calculate change
+            
             if money_rendered < total:
                 raise ValueError("Insufficient money rendered")
                 
@@ -505,84 +571,6 @@ def view_income_statement(request, pk):
 
     return render(request, 'core/list_income_statements.html', context)
 
-@login_required
-def terms(request):
-
-    show_all = request.GET.get('show_all') == 'true'
-    target_date = request.GET.get('date')
-    out_of_stock_count = Product.objects.filter(status='OUT').count()
-    
-    profile = Profile.objects.get(user=request.user)  
-
-    categories = Category.objects.filter(profile=profile)
-    
-    products = Product.objects.filter(profile=profile).annotate(
-        month=TruncMonth('date_added'),
-        date=TruncDate('date_added')).order_by('-date_added')
-
-    
-    out_of_stock_per_month = Product.objects.filter(profile=profile, status='OUT').annotate(
-        month=TruncMonth('date_added')
-    ).values('month').annotate(count=Count('id')).order_by('month')
-
-    grouped_products = defaultdict(lambda: defaultdict(list))
-    monthly_totals = defaultdict(lambda: {'price': Decimal('0.00'), 'cost': Decimal('0.00'), 'profit_loss': Decimal('0.00')})
-
-    for product in products:
-        try:
-            product.profit_loss = product.price - product.cost
-            product.profit_loss_message = f"{product.profit_loss:.2f}"
-        except Exception as e:
-            print(f"Error calculating profit/loss for product {product.name}: {str(e)}")
-            product.profit_loss_message = "Error calculating profit/loss"
-            product.profit_loss = Decimal('0.00')
-
-        grouped_products[product.month][product.date].append(product)
-
-        
-        monthly_totals[product.month]['price'] += product.price
-        monthly_totals[product.month]['cost'] += product.cost
-        monthly_totals[product.month]['profit_loss'] += product.profit_loss
-
-    
-    grouped_products_dict = {}
-    for month, dates in grouped_products.items():
-        grouped_products_dict[month] = {
-            'dates': {},
-            'monthly_total': monthly_totals[month]
-        }
-        for date, product_list in dates.items():
-            date_str = date.strftime('%Y-%m-%d')
-            if show_all and target_date and date_str == target_date:
-                products_to_show = product_list
-                show_all_flag = True
-            else:
-                products_to_show = product_list[:10]
-                show_all_flag = False
-
-            
-            daily_total = {
-                'price': sum(p.price for p in products_to_show),
-                'cost': sum(p.cost for p in products_to_show),
-                'profit_loss': sum(p.profit_loss for p in products_to_show)
-            }
-
-            grouped_products_dict[month]['dates'][date] = {
-                'products': products_to_show,
-                'total_count': len(product_list),
-                'show_all': show_all_flag,
-                'daily_total': daily_total
-            }
-
-    context = {
-        'categories': categories,
-        'grouped_products': grouped_products_dict,
-        'out_of_stock_count': out_of_stock_count,
-        'out_of_stock_per_month': out_of_stock_per_month,
-    }
-
-
-    return render(request, 'core/terms.html',context)
 
 
 
@@ -812,25 +800,39 @@ def inventory_view(request):
 
 def generate_barcodes(request):
     if request.method == 'POST':
+        
+        if not request.user.is_authenticated:
+            messages.error(request, "You must be logged in to download barcodes.")
+            return render(request, 'core/generate_barcodes.html')
+
+        
+        try:
+            subscription = Subscription.objects.get(user=request.user)
+        except Subscription.DoesNotExist:
+            messages.error(request, "You must have a subscription to download barcodes.")
+            return render(request, 'core/generate_barcodes.html')
+
+        
+        enterprise_plan = SubscriptionPlan.objects.get(price=199.99)
+        if subscription.plan != enterprise_plan:
+            messages.error(request, "You must upgrade to the Enterprise Plan to download barcodes.")
+            return render(request, 'core/generate_barcodes.html')
+
         quantity = int(request.POST.get('quantity', 1))
         format_type = request.POST.get('format', 'pdf')
-        
-        
+
         generated_codes = []
         for _ in range(quantity):
             code = Barcode.generate_unique_code()
             Barcode.objects.create(code=code)
             generated_codes.append(code)
-        
+
         if format_type == 'pdf':
-            
             response = HttpResponse(content_type='application/pdf')
             response['Content-Disposition'] = 'attachment; filename="barcodes.pdf"'
             
-            
             c = canvas.Canvas(response, pagesize=A4)
             width, height = A4
-            
             
             x_start = 20 * mm
             y_start = height - 30 * mm
@@ -838,62 +840,51 @@ def generate_barcodes(request):
             spacing = 35 * mm
             codes_per_page = 20
             
-            
             with tempfile.TemporaryDirectory() as temp_dir:
                 for idx, code in enumerate(generated_codes):
-                    
                     if idx > 0 and idx % codes_per_page == 0:
                         c.showPage()
                         y_start = height - 30 * mm
                     
-                    
                     ean = barcode.get('ean13', code, writer=ImageWriter())
                     temp_path = os.path.join(temp_dir, f'barcode_{code}.png')
                     
-                    
                     img_buffer = BytesIO()
                     ean.write(img_buffer)
-                    
                     
                     img_buffer.seek(0)
                     img = Image.open(img_buffer)
                     img.save(temp_path, 'PNG')
                     img_buffer.close()
                     
-                    
                     if os.path.exists(temp_path):
-                        
                         y_pos = y_start - ((idx % codes_per_page) * spacing)
                         try:
                             c.drawImage(temp_path, x_start, y_pos, width=60*mm, height=barcode_height)
                             c.drawString(x_start, y_pos - 5*mm, code)
                         except Exception as e:
                             print(f"Error drawing image: {e}")
-                            print(f"File path: {temp_path}")
-                            print(f"File exists: {os.path.exists(temp_path)}")
-                            print(f"File size: {os.path.getsize(temp_path)}")
                     else:
                         print(f"File not found: {temp_path}")
                 
                 c.save()
+            
             return response
             
         else:  
             zip_buffer = BytesIO()
             with zipfile.ZipFile(zip_buffer, 'w') as zip_file:
                 for code in generated_codes:
-                    
                     ean = barcode.get('ean13', code, writer=ImageWriter())
                     img_buffer = BytesIO()
                     ean.write(img_buffer)
-                    
                     
                     zip_file.writestr(f'barcode_{code}.png', img_buffer.getvalue())
                     img_buffer.close()
             
             response = HttpResponse(zip_buffer.getvalue(), content_type='application/zip')
             response['Content-Disposition'] = 'attachment; filename="barcodes.zip"'
-            zip_buffer.close()
+            
             return response
     
     return render(request, 'core/generate_barcodes.html')
@@ -905,3 +896,74 @@ def delete_product(request, product_id):
     product.delete()
     messages.success(request, 'Product deleted successfully')
     return redirect('contact')
+
+
+def is_admin(user):
+    if not user.is_staff:
+        raise PermissionDenied("You don't have permission to access this page.")
+    return True
+
+@user_passes_test(is_admin)
+@login_required
+def send_email(request):
+    if request.method == 'POST':
+        form = EmailForm(request.POST)
+        if form.is_valid():
+            recipients = form.cleaned_data['recipient']
+            template = form.cleaned_data['template']
+            
+            
+            recipient_list = [email.strip() for email in recipients.split(',')]
+
+            
+            html_message = render_to_string(f'emails/{template.filename}', {})
+
+            
+            send_mail(
+                subject=template.subject,
+                message='',  
+                html_message=html_message,
+                from_email='prettysweetmeassages_PSM@outlook.com',
+                recipient_list=recipient_list,  
+                fail_silently=False,
+            )
+
+            messages.success(request, 'Email sent successfully!')
+            return redirect('send_email')
+    else:
+        form = EmailForm()
+
+    return render(request, 'core/send_email.html', {'form': form})
+
+
+
+def email(request):
+    if request.method == 'POST':
+        email = request.POST.get('email')
+
+        email_message = EmailMessage(
+            subject='New Subscription from',
+            body=f'Email: {email}',
+            from_email=settings.ADMIN_EMAIL,  
+            to=[settings.ADMIN_EMAIL],
+            reply_to=[email],  
+        )
+        email_message.send(fail_silently=False)
+
+        html_content = render_to_string('core/subscribe.html', {'email': email})
+
+        confirmation_email = EmailMultiAlternatives(
+            subject="Subscription Confirmation", 
+            body='', 
+            from_email=settings.ADMIN_EMAIL,  
+            to=[email],  
+        )
+        confirmation_email.attach_alternative(html_content, "text/html") 
+
+
+        confirmation_email.send(fail_silently=False)
+
+        messages.success(request, 'Thank you for Subscribing, a confirmation email has been sent!')
+        return redirect('index')
+
+    return redirect('index')

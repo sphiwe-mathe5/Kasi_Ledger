@@ -1,9 +1,12 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="en">
     <head>
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <title>Barcode Generator</title>
+        <link rel="stylesheet" href="{% static 'css/list.css' %}">
+        <link rel="icon" href="{% static 'images/kasicon.png' %}">
         <link
             rel="stylesheet"
             href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css"
@@ -11,7 +14,7 @@
         <style>
             body {
                 font-family: Arial, sans-serif;
-                background-color: #f4f4f4;
+                background-color: #ffffff;
                 margin: 0;
                 padding: 20px;
             }
@@ -60,9 +63,94 @@
             .icon {
                 margin-right: 8px;
             }
+            .navbar {
+                padding: 20px;
+            }
+            .logo {
+                color: var(--text-color);
+                font-size: 24px;
+                font-weight: bold;
+                text-decoration: none;
+            }
+            .quote_btn-container {
+                display: flex;
+                gap: 10px;
+            }
+            .quote_btn-container a {
+                text-decoration: none;
+                padding: 5px 10px;
+                border-radius: 8px;
+                font-family: "Poppins", sans-serif;
+                transition: all 0.3s ease;
+            }
+            .sign-in {
+                background-color: white;
+                color: black;
+                border: 1px solid #808080;
+            }
+            .sign-in:hover {
+                background-color: #f0f0f0;
+                text-decoration: none;
+            }
+            .sign-up {
+                background-color: black;
+                color: white;
+                border: 2px solid black;
+            }
+            .sign-up:hover {
+                background-color: #333;
+                text-decoration: none;
+            }
+            .messages {
+                text-align: center;
+            }
+            .load {
+                text-align: center;
+                margin: 20px 0;
+            }
+            
+            .messages ul {
+                list-style: none;
+                padding: 0;
+                display: inline-block;
+            }
+            
+            .messages li {
+                margin: 10px 0;
+            }
+            
+            .upgrade-link {
+                display: inline-block;
+                margin-top: 15px;
+                text-decoration: underline;
+                color: blue;
+            }            
         </style>
     </head>
     <body>
+        <nav class="navbar">
+            <a href="{% url 'index' %}" class="logo">KASI LEDGER</a>
+            <div class="quote_btn-container">
+                <a href="{% url 'index' %}" class="sign-up"><span>Home</span></a>
+            </div>
+        </nav>
+        
+        {% if messages %}
+        <div class="messages" style="text-align: center; margin: 20px 0;">
+            <ul style="list-style: none; padding: 0; display: inline-block;">
+                {% for message in messages %}
+                    <li{% if message.tags %} class="{{ message.tags }}"{% endif %} style="margin: 10px 0;">
+                        {{ message }}
+                    </li>
+                {% endfor %}
+            </ul>
+            <a href="{% url 'subscription_plans' %}" class="upgrade-link" style="display: inline-block; margin-top: 15px; text-decoration: underline; color: blue;">
+                Upgrade to Enterprise Plan
+            </a>
+        </div>
+        {% endif %}
+    
+
         <h1>Generate Barcodes</h1>
         <form method="post" id="barcode-form">
             {% csrf_token %}
@@ -79,9 +167,14 @@
             </div>
             <button type="submit"><i class="fas fa-download icon"></i>Download Barcodes</button>
         </form>
-        <div id="loading-message" style="display: none">
+        <div id="loading-message" class="load"style="display: none">
             <p>Your download will start shortly...</p>
         </div>
+
+        <div id="subscriptionModal" class="modal">
+
+        </div>
+        
         <script>
             const form = document.getElementById("barcode-form");
             const loadingMessage = document.getElementById("loading-message");
@@ -92,6 +185,9 @@
                     form.submit();
                 }, 2000);
             });
+
+            
+            
         </script>
     </body>
 </html>

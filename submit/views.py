@@ -1,14 +1,16 @@
 from django.shortcuts import render, redirect
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
-from .forms import UserRegisterForm, UserUpdateForm, ProfileUpdateForm
+from .forms import UserRegisterForm, UserUpdateForm
 from django.contrib.auth.models import User
 from .forms import SearchForm
-from .models import Profile
+from .models import Profile, ProductPeriod
 from django.utils import timezone
 import json
 import datetime
+from django.views.decorators.http import require_POST
 import hmac
+from datetime import timedelta
 import hashlib
 import logging
 from django.http import JsonResponse, HttpResponse
@@ -29,6 +31,10 @@ from django.contrib.auth import authenticate, login
 from django.contrib.auth import authenticate, login, logout
 from .models import CustomUser, PasswordResetRequest, AdminPasswordResetRequest
 from django.utils.crypto import get_random_string
+from django.core.mail import send_mail
+from django.template.loader import render_to_string
+from django.utils.html import strip_tags
+from django.contrib.sites.shortcuts import get_current_site
 
 
 
@@ -41,7 +47,6 @@ def signup_view(request):
         password = request.POST['password']
 
         try:
-            
             user = CustomUser.objects.create_user(
                 username=email,
                 email=email,
@@ -50,13 +55,33 @@ def signup_view(request):
                 password=password,
             )
 
-            login(request, user, backend='submit.backends.EmailBackend')
+            # Send welcome email
+            current_site = get_current_site(request)
+            context = {
+                'user': user,
+                'company_name': company_name,
+                'domain': settings.SITE_URL,
+            }
+            
+            # Render email templates
+            html_message = render_to_string('submit/welcome.html', context)
+            plain_message = strip_tags(html_message)
+            
+            # Send email
+            send_mail(
+                subject=f'Thank You For Signing Up',
+                message=plain_message,
+                from_email=settings.DEFAULT_FROM_EMAIL,
+                recipient_list=[email],
+                html_message=html_message,
+                fail_silently=False,
+            )
 
-            return redirect('index')
+            login(request, user, backend='submit.backends.EmailBackend')
+            return redirect('subscription_plans')
         
         except IntegrityError:
             messages.error(request, 'An account with this email already exists. Please log in or use a different email.')
-
             return redirect('signup')  
 
     return render(request, 'submit/register.html')
@@ -170,20 +195,16 @@ def logout_view(request):
 def profile(request):
     if request.method == 'POST':
         u_form = UserUpdateForm(request.POST, instance=request.user)
-        p_form = ProfileUpdateForm(request.POST,
-                                   request.FILES,
-                                   instance=request.user.profile)
+
         if u_form.is_valid() and p_form.is_valid():
             u_form.save()
-            p_form.save()
             messages.success(request, f'updated!')
             return redirect('profile')
 
     else:
         u_form = UserUpdateForm(instance=request.user)
-        p_form = ProfileUpdateForm(instance=request.user.profile)
 
-    context = {'u_form': u_form, 'p_form': p_form}
+    context = {'u_form': u_form}
 
     return render(request, 'submit/profile.html', context)
 
@@ -296,7 +317,7 @@ def webhook(request):
             print("No Paystack signature")
             return HttpResponse(status=400)
 
-        # Verify webhook signature
+        
         computed_signature = hmac.new(
             settings.PAYSTACK_SECRET_KEY.encode('utf-8'),
             request.body,
@@ -315,17 +336,17 @@ def webhook(request):
         
         if event == 'subscription.create':
             try:
-                # Get customer email from the payload
+                
                 customer_email = data.get('customer', {}).get('email')
                 
-                # Find the user by email
+                
                 try:
                     user = CustomUser.objects.get(email=customer_email)
                 except CustomUser.DoesNotExist:
                     print(f"User not found for email: {customer_email}")
                     return HttpResponse(status=400)
 
-                # Get the plan details
+                
                 plan_data = data.get('plan', {})
                 try:
                     plan = SubscriptionPlan.objects.get(paystack_plan_code=plan_data.get('plan_code'))
@@ -333,21 +354,21 @@ def webhook(request):
                     print(f"Plan not found for code: {plan_data.get('plan_code')}")
                     return HttpResponse(status=400)
 
-                # Create or update subscription
+                
                 subscription = Subscription.objects.get_or_create(
                     user=user,
                     defaults={'plan': plan}
                 )[0]
 
-                # Update subscription details
+                
                 subscription.status = 'active'
                 subscription.paystack_subscription_code = data.get('subscription_code')
                 subscription.paystack_email_token = data.get('email_token')
                 
-                # Convert next_payment_date string to datetime
+                
                 next_payment_str = data.get('next_payment_date')
                 if next_payment_str:
-                    # Parse the ISO format datetime string and make it timezone-aware
+                    
                     next_payment_date = datetime.datetime.strptime(
                         next_payment_str.split('.')[0], 
                         '%Y-%m-%dT%H:%M:%S'
@@ -417,10 +438,10 @@ def payment_callback(request):
     reference = request.GET.get('reference')
     trxref = request.GET.get('trxref')
     
-    # Log the callback
+    
     print(f"Payment callback received - Reference: {reference}")
     
-    # Verify the payment status
+    
     headers = {
         "Authorization": f"Bearer {settings.PAYSTACK_SECRET_KEY}",
         "Content-Type": "application/json"
@@ -513,28 +534,196 @@ def cancel_subscription(request):
     return redirect('subscription_settings')
 
 
+
+def activate_subscription(request):
+    if request.method != 'POST':
+        return HttpResponseBadRequest()
+        
+    try:
+        subscription = Subscription.objects.get(
+            user=request.user,
+            status='cancelled'
+        )
+        
+        headers = {
+            "Authorization": f"Bearer {settings.PAYSTACK_SECRET_KEY}",
+            "Content-Type": "application/json"
+        }
+        
+        
+        create_response = requests.post(
+            "https://api.paystack.co/subscription",
+            headers=headers,
+            json={
+                "customer": request.user.email,
+                "plan": subscription.plan.paystack_plan_code
+            }
+        )
+        
+        if create_response.status_code == 200:
+            subscription_data = create_response.json().get('data', {})
+            subscription.paystack_subscription_code = subscription_data.get('subscription_code')
+            subscription.activate()
+            messages.success(request, "Your subscription has been reactivated.")
+        else:
+            raise Exception(f"Paystack API error: {create_response.text}")
+            
+    except Subscription.DoesNotExist:
+        messages.error(request, "No cancelled subscription found.")
+    except Exception as e:
+        print(f"Subscription activation error: {str(e)}")
+        messages.error(request, "An error occurred. Please contact support.")
+    
+    return redirect('subscription_settings')
+
+def delete_subscription(request):
+    if request.method != 'POST':
+        return HttpResponseBadRequest()
+        
+    try:
+        subscription = Subscription.objects.get(
+            user=request.user
+        )
+        
+        
+        if subscription.status != 'cancelled':
+            messages.error(request, "Please cancel your subscription before deleting it.")
+            return redirect('subscription_settings')
+            
+        subscription.delete()
+        messages.success(request, "Your subscription has been deleted.")
+            
+    except Subscription.DoesNotExist:
+        messages.error(request, "No subscription found.")
+    except Exception as e:
+        print(f"Subscription deletion error: {str(e)}")
+        messages.error(request, "An error occurred. Please contact support.")
+    
+    return redirect('subscription_settings')
+
 @login_required
 def subscription_settings(request):
     try:
+        
         subscription = Subscription.objects.get(user=request.user)
+        
+        
         payment_history = PaymentHistory.objects.filter(
             subscription=subscription
         ).order_by('-paid_at')
         
+        
         context = {
             'subscription': subscription,
             'payment_history': payment_history,
-            'current_plan': subscription.plan.name,
-            'status': subscription.status,
-            'next_payment': subscription.next_payment_date
+            'current_plan': subscription.plan.name,  
+            'status': subscription.status,  
+            'next_payment': subscription.next_payment_date,  
+            'plan_price': subscription.plan.price  
         }
+        
+        
         return render(request, 'submit/subscription_settings.html', context)
+    
     except Subscription.DoesNotExist:
+        
         messages.warning(request, "You don't have an active subscription.")
         return redirect('subscription_plans')
+
 
 def subscription_success(request):
     return render(request, 'submit/subscription_success.html')
 
 def subscription_failed(request):
     return render(request, 'submit/subscription_failed.html')
+
+
+@require_POST
+def register_free_plan(request, plan_id):
+    try:
+        plan = SubscriptionPlan.objects.get(id=plan_id, price=0)
+        
+        
+        existing_subscription = Subscription.objects.filter(
+            user=request.user,
+            status='active'
+        ).first()
+        
+        if existing_subscription:
+            return JsonResponse({
+                'success': False,
+                'message': 'You already have an active subscription.'
+            })
+
+        
+        subscription = Subscription.objects.create(
+            user=request.user,
+            plan=plan,
+            status='active',
+            created_at=timezone.now(),
+            next_payment_date=timezone.now() + timezone.timedelta(days=30)  
+        )
+
+        
+        ProductPeriod.objects.create(
+            profile=request.user.profile,
+            start_date=timezone.now(),
+            end_date=timezone.now() + timezone.timedelta(days=30),
+            product_count=0
+        )
+
+        return JsonResponse({
+            'success': True,
+            'message': 'Free plan activated successfully'
+        })
+
+    except SubscriptionPlan.DoesNotExist:
+        return JsonResponse({
+            'success': False,
+            'message': 'Invalid plan selected'
+        })
+    except Exception as e:
+        return JsonResponse({
+            'success': False,
+            'message': str(e)
+        })
+
+
+@require_POST
+def cancel_plan(request):
+    try:
+        
+        subscription = Subscription.objects.filter(
+            user=request.user,
+            status='active'
+        ).first()
+        
+        if not subscription:
+            return JsonResponse({
+                'success': False,
+                'message': 'No active subscription found.'
+            })
+
+        
+        product_period = ProductPeriod.objects.filter(
+            profile=request.user.profile,
+            end_date__gt=timezone.now()
+        ).first()
+
+        
+        subscription.delete()
+
+        
+        if product_period:
+            product_period.delete()
+
+        return JsonResponse({
+            'success': True,
+            'message': 'Subscription cancelled successfully'
+        })
+
+    except Exception as e:
+        return JsonResponse({
+            'success': False,
+            'message': str(e)
+        })

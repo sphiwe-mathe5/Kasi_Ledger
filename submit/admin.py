@@ -5,18 +5,18 @@ from .models import SubscriptionPlan, Subscription
 
 class CustomUserAdmin(UserAdmin):
     model = CustomUser
-    list_display = ('email', 'username', 'is_staff', 'is_active', 'is_authorized')
-    list_filter = ('is_staff', 'is_active', 'is_authorized')
+    list_display = ('email', 'username', 'is_staff', 'is_active', 'is_authorized', 'is_verified')
+    list_filter = ('is_staff', 'is_active', 'is_authorized', 'is_verified')
     fieldsets = (
         (None, {'fields': ('email', 'password')}),
         ('Personal info', {'fields': ('username', 'first_name', 'last_name')}),
-        ('Permissions', {'fields': ('is_active', 'is_staff', 'is_superuser', 'is_authorized',
+        ('Permissions', {'fields': ('is_active', 'is_staff', 'is_superuser', 'is_authorized', 'is_verified',
                                   'groups', 'user_permissions')}),
     )
     add_fieldsets = (
         (None, {
             'classes': ('wide',),
-            'fields': ('email', 'password1', 'password2', 'is_staff', 'is_active')}
+            'fields': ('email', 'password1', 'password2', 'is_staff', 'is_active', 'is_verified')}
         ),
     )
     search_fields = ('email', 'username')

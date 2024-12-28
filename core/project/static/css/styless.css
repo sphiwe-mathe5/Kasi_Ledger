@@ -899,13 +899,16 @@ a:focus {
 }
 h3 {
   font-family: "Noto Serif Display", serif;
-  font-size: 2rem;
+  font-size: 1rem;
   font-weight: 300;
+
+  
 }
 a {
   text-decoration: none;
   color: var(--dark);
 }
+
 ul {
   list-style-type: none;
   padding: 0;
@@ -916,11 +919,13 @@ button {
   background: transparent;
 }
 .c-link {
-  color: initial;
+  color: initial; 
+
 }
+
 .c-link:hover {
-  color: blue;
-  text-decoration: underline;
+  color: blue; /* Change color on hover */
+  text-decoration: underline
 }
 .flex {
   display: flex;
@@ -949,7 +954,7 @@ button {
   display: flex;
   align-items: center;
   min-height: 70vh;
-  background-color: #007bff;
+  background-color: #007BFF;
 }
 .container2 {
   max-width: 1200px;
@@ -957,6 +962,7 @@ button {
   margin: 0 auto;
   padding: 0 1rem;
 }
+
 form {
   display: flex;
   align-items: center;
@@ -964,6 +970,7 @@ form {
   width: min(100%, 400px);
   border-bottom: 1px solid var(--dark);
 }
+
 input {
   padding: 0.75rem 0;
   border: none;
@@ -1002,54 +1009,69 @@ svg {
 .footer_copyright {
   color: var(--light);
 }
+
+
+
 .hover-underline {
-  color: blue;
-  text-decoration: none;
-  position: relative;
+  color: blue; 
+  text-decoration: none; 
+  position: relative; 
 }
+
 .hover-underline::after {
-  content: "";
+  content: ''; 
   position: absolute;
-  width: 100%;
-  height: 2px;
-  background-color: blue;
-  bottom: 0;
-  left: 0;
-  transform: scaleX(0);
-  transition: transform 0.3s ease;
+  width: 100%; 
+  height: 2px; 
+  background-color: blue; 
+  bottom: 0; 
+  left: 0; 
+  transform: scaleX(0); 
+  transition: transform 0.3s ease; 
 }
+
 .hover-underline:hover::after {
-  transform: scaleX(1);
+  transform: scaleX(1); 
 }
+
 .hover-underline:hover {
   color: darkblue;
 }
+
+
 .social-icons {
-  display: flex;
+display: flex; 
 }
+
 .social-icons a {
-  margin-right: 15px;
-  font-size: 24px;
-  transition: color 0.3s;
+margin-right: 15px; 
+font-size: 24px; 
+transition: color 0.3s; 
 }
+
 .social-icons a:hover {
-  color: #ffcc00;
+color: #ffcc00; 
 }
+
 .footer-section h3 {
-  font-size: 25px;
-  margin: 0 5rem;
+font-size: 25px;
+margin: 0 5rem;
 }
-.footer-section {
-  margin: 0 -2rem;
+
+.footer-section{
+margin: 0 -2rem;  
 }
+
 @media (max-width: 480px) {
-  .footer-section {
-    margin: 0 0rem;
-  }
-  .logos img {
-    margin: 0 -0.9rem;
-  }
+.footer-section{
+  margin: 0 0rem;  
+
 }
+.logos img {
+  margin: 0 -0.90rem;
+}
+}
+
 .pricing-container {
   display: flex;
   justify-content: center;

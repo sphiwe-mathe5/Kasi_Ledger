@@ -7,6 +7,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, shrink-to-fit=no">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <link rel="stylesheet" href="{% static 'css/styless.css' %}">
+    <link rel="icon" href="{% static 'images/kasicon.png' %}">
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap">
     <title>Kasi Ledger</title>
     <link rel="stylesheet" type="text/css" href="static/css/bootstrap.css" />
@@ -58,6 +59,18 @@
                                   <a href="{% url 'profile' %}" class="menu-item">
                                     <i class="fa-solid fa-gear"></i>
                                     <span>Settings</span>
+                                  </a>
+                                </li>
+                                <li>
+                                  <a href="{% url 'subscription_settings' %}" class="menu-item">
+                                    <i class="fa-solid fa-money-check"></i>
+                                    <span>Subscription</span>
+                                  </a>
+                                </li>
+                                <li>
+                                  <a href="{% url 'generate_barcodes' %}" class="menu-item">
+                                    <i class="fa-solid fa-barcode"></i>
+                                    <span>Barcode Design</span>
                                   </a>
                                 </li>
                                 <li>
@@ -123,8 +136,8 @@
                       informed about stock levels to avoid shortages and enhance profitability.
                     </p>
                     <div class="btn-box">
-                      <a href="" class="btn2">
-                        Manage Invetory
+                      <a href="{% url 'contact' %}" class="btn2">
+                        Manage Inventory
                       </a>
                     </div>
                   </div>
@@ -154,7 +167,7 @@
                       Monitor costs and sales in real-time to make informed decisions.
                     </p>
                     <div class="btn-box">
-                      <a href="" class="btn2">
+                      <a href="{% url 'list_income_statements' %}" class="btn2">
                         Statements
                       </a>
                     </div>
@@ -185,7 +198,7 @@
                       sales analysis and business management
                     </p>
                     <div class="btn-box">
-                      <a href="" class="btn2">
+                      <a href="{% url 'subscribed' %}" class="btn2">
                         Point Of Sale
                       </a>
                     </div>
@@ -242,55 +255,56 @@
   <div class="pricing-container">
     <div class="pricing-card">
         <div class="card-header">
-            <h2 class="card-title">Basic</h2>
-            <div class="card-price">R99.99<span>/month</span></div>
+            <h2 class="card-title">Free Plan</h2>
+            <div class="card-price">R0.00<span>/month</span></div>
         </div>
         <ul class="card-features">
             <li>1 User</li>
-            <li>10GB Storage</li>
+            <li>500MB Storage</li>
             <li>Point Of Sale Integration</li>
             <li>Financial Statements</li>
             <li>Inventory management</li>
+            <li>40 Products Upload p/m</li>
         </ul>
         <button class="card-button">Choose Plan</button>
     </div>
     <div class="pricing-card popular">
         <div class="card-header">
-            <h2 class="card-title">Pro</h2>
-            <div class="card-price">R199.99<span>/month</span></div>
+            <h2 class="card-title">Pro Plan</h2>
+            <div class="card-price">R99.99<span>/month</span></div>
         </div>
         <ul class="card-features">
             <li>5 Users</li>
-            <li>50GB Storage</li>
+            <li>1GB Storage</li>
             <li>Priority Support</li>
             <li>Point Of Sale Integration</li>
             <li>Financial Statements</li>
-            <li>Sales Forecasting</li>
-            <li>Advanced Analytics</li>
+            <!--<<li>Sales Forecasting</li>-->
+            <li>300 Products Upload p/m</li>
         </ul>
         <button class="card-button">Choose Plan</button>
     </div>
     <div class="pricing-card">
         <div class="card-header">
             <h2 class="card-title">Enterprise</h2>
-            <div class="card-price">R299.99<span>/month</span></div>
+            <div class="card-price">R199.99<span>/month</span></div>
         </div>
         <ul class="card-features">
             <li>Unlimited Users</li>
-            <li>1TB Storage</li>
+            <li>2GB Storage</li>
             <li>24/7 Dedicated Support</li>
             <li>Point Of Sale Integration</li>
             <li>Financial Statements</li>
-            <li>Sales Forecasting</li>
-            <li>Supplier Connection</li>
+            <li>Unlimited Products Upload </li>
+            <!--<<li>Sales Forecasting(coming soon)</li>-->
+            <!--<li>Supplier Connection(coming soon)</li>-->
+            <li>Advanced Analytics</li>
             <li>Custom barcode design</li>
             <li>Data Visualization</li>
         </ul>
         <button class="card-button">Choose Plan</button>
     </div>
 </div>
-
-
 
 
 <footer class="footer">
@@ -300,8 +314,8 @@
         <div class="layout">
           <div class="layout_item w-50">
             <div class="newsletter">
-              <h4 class="newsletter_title">Subscribe to get exciting news about deployments,<br>upcoming events and more.</h4><br><br>
-              <form action="#" method="POST">
+              <h5 class="newsletter_title">Subscribe to get exciting news about deployments,<br>upcoming events and more.</h5><br><br>
+              <form action="{% url 'email' %}" method="POST">
                 {% csrf_token %}
                 <input type="email" name="email"placeholder="Your email address">
                 <button>
@@ -318,11 +332,12 @@
               <h4 class="c-nav-tool_title">Menu</h4>
               <ul class="c-nav-tool_list">
                 <li>
-                  <a href="#" class="c-link">About Us</a>
-                </li>
-                <li>
-                  <a href="#" class="c-link">Contact Us</a>
-                </li>
+                  <a href="https://kasialgorithms.co.za/about/" class="c-link" target="_blank" rel="noopener noreferrer">About Us</a>
+              </li>
+              <li>
+                  <a href="https://kasialgorithms.co.za/prompt/" class="c-link" target="_blank" rel="noopener noreferrer">Contact Us</a>
+              </li>
+              
               </ul>
             </nav>
           </div>
@@ -331,10 +346,10 @@
               <h4 class="c-nav-tool_title">Support</h4>
               <ul class="c-nav-tool_list">
                 <li class="c-nav-tool_item">
-                  <a href="#" class="c-link">Terms &amp; Conditions</a>
+                  <a href="https://kasialgorithms.co.za/terms/#terms" class="c-link" target="_blank" rel="noopener noreferrer">Terms &amp; Conditions</a>
                 </li>
                 <li class="c-nav-tool_item">
-                  <a href="#" class="c-link">Privacy Policy</a>
+                  <a href="https://kasialgorithms.co.za/terms/#privacy" class="c-link" target="_blank" rel="noopener noreferrer">Privacy Policy</a>
                 </li>
               </ul>
             </nav>
@@ -373,7 +388,7 @@
       </div>
     </div>
     <div class="footer_copyright">
-      <p>&copy; 2024 Kasi Algorithms</p>
+      <p>&copy; 2024 Kasi Ledger</p>
     </div>
   </div>
 </footer>

@@ -7,6 +7,7 @@ from django.core.mail import send_mail
 from django.conf import settings
 from django.contrib.auth.hashers import make_password
 import uuid
+from datetime import timedelta
 from submit.managers import CustomUserManager
 from django.utils.crypto import get_random_string
 from django.utils import timezone
@@ -27,6 +28,7 @@ class CustomUser(AbstractUser):
     username = models.CharField(max_length=100, unique=True, default='none')
     email = models.EmailField(max_length=255, unique=True, db_index=True)
     is_authorized = models.BooleanField(default=False)
+    is_verified = models.BooleanField(default=False)  
     login_token = models.CharField(max_length=6, blank=True, null=True)
     first_name = models.CharField(max_length=30, blank=True)
     last_name = models.CharField(max_length=30, blank=True)
@@ -50,13 +52,13 @@ class CustomUser(AbstractUser):
     REQUIRED_FIELDS = []
 
     def save(self, *args, **kwargs):
-        
         if self.admin_password:
             self.admin_password = make_password(self.admin_password)
         super().save(*args, **kwargs)
 
     def __str__(self):
         return self.email
+
 
 class PasswordResetRequest(models.Model):
     user = models.ForeignKey('CustomUser', on_delete=models.CASCADE)
@@ -124,6 +126,7 @@ class SubscriptionPlan(models.Model):
     features = models.JSONField()
     is_active = models.BooleanField(default=True)
     paystack_plan_code = models.CharField(max_length=100, blank=True)
+    product_limit = models.IntegerField(default=3)
     
     def __str__(self):
         return f"{self.name} - R{self.price}/month"
@@ -157,6 +160,12 @@ class Subscription(models.Model):
             self.status = 'cancelled'
             self.cancelled_at = timezone.now()
             self.save()
+    
+    def activate(self):
+        if self.status == 'cancelled':
+            self.status = 'active'
+            self.cancelled_at = None
+            self.save()
 
 class PaymentHistory(models.Model):
     subscription = models.ForeignKey(Subscription, on_delete=models.CASCADE)
@@ -166,3 +175,31 @@ class PaymentHistory(models.Model):
     paid_at = models.DateTimeField()
     created_at = models.DateTimeField(auto_now_add=True)
 
+
+class ProductPeriod(models.Model):
+    profile = models.ForeignKey('Profile', on_delete=models.CASCADE)
+    start_date = models.DateTimeField(auto_now_add=True)
+    end_date = models.DateTimeField()
+    product_count = models.IntegerField(default=0)
+
+    def save(self, *args, **kwargs):
+        if not self.end_date:
+            self.end_date = self.start_date + timedelta(days=30)
+        super().save(*args, **kwargs)
+
+    @classmethod
+    def get_or_create_current_period(cls, profile):
+        current_date = timezone.now()
+        current_period = cls.objects.filter(
+            profile=profile,
+            start_date__lte=current_date,
+            end_date__gte=current_date
+        ).first()
+
+        if not current_period:
+            current_period = cls.objects.create(
+                profile=profile,
+                start_date=current_date,
+                end_date=current_date + timedelta(days=30)
+            )
+        return current_period

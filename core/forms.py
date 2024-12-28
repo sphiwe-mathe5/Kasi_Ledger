@@ -1,6 +1,7 @@
 from django import forms
 from .models import Product, Category
 from .models import IncomeStatement
+from .models import EmailTemplate
 
 class CategoryForm(forms.ModelForm):
     class Meta:
@@ -34,3 +35,10 @@ class IncomeStatementForm(forms.ModelForm):
             'tax': forms.NumberInput(attrs={'step': '0.01'}),
             'dividends': forms.NumberInput(attrs={'step': '0.01'}),
         }
+
+
+
+
+class EmailForm(forms.Form):
+    recipient = forms.CharField(widget=forms.Textarea, help_text="Enter multiple emails separated by commas")
+    template = forms.ModelChoiceField(queryset=EmailTemplate.objects.all())
