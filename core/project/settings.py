@@ -6,7 +6,7 @@ from decouple import config, Csv
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 SECRET_KEY = config('SECRET_KEY')
-DEBUG = False
+DEBUG = config('DEBUG', default=False, cast=bool)
 ALLOWED_HOSTS = config('ALLOWED_HOSTS', default='.vercel.app,127.0.0.1,.com').split(',')
 ADMIN_PATH = config('ADMIN_PATH')
 
@@ -28,6 +28,7 @@ INSTALLED_APPS = [
     'django.contrib.humanize',
     "django.contrib.sites",
     "allauth",
+    "axes",
     "allauth.account",
     "allauth.socialaccount",
     "allauth.socialaccount.providers.google"
@@ -59,6 +60,7 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'allauth.account.middleware.AccountMiddleware',
+    'axes.middleware.AxesMiddleware',
 ]
 AUTH_USER_MODEL = 'submit.CustomUser'
 ROOT_URLCONF = 'core.project.urls'
@@ -67,7 +69,8 @@ SOCIALACCOUNT_LOGIN_ON_GET = True
 AUTHENTICATION_BACKENDS = [
     'submit.backends.EmailBackend',  
     'django.contrib.auth.backends.ModelBackend',
-    'allauth.account.auth_backends.AuthenticationBackend'
+    'allauth.account.auth_backends.AuthenticationBackend',
+    'axes.backends.AxesStandaloneBackend',
 ]
 
 ASGI_APPLICATION = 'core.project.asgi.application'
@@ -171,3 +174,57 @@ PAYSTACK_SECRET_KEY = config('PAYSTACK_SECRET_KEY')
 PAYSTACK_PUBLIC_KEY = config('PAYSTACK_PUBLIC_KEY')
 SITE_URL = 'http://127.0.0.1:8000'
 SITE_URL = 'https://kasiledger.com' 
+
+SILENCED_SYSTEM_CHECKS = config('SILENCED_SYSTEM_CHECKS', cast=Csv())
+
+AXES_FAILURE_LIMIT = config('AXES_FAILURE_LIMIT', cast=int)
+
+AXES_COOLOFF_TIME = 1
+
+AXES_ONLY_ADMIN_SITE = config('AXES_ONLY_ADMIN_SITE', cast=bool)
+
+AXES_LOCKOUT_TEMPLATE = config('AXES_LOCKOUT_TEMPLATE')
+
+AXES_LOCKOUT_URL = config('AXES_LOCKOUT_URL')
+AXES_USERNAME_FORM_FIELD = config('AXES_USERNAME_FORM_FIELD')
+
+AXES_RESET_ON_SUCCESS = config('AXES_RESET_ON_SUCCESS', cast=bool)
+
+AXES_NEVER_LOCKOUT_WHITELIST = config('AXES_NEVER_LOCKOUT_WHITELIST',
+                                      cast=bool)
+AXES_IP_WHITELIST = config('AXES_IP_WHITELIST', cast=Csv())
+
+AXES_ENABLE_ACCESS_FAILURE_LOG = config('AXES_ENABLE_ACCESS_FAILURE_LOG',
+                                        cast=bool)
+
+AXES_RESET_ON_SUCCESS = config('AXES_RESET_ON_SUCCESS', cast=bool)
+
+AXES_LOCKOUT_PARAMETERS = config('AXES_LOCKOUT_PARAMETERS', cast=Csv())
+
+
+X_FRAME_OPTIONS = 'DENY'
+CSRF_COOKIE_SAMESITE = 'Strict'
+SESSION_EXPIRE_AT_BROWSER_CLOSE = True
+
+
+if not DEBUG:
+    CSRF_COOKIE_SECURE = True
+    CSRF_COOKIE_HTTPONLY = True
+    SESSION_COOKIE_SECURE = True
+    SECURE_BROWSER_XSS_FILTER = True
+    SECURE_CONTENT_TYPE_NOSNIFF = True
+    SECURE_HSTS_SECONDS = 15768000
+    SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+    SECURE_HSTS_PRELOAD = True
+    SECURE_SSL_REDIRECT = True
+    SECURE_REFERRER_POLICY = 'same-origin'
+    SECURE_CROSS_ORIGIN_OPENER_POLICY = 'same-origin'
+    SESSION_COOKIE_NAME = '__Host-sessionid'
+    CSRF_COOKIE_NAME = '__Host-csrftoken'
+else:
+    
+    CSRF_COOKIE_SECURE = False
+    CSRF_COOKIE_HTTPONLY = False
+    SESSION_COOKIE_SECURE = False
+    SECURE_SSL_REDIRECT = False
+    SECURE_HSTS_SECONDS = 0

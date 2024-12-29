@@ -28,7 +28,6 @@ class CustomUser(AbstractUser):
     username = models.CharField(max_length=100, unique=True, default='none')
     email = models.EmailField(max_length=255, unique=True, db_index=True)
     is_authorized = models.BooleanField(default=False)
-    is_verified = models.BooleanField(default=False)  
     login_token = models.CharField(max_length=6, blank=True, null=True)
     first_name = models.CharField(max_length=30, blank=True)
     last_name = models.CharField(max_length=30, blank=True)
@@ -56,6 +55,10 @@ class CustomUser(AbstractUser):
             self.admin_password = make_password(self.admin_password)
         super().save(*args, **kwargs)
 
+    def is_verified(self):
+
+        return True
+        
     def __str__(self):
         return self.email
 
@@ -74,7 +77,7 @@ class PasswordResetRequest(models.Model):
         return timezone.now() <= self.created_at + self.TOKEN_VALIDITY_PERIOD
 
     def send_reset_email(self):
-        reset_link = f"http://localhost:8000/reset-password/{self.token}/"
+        reset_link = f"https://kasiledger/reset-password/{self.token}/"
         send_mail(
             'Password Reset Request',
             f'Click the following link to reset your password: {reset_link}',
@@ -98,7 +101,7 @@ class AdminPasswordResetRequest(models.Model):
         return timezone.now() <= self.created_at + self.TOKEN_VALIDITY_PERIOD
 
     def send_reset_email(self):
-        reset_link = f"http://localhost:8000/reset-admin-password/{self.token}/"
+        reset_link = f"https://kasiledger/reset-admin-password/{self.token}/"
         send_mail(
             'Admin Password Reset Request',
             f'Click the following link to reset the admin password: {reset_link}',

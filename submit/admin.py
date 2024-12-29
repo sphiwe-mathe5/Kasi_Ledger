@@ -6,11 +6,11 @@ from .models import SubscriptionPlan, Subscription
 class CustomUserAdmin(UserAdmin):
     model = CustomUser
     list_display = ('email', 'username', 'is_staff', 'is_active', 'is_authorized', 'is_verified')
-    list_filter = ('is_staff', 'is_active', 'is_authorized', 'is_verified')
+    list_filter = ('is_staff', 'is_active', 'is_authorized')
     fieldsets = (
         (None, {'fields': ('email', 'password')}),
         ('Personal info', {'fields': ('username', 'first_name', 'last_name')}),
-        ('Permissions', {'fields': ('is_active', 'is_staff', 'is_superuser', 'is_authorized', 'is_verified',
+        ('Permissions', {'fields': ('is_active', 'is_staff', 'is_superuser', 'is_authorized',
                                   'groups', 'user_permissions')}),
     )
     add_fieldsets = (

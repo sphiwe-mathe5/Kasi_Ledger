@@ -11,6 +11,7 @@ from django.conf import settings
 from django.contrib.auth.models import User
 from django.conf.urls.static import static
 from core import views
+from axes.models import AccessAttempt, AccessLog
 from core.project.settings import ADMIN_PATH
 from core.views import index, subscribe,  enquire, email, guide, delete_product, generate_barcodes, list_income_statements, subscribed, contact, unsubscribed, optout, PostCreateView
 
@@ -24,25 +25,25 @@ admin_site.register(Profile)
 admin_site.register(Category)
 admin_site.register(IncomeStatement)
 admin_site.register(Product)
-#admin_site.register(AccessAttempt)
-#admin_site.register(AccessLog)
+admin_site.register(AccessAttempt)
+admin_site.register(AccessLog)
 admin_site.register(EmailTemplate)
 admin_site.register(SentEmail)
 
 class CustomUserAdmin(UserAdmin):
     model = CustomUser
-    list_display = ('email', 'username', 'is_staff', 'is_active', 'is_authorized', 'is_verified')
-    list_filter = ('is_staff', 'is_active', 'is_authorized', 'is_verified')
+    list_display = ('email', 'username', 'is_staff', 'is_active', 'is_authorized')
+    list_filter = ('is_staff', 'is_active', 'is_authorized')
     fieldsets = (
         (None, {'fields': ('email', 'password')}),
         ('Personal info', {'fields': ('username', 'first_name', 'last_name')}),
-        ('Permissions', {'fields': ('is_active', 'is_staff', 'is_superuser', 'is_authorized', 'is_verified',
+        ('Permissions', {'fields': ('is_active', 'is_staff', 'is_superuser', 'is_authorized',
                                   'groups', 'user_permissions')}),
     )
     add_fieldsets = (
         (None, {
             'classes': ('wide',),
-            'fields': ('email', 'password1', 'password2', 'is_staff', 'is_active', 'is_verified')}
+            'fields': ('email', 'password1', 'password2', 'is_staff', 'is_active')}
         ),
     )
     search_fields = ('email', 'username')
@@ -58,8 +59,8 @@ urlpatterns = [
     path('', index, name='index'),
     #path("", include("googleauthentication.urls")),
     path('accounts/', include("allauth.urls")),
-    path('admin/', admin.site.urls),
-    #path('kasiledger-safe-admin/', admin_site.urls),
+    #path('admin/', admin.site.urls),
+    path('kasiledger-safe-admin/', admin_site.urls),
     path('subscribe/', subscribe, name='subscribe'),
     path('POS/', subscribed, name='subscribed'),
     path('generate/', views.generate_barcodes, name='generate_barcodes'),
