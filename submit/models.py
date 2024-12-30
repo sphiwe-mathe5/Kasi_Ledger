@@ -77,7 +77,7 @@ class PasswordResetRequest(models.Model):
         return timezone.now() <= self.created_at + self.TOKEN_VALIDITY_PERIOD
 
     def send_reset_email(self):
-        reset_link = f"https://kasiledger/reset-password/{self.token}/"
+        reset_link = f"https://kasiledger.com/reset-password/{self.token}/"
         send_mail(
             'Password Reset Request',
             f'Click the following link to reset your password: {reset_link}',
@@ -101,7 +101,7 @@ class AdminPasswordResetRequest(models.Model):
         return timezone.now() <= self.created_at + self.TOKEN_VALIDITY_PERIOD
 
     def send_reset_email(self):
-        reset_link = f"https://kasiledger/reset-admin-password/{self.token}/"
+        reset_link = f"https://kasiledger.com/reset-admin-password/{self.token}/"
         send_mail(
             'Admin Password Reset Request',
             f'Click the following link to reset the admin password: {reset_link}',

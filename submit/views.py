@@ -55,7 +55,7 @@ def signup_view(request):
                 password=password,
             )
 
-            # Send welcome email
+            
             current_site = get_current_site(request)
             context = {
                 'user': user,
@@ -63,11 +63,11 @@ def signup_view(request):
                 'domain': settings.SITE_URL,
             }
             
-            # Render email templates
+            
             html_message = render_to_string('submit/welcome.html', context)
             plain_message = strip_tags(html_message)
             
-            # Send email
+            
             send_mail(
                 subject=f'Thank You For Signing Up',
                 message=plain_message,

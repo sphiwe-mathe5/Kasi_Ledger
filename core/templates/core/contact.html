@@ -25,7 +25,7 @@
                     <h5 class="modal-title" id="modalLabel">Enter Admin Password</h5>
                 </div>
                 <div class="modal-body">
-                    <p class="notification">Please enter your admin password to access this section. This is required for security purposes.<a href="#" class="forgot-password" id="forgotPasswordLink">Read More</a></p>
+                    <p class="notification">Please enter your admin password to access this section. This is required for security purposes.<a href="{% url 'guide' %}" class="forgot-password" id="forgotPasswordLink">Read More</a></p>
                     {% if messages %}
                         <div class="error-message">
                             {% for message in messages %}
@@ -139,11 +139,11 @@
     </div>
     <div class="card-content">
       <ol class="list">
-        <li>Choose "Scan In" for new inventory or "Scan Out" for sales.</li>
+        <li>Fill in all the product details</li>
+        <li>Ensure you set up you camera on your browser.</li>
         <li>Position the product's barcode in front of your device's camera.</li>
         <li>Hold steady until the scanner recognizes the code.</li>
-        <li>Verify the scanned information in the form.</li>
-        <li>Adjust details if necessary and submit <a href="{% url 'guide' %}" class="forgotpassword-link">Read Detailed Guide</a></li>
+        <li>Verify the scanned information in the form<a href="{% url 'guide' %}" class="forgotpassword-link">Read Detailed Guide</a></li>
       </ol>
       <div id="reader" class="scanner-area"></div>
       <div id="result" class="scanner-result"></div>

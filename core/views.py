@@ -254,7 +254,7 @@ def subscribe(request):
     return JsonResponse({'success': False, 'message': 'Invalid request'})
 
 
-
+@login_required
 def subscribed(request):
     products = Product.objects.filter(profile=request.user.profile)
 
@@ -749,7 +749,7 @@ def optout(request):
 
     return redirect('index')
 
-
+@login_required
 def list_income_statements(request):
     statements = IncomeStatement.objects.filter(profile__user=request.user)
 
