@@ -1,0 +1,375 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <link
+            rel="stylesheet"
+            href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap"
+        />
+        <link
+            rel="stylesheet"
+            href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css"
+        />
+        <link rel="icon" href="{% static 'images/kasicon.png' %}">
+        <title>POS Analytics</title>
+        <link rel="stylesheet" href="{% static 'css/list.css' %}" />
+        <style>
+            :root {
+                --primary-color: #4a90e2;
+                --secondary-color: #50c878;
+                --background-color: #f8f9fa;
+                --text-color: #333;
+                --border-color: #e0e0e0;
+                --card-background: #ffffff;
+                --hover-color: #f0f0f0;
+                --box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            }
+            * {
+                margin: 0;
+                padding: 0;
+                box-sizing: border-box;
+            }
+            body {
+                font-family: "Inter", sans-serif;
+                line-height: 1.6;
+                color: var(--text-color);
+                background-color: var(--background-color);
+            }
+            .container {
+                max-width: 1200px;
+                margin: 0 auto;
+                padding: 2rem;
+            }
+            header {
+                margin-bottom: 2rem;
+            }
+            h1 {
+                font-size: 2.5rem;
+                font-weight: 700;
+                color: var(--primary-color);
+                margin-bottom: 0.5rem;
+            }
+            .period {
+                font-size: 1rem;
+                color: #666;
+            }
+            .summary-cards {
+                display: grid;
+                grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+                gap: 1.5rem;
+                margin-bottom: 2rem;
+            }
+            .summary-card {
+                background-color: var(--card-background);
+                border-radius: 8px;
+                padding: 1.5rem;
+                box-shadow: var(--box-shadow);
+                transition: transform 0.3s ease;
+            }
+            .summary-card:hover {
+                transform: translateY(-5px);
+            }
+            .summary-card h3 {
+                font-size: 1rem;
+                font-weight: 600;
+                color: #666;
+                margin-bottom: 0.5rem;
+            }
+            .summary-card .amount {
+                font-size: 2rem;
+                font-weight: 700;
+                color: var(--primary-color);
+            }
+            .analytics-container {
+                display: grid;
+                grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+                gap: 1.5rem;
+                margin-bottom: 2rem;
+            }
+            .analytics-card {
+                background-color: var(--card-background);
+                border-radius: 8px;
+                padding: 1.5rem;
+                box-shadow: var(--box-shadow);
+            }
+            .analytics-card h2 {
+                font-size: 1.25rem;
+                font-weight: 600;
+                margin-bottom: 1rem;
+                color: var(--primary-color);
+            }
+            .table-container {
+                overflow-x: auto;
+            }
+            table {
+                width: 100%;
+                border-collapse: collapse;
+            }
+            th,
+            td {
+                padding: 0.75rem;
+                text-align: left;
+                border-bottom: 1px solid var(--border-color);
+            }
+            th {
+                font-weight: 600;
+                background-color: #f8f9fa;
+            }
+            tr:hover {
+                background-color: var(--hover-color);
+            }
+            .order-history {
+                background-color: var(--card-background);
+                border-radius: 8px;
+                padding: 1.5rem;
+                box-shadow: var(--box-shadow);
+            }
+            .order-history h2 {
+                font-size: 1.25rem;
+                font-weight: 600;
+                margin-bottom: 1rem;
+                color: var(--primary-color);
+            }
+            .history-list {
+                display: grid;
+                gap: 1rem;
+            }
+            .history-item {
+                background-color: #f8f9fa;
+                border-radius: 8px;
+                padding: 1rem;
+                transition: background-color 0.3s ease;
+            }
+            .history-item:hover {
+                background-color: var(--hover-color);
+            }
+            .history-info {
+                display: grid;
+                gap: 0.5rem;
+            }
+            .history-info strong {
+                font-size: 1.1rem;
+                color: var(--primary-color);
+            }
+            .product-list {
+                display: flex;
+                flex-wrap: wrap;
+                gap: 0.5rem;
+            }
+            .product-name {
+                background-color: #e0e0e0;
+                padding: 0.25rem 0.5rem;
+                border-radius: 4px;
+                font-size: 0.9rem;
+            }
+            .total {
+                font-weight: 600;
+            }
+            .date-time {
+                font-size: 0.9rem;
+                color: #666;
+            }
+            .show-more-btn {
+                display: block;
+                width: 100%;
+                padding: 0.75rem;
+                margin-top: 1rem;
+                background-color: var(--primary-color);
+                color: white;
+                border: none;
+                border-radius: 4px;
+                font-size: 1rem;
+                font-weight: 500;
+                cursor: pointer;
+                transition: background-color 0.3s ease;
+            }
+            .show-more-btn:hover {
+                background-color: #3a7bc8;
+            }
+            @media (max-width: 768px) {
+                .container {
+                    padding: 1rem;
+                }
+                h1 {
+                    font-size: 2rem;
+                }
+                .summary-card .amount {
+                    font-size: 1.5rem;
+                }
+                .analytics-container {
+                    grid-template-columns: 1fr;
+                }
+            }
+        </style>
+    </head>
+    <body>
+        <nav class="navbar">
+            <a href="{% url 'index' %}" class="logo">KASI LEDGER</a>
+            <div class="quote_btn-container">
+                <a href="{% url 'pos_view' %}" class="sign-up"><span>POS</span></a>
+                <a href="{% url 'list_income_statements' %}" class="sign-up">Statements</a>
+            </div>
+        </nav>
+        <div class="container">
+            <header>
+                <h1>Sales Analytics</h1>
+                <p class="period">Period: {{ start_date }} to {{ end_date }}</p>
+            </header>
+            <div class="summary-cards">
+                <div class="summary-card">
+                    <h3>Total Sales</h3>
+                    <p class="amount">R{{ total_sales_amount|floatformat:2 }}</p>
+                </div>
+                <div class="summary-card">
+                    <h3>Total Orders</h3>
+                    <p class="amount">{{ total_orders }}</p>
+                </div>
+                <div class="summary-card">
+                    <h3>Average Order Value</h3>
+                    <p class="amount">R{{ average_order_value|floatformat:2 }}</p>
+                </div>
+            </div>
+            <div class="analytics-container">
+                <div class="analytics-card">
+                    <h2>Daily Sales</h2>
+                    <div class="table-container">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Orders</th>
+                                    <th>Total Sales</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for day in daily_sales %}
+                                <tr>
+                                    <td>{{ day.date|date }}</td>
+                                    <td>{{ day.orders_count }}</td>
+                                    <td>R{{ day.total_sales|floatformat:2 }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="analytics-card">
+                    <h2>Product Performance</h2>
+                    <div class="table-container">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Product</th>
+                                    <th>Quantity Sold</th>
+                                    <th>Total Revenue</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for product in product_sales %}
+                                <tr>
+                                    <td>{{ product.product__name }}</td>
+                                    <td>{{ product.total_quantity }}</td>
+                                    <td>R{{ product.total_amount|floatformat:2 }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h3 class="mb-0">Monthly Sales {{ current_year }}</h3>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Month</th>
+                                    <th class="text-right">Total Sales</th>
+                                    <th class="text-right">Orders</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for month in monthly_sales %}
+                                <tr>
+                                    <td>{{ month.name }}</td>
+                                    <td class="text-right">R{{ month.total_sales|floatformat:2|default:"0.00" }}</td>
+                                    <td class="text-right">{{ month.orders_count|default:"0" }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            <div class="order-history">
+                <h2>Order History ({{order_history.count}}) orders</h2>
+                <div class="history-list" id="historyList">
+                    {% if order_history %} {% for transaction in order_history %}
+                    <div
+                        class="history-item{% if forloop.counter > 5 %} hidden-order{% endif %}"
+                        {%
+                        if
+                        forloop.counter
+                    >
+                        5 %}style="display: none;"{% endif %}>
+                        <div class="history-info">
+                            <div class="order-header">
+                                <strong>Order #{{ transaction.order_number }}</strong>
+                                <span class="order-time">
+                                    {{ transaction.created_at|date:"d M Y" }} at {{ transaction.created_at|time:"H:i"
+                                    }}
+                                </span>
+                            </div>
+                            <div class="products-list">
+                                {% for item in transaction.items.all %}
+                                <div class="product-item">
+                                    <span class="product-name">{{ item.product.name }}</span>
+                                    <div class="product-details">
+                                        <span class="quantity">{{ item.quantity }}x</span>
+                                        <span class="price">R {{ item.price }}</span>
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            </div>
+                            <div class="order-total">Total: R{{ transaction.total_amount }}</div>
+                        </div>
+                    </div>
+                    {% endfor %} {% if order_history.count > 5 %}
+                    <button class="show-more-btn" onclick="toggleOrders()">
+                        <span class="button-text">Show More</span>
+                        <i class="fas fa-chevron-down"></i>
+                    </button>
+                    {% endif %} {% else %}
+                    <div class="no-orders">
+                        <p>No completed orders found in history.</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        <script>
+            function toggleOrders() {
+                const hiddenOrders = document.querySelectorAll(".hidden-order");
+                const btn = document.querySelector(".show-more-btn");
+                const btnText = btn.querySelector(".button-text");
+                const btnIcon = btn.querySelector("i");
+                hiddenOrders.forEach((order) => {
+                    if (order.style.display === "none") {
+                        order.style.display = "block";
+                        btnText.textContent = "Show Less";
+                        btnIcon.className = "fas fa-chevron-up";
+                    } else {
+                        order.style.display = "none";
+                        btnText.textContent = "Show More";
+                        btnIcon.className = "fas fa-chevron-down";
+                    }
+                });
+            }
+        </script>
+    </body>
+</html>

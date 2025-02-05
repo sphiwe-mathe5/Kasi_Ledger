@@ -220,3 +220,52 @@ class SentEmail(models.Model):
 
     def __str__(self):
         return f"Email to {self.recipient} at {self.sent_at}"
+
+
+
+
+
+
+class POSProduct(models.Model):
+    name = models.CharField(max_length=100)
+    price = models.DecimalField(max_digits=10, decimal_places=2)
+    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE,null=True, blank=True )  # Changed from profile to user
+
+    def __str__(self):
+        return self.name
+
+class POSTransaction(models.Model):
+    order_number = models.CharField(max_length=4)
+    total_amount = models.DecimalField(max_digits=10, decimal_places=2)
+    money_rendered = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+    change = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    created_at = models.DateTimeField(auto_now_add=True)
+    collected = models.BooleanField(default=False)
+    collected_at = models.DateTimeField(null=True, blank=True)
+    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE, null=True, blank=True )  
+
+    class Meta:
+        unique_together = ['order_number', 'user']  # Ensure order numbers are unique per user
+
+    def save(self, *args, **kwargs):
+        if not self.order_number:
+            while True:
+                number = str(random.randint(1000, 9999))
+                if not POSTransaction.objects.filter(
+                    order_number=number, 
+                    user=self.user
+                ).exists():
+                    self.order_number = number
+                    break
+        super().save(*args, **kwargs)
+
+    def mark_as_collected(self):
+        self.collected = True
+        self.collected_at = timezone.now()
+        self.save()
+
+class POSTransactionItem(models.Model):
+    transaction = models.ForeignKey(POSTransaction, on_delete=models.CASCADE, related_name='items')
+    product = models.ForeignKey(POSProduct, on_delete=models.PROTECT)
+    quantity = models.IntegerField(default=1)
+    price = models.DecimalField(max_digits=10, decimal_places=2)

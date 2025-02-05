@@ -6,7 +6,7 @@ import random
 from django.template.loader import render_to_string
 import logging
 from django.db import transaction
-from datetime import datetime
+from datetime import datetime, timedelta
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import render
 from django.views.decorators.http import require_POST
@@ -38,13 +38,13 @@ from barcode.writer import ImageWriter
 from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle
 from io import BytesIO
 from django.db.models import Q
-from .models import IncomeStatement
+from .models import IncomeStatement, POSProduct, POSTransactionItem, POSTransaction
 from .forms import IncomeStatementForm
-from django.db.models import Count
+from django.db.models import Count, Sum
 from django.views.decorators.csrf import csrf_exempt
 from .models import Product, Sale, SaleItem, Barcode
 from decimal import Decimal, InvalidOperation
-
+from django.db.models.functions import ExtractMonth
 from django.urls import reverse, reverse_lazy
 import random
 from django.db.models import Q
@@ -967,3 +967,200 @@ def email(request):
         return redirect('index')
 
     return redirect('index')
+
+
+
+@login_required
+def pos_view(request):
+    products = POSProduct.objects.filter(user=request.user)
+    pending_orders = POSTransaction.objects.filter(
+        user=request.user,
+        collected=False
+    ).order_by('-created_at')
+    
+    return render(request, 'core/pos_view.html', {
+        'products': products,
+        'pending_orders': pending_orders
+    })
+
+@login_required
+@csrf_exempt
+def add_product(request):
+    if request.method == 'POST':
+        data = json.loads(request.body)
+        product = POSProduct.objects.create(
+            name=data['name'],
+            price=data['price'],
+            user=request.user
+        )
+        return JsonResponse({
+            'id': product.id,
+            'name': product.name,
+            'price': str(product.price)
+        })
+
+@login_required
+@csrf_exempt
+def complete_sale(request):
+    if request.method == 'POST':
+        try:
+            data = json.loads(request.body)
+            transaction = POSTransaction.objects.create(
+                total_amount=data['total_amount'],
+                money_rendered=data.get('money_rendered'),
+                change=data.get('change', 0),
+                user=request.user
+            )
+
+            
+            product_details = []
+            for item in data['items']:
+                product = POSProduct.objects.get(id=item['product_id'], user=request.user)
+                POSTransactionItem.objects.create(
+                    transaction=transaction,
+                    product=product,
+                    quantity=item['quantity'],
+                    price=item['price']
+                )
+                product_details.append({
+                    'name': product.name,
+                    'quantity': item['quantity'],
+                    'price': item['price']
+                })
+
+            new_pending_order = {
+                'id': transaction.id,
+                'order_number': transaction.order_number,
+                'total_amount': transaction.total_amount,
+                'created_at': transaction.created_at.isoformat(),
+                'products': product_details  
+            }
+
+            return JsonResponse({
+                'success': True,
+                'new_pending_order': new_pending_order,
+                'order_number': transaction.order_number,
+                'total': str(transaction.total_amount),
+                'change': str(transaction.change)
+            })
+
+        except Exception as e:
+            return JsonResponse({
+                'success': False,
+                'error': str(e)
+            }, status=400)
+
+@login_required
+@csrf_exempt
+def mark_collected(request, order_id):
+    transaction = get_object_or_404(POSTransaction, id=order_id, user=request.user)
+    transaction.mark_as_collected()
+    return JsonResponse({'status': 'success'})
+
+@login_required
+def sales_analytics(request):
+    
+    end_date = timezone.now().date()
+    start_date = end_date - timedelta(days=6)
+    current_year = timezone.now().year
+    current_month = timezone.now().month
+    
+    
+    daily_sales = POSTransaction.objects.filter(
+        user=request.user,
+        created_at__date__range=[start_date, end_date]
+    ).annotate(
+        date=TruncDate('created_at')
+    ).values('date').annotate(
+        total_sales=Sum('total_amount'),
+        orders_count=Count('id')
+    ).order_by('date')
+
+    monthly_sales = POSTransaction.objects.filter(
+        user=request.user,
+        created_at__year=current_year
+    ).annotate(
+        month=ExtractMonth('created_at')
+    ).values('month').annotate(
+        total_sales=Sum('total_amount'),
+        orders_count=Count('id')
+    ).order_by('month')
+    
+    
+    months_data = []
+    month_names = [
+        'January', 'February', 'March', 'April', 'May', 'June',
+        'July', 'August', 'September', 'October', 'November', 'December'
+    ]
+    
+    
+    for month_num in range(1, current_month + 1):
+        month_data = next(
+            (item for item in monthly_sales if item['month'] == month_num),
+            {'month': month_num, 'total_sales': 0, 'orders_count': 0}
+        )
+        
+        months_data.append({
+            'name': month_names[month_num - 1],
+            'total_sales': month_data['total_sales'],
+            'orders_count': month_data['orders_count']
+        })
+
+    
+    total_sales = POSTransaction.objects.filter(
+        user=request.user,
+        created_at__date__range=[start_date, end_date]
+    ).aggregate(
+        total_amount=Sum('total_amount'),
+        total_orders=Count('id')
+    )
+
+    
+    average_order = (
+        total_sales['total_amount'] / total_sales['total_orders']
+        if total_sales['total_orders'] > 0
+        else 0
+    )
+
+    
+    product_sales = POSTransactionItem.objects.filter(
+        transaction__user=request.user,
+        transaction__created_at__date__range=[start_date, end_date]
+    ).values('product__name').annotate(
+        total_quantity=Sum('quantity'),
+        total_amount=Sum('price')
+    ).order_by('-total_quantity')
+
+    
+    pending_orders = POSTransaction.objects.filter(
+        user=request.user,
+        collected=False
+    ).order_by('created_at')
+
+    
+    order_history = POSTransaction.objects.select_related('user').prefetch_related(
+        'items',
+        'items__product'
+    ).filter(
+        user=request.user,
+        collected=True  
+    ).order_by('-created_at')
+
+    
+    print(f"Found {order_history.count()} orders in history")
+
+    context = {
+        'daily_sales': daily_sales,
+        'product_sales': product_sales,
+        'start_date': start_date,
+        'end_date': end_date,
+        'total_sales_amount': total_sales['total_amount'] or 0,
+        'total_orders': total_sales['total_orders'] or 0,
+        'average_order_value': average_order,
+        'pending_orders': pending_orders,
+        'order_history': order_history,
+        'monthly_sales': months_data,
+        'current_year': current_year,
+    }
+    
+    return render(request, 'core/analytics.html', context)

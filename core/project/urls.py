@@ -70,6 +70,13 @@ urlpatterns = [
     path('', include('submit.urls')),
     path('enquire/', enquire, name='enquire'),
     path('send/', views.send_email, name='send_email'),
+
+    path('food-pos', views.pos_view, name='pos_view'),
+    path('add-product/', views.add_product, name='add_product'),
+    path('complete-sale/', views.complete_sale, name='complete_sale'),
+    path('mark-collected/<int:order_id>/', views.mark_collected, name='mark_collected'),
+    path('analytics/', views.sales_analytics, name='sales_analytics'),
+
     path('guide/', guide, name='guide'),
     path('email/', email, name='email'),
     path('income-statement/create/',views.create_income_statement,name='create_income_statement'),

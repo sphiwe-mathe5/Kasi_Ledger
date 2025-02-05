@@ -138,9 +138,9 @@ h3 {
   
 .quote_btn-container a {
     text-decoration: none;
-    padding: 5px 10px;
+    padding: 2px 3px;
     border-radius: 8px;
-    font-family: Arial, sans-serif;
+    font-family: Arial, Poppins;
     transition: all 0.3s ease;
   }
 
