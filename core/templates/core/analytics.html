@@ -307,51 +307,51 @@
                 </div>
             </div>
             <div class="order-history">
-                <h2>Order History ({{order_history.count}}) orders</h2>
+                <h2>Order History ({{ order_history.count }} orders)</h2>
                 <div class="history-list" id="historyList">
-                    {% if order_history %} {% for transaction in order_history %}
-                    <div
-                        class="history-item{% if forloop.counter > 5 %} hidden-order{% endif %}"
-                        {%
-                        if
-                        forloop.counter
-                    >
-                        5 %}style="display: none;"{% endif %}>
-                        <div class="history-info">
-                            <div class="order-header">
-                                <strong>Order #{{ transaction.order_number }}</strong>
-                                <span class="order-time">
-                                    {{ transaction.created_at|date:"d M Y" }} at {{ transaction.created_at|time:"H:i"
-                                    }}
-                                </span>
-                            </div>
-                            <div class="products-list">
-                                {% for item in transaction.items.all %}
-                                <div class="product-item">
-                                    <span class="product-name">{{ item.product.name }}</span>
-                                    <div class="product-details">
-                                        <span class="quantity">{{ item.quantity }}x</span>
-                                        <span class="price">R {{ item.price }}</span>
+                    {% if order_history %}
+                        {% for transaction in order_history %}
+                            <div
+                                class="history-item{% if forloop.counter > 5 %} hidden-order{% endif %}"
+                                {% if forloop.counter > 5 %}style="display: none;"{% endif %}>
+                                <div class="history-info">
+                                    <div class="order-header">
+                                        <strong>Order #{{ transaction.order_number }}</strong>
+                                        <span class="order-time">
+                                            {{ transaction.created_at|date:"d M Y" }} at {{ transaction.created_at|time:"H:i" }}
+                                        </span>
                                     </div>
+                                    <div class="products-list">
+                                        {% for item in transaction.items.all %}
+                                            <div class="product-item">
+                                                <span class="product-name">{{ item.product.name }}</span>
+                                                <div class="product-details">
+                                                    <span class="quantity">{{ item.quantity }}x</span>
+                                                    <span class="price">R {{ item.price }}</span>
+                                                </div>
+                                            </div>
+                                        {% endfor %}
+                                    </div>
+                                    <div class="order-total">Total: R{{ transaction.total_amount }}</div>
                                 </div>
-                                {% endfor %}
                             </div>
-                            <div class="order-total">Total: R{{ transaction.total_amount }}</div>
+                        {% endfor %}
+                        
+                        {% if order_history.count > 5 %}
+                            <button class="show-more-btn" onclick="toggleOrders()">
+                                <span class="button-text">Show More</span>
+                                <i class="fas fa-chevron-down"></i>
+                            </button>
+                        {% endif %}
+                    {% else %}
+                        <div class="no-orders">
+                            <p>No completed orders found in history.</p>
                         </div>
-                    </div>
-                    {% endfor %} {% if order_history.count > 5 %}
-                    <button class="show-more-btn" onclick="toggleOrders()">
-                        <span class="button-text">Show More</span>
-                        <i class="fas fa-chevron-down"></i>
-                    </button>
-                    {% endif %} {% else %}
-                    <div class="no-orders">
-                        <p>No completed orders found in history.</p>
-                    </div>
                     {% endif %}
                 </div>
             </div>
         </div>
+            
         <script>
             function toggleOrders() {
                 const hiddenOrders = document.querySelectorAll(".hidden-order");
