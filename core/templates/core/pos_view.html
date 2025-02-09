@@ -586,7 +586,7 @@
                             <div class="product-item">
                                 <span class="product-name">{{ item.product.name }}</span>
                                 <span class="product-quantity">x{{ item.quantity }}</span>
-                                <span class="product-price">${{ item.price }}</span>
+                                <span class="product-price">R{{ item.price }}</span>
                             </div>
                             {% endfor %}
                         </div>
@@ -756,7 +756,7 @@
                 document.getElementById("receiptItems").innerHTML = cart
                     .map(
                         (item) =>
-                            `<p>${item.name} x ${item.quantity} = $${(item.price * item.quantity).toFixed(2)}</p>`
+                            `<p>${item.name} x ${item.quantity} = R${(item.price * item.quantity).toFixed(2)}</p>`
                     )
                     .join("");
                 document.getElementById("receiptTotal").textContent = data.total;
