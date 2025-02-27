@@ -39,8 +39,49 @@ from django.contrib.sites.shortcuts import get_current_site
 
 
 
+def login_view(request):
+    if request.method == 'POST':
+        # Verify reCAPTCHA
+        recaptcha_token = request.POST.get('recaptcha_token')
+        data = {
+            'secret': settings.RECAPTCHA_PRIVATE_KEY,
+            'response': recaptcha_token
+        }
+        r = requests.post('https://www.google.com/recaptcha/api/siteverify', data=data)
+        result = r.json()
+
+        if not result['success'] or result['score'] < 0.5:  # Adjust score threshold as needed
+            messages.error(request, 'reCAPTCHA verification failed. Please try again.')
+            return redirect('login')
+
+        email = request.POST['email']
+        password = request.POST['password']
+        user = authenticate(request, username=email, password=password)
+        if user is not None:
+            login(request, user)
+            return redirect('index')
+        else:
+            messages.error(request, 'Invalid credentials')
+
+    return render(request, 'submit/login.html', {
+        'RECAPTCHA_PUBLIC_KEY': settings.RECAPTCHA_PUBLIC_KEY,
+    })
+
 def signup_view(request):
     if request.method == 'POST':
+        # Verify reCAPTCHA
+        recaptcha_token = request.POST.get('recaptcha_token')
+        data = {
+            'secret': settings.RECAPTCHA_PRIVATE_KEY,
+            'response': recaptcha_token
+        }
+        r = requests.post('https://www.google.com/recaptcha/api/siteverify', data=data)
+        result = r.json()
+
+        if not result['success'] or result['score'] < 0.5:  # Adjust score threshold as needed
+            messages.error(request, 'reCAPTCHA verification failed. Please try again.')
+            return redirect('signup')
+
         admin_password = request.POST['admin_password']
         company_name = request.POST['company_name']
         email = request.POST['email']
@@ -55,19 +96,14 @@ def signup_view(request):
                 password=password,
             )
 
-            
             current_site = get_current_site(request)
             context = {
                 'user': user,
                 'company_name': company_name,
                 'domain': settings.SITE_URL,
             }
-            
-            
             html_message = render_to_string('submit/welcome.html', context)
             plain_message = strip_tags(html_message)
-            
-            
             send_mail(
                 subject=f'Thank You For Signing Up',
                 message=plain_message,
@@ -84,24 +120,25 @@ def signup_view(request):
             messages.error(request, 'An account with this email already exists. Please log in or use a different email.')
             return redirect('signup')  
 
-    return render(request, 'submit/register.html')
-
-def login_view(request):
-    if request.method == 'POST':
-        email = request.POST['email']
-        password = request.POST['password']
-        print(f"Attempting to log in with email: {email}")  
-
-        user = authenticate(request, username=email, password=password)
-        if user is not None:  
-            login(request, user)
-            return redirect('index')
-        else:  
-            messages.error(request, 'Invalid credentials')
-    return render(request, 'submit/login.html')
+    return render(request, 'submit/register.html', {
+        'RECAPTCHA_PUBLIC_KEY': settings.RECAPTCHA_PUBLIC_KEY,
+    })
 
 def forgot_password_view(request):
     if request.method == 'POST':
+        # Verify reCAPTCHA
+        recaptcha_token = request.POST.get('recaptcha_token')
+        data = {
+            'secret': settings.RECAPTCHA_PRIVATE_KEY,
+            'response': recaptcha_token
+        }
+        r = requests.post('https://www.google.com/recaptcha/api/siteverify', data=data)
+        result = r.json()
+
+        if not result.get('success', False) or result.get('score', 0) < 0.5:
+            messages.error(request, 'Verification failed. Please try again.')
+            return render(request, 'submit/login.html')
+
         email = request.POST['email']
         user = CustomUser.objects.filter(email=email).first()
 
@@ -113,7 +150,9 @@ def forgot_password_view(request):
         else:
             messages.error(request, 'Email not found.')
 
-    return render(request, 'submit/login.html')
+    return render(request, 'submit/login.html', {
+        'RECAPTCHA_PUBLIC_KEY': settings.RECAPTCHA_PUBLIC_KEY,
+    })
 
 
 def reset_password_view(request, token):

@@ -14,7 +14,6 @@
     <link href="https://fonts.googleapis.com/css?family=Poppins:400,600,700&display=swap" rel="stylesheet" />
     <link href="static/css/responsive.css" rel="stylesheet" />
 </head>
-
 <body>
   <div class="hero_area">
     <header class="header_section long_section px-0">
@@ -88,7 +87,6 @@
             </div>
         </nav>
     </header>
-
     <section class="about_section layout_padding long_section">
       <div class="container">
         <div class="row">
@@ -118,7 +116,6 @@
         </div>
       </div>
     </section>
-
     <section class="slider_section long_section">
       <div id="customCarousel" class="carousel slide" data-ride="carousel">
         <div class="carousel-inner">
@@ -159,7 +156,6 @@
                     <h1>
                       Financial Statements
                     </h1>
-
                     <p>
                       Kasi Ledger  calculates profits as items are sold, 
                       providing instant insights into daily earnings. It also generates 
@@ -182,7 +178,6 @@
               </div>
             </div>
           </div>
-
           <div class="carousel-item">
             <div class="container ">
               <div class="row">
@@ -191,7 +186,6 @@
                     <h1>
                       Point of Sale Integration
                     </h1>
-
                     <p>
                       Kasi Ledger seamlessly integrates with your Point of Sale system, 
                       allowing for unified inventory and sales management. This integration 
@@ -213,7 +207,6 @@
               </div>
             </div>
           </div>
-
           <div class="carousel-item">
             <div class="container ">
               <div class="row">
@@ -280,7 +273,6 @@
             <li>Priority Support</li>
             <li>Point Of Sale Integration</li>
             <li>Financial Statements</li>
-            <!--<<li>Sales Forecasting</li>-->
             <li>300 Products Upload p/m</li>
         </ul>
         <button class="card-button">Choose Plan</button>
@@ -297,8 +289,6 @@
             <li>Point Of Sale Integration</li>
             <li>Financial Statements</li>
             <li>Unlimited Products Upload </li>
-            <!--<<li>Sales Forecasting(coming soon)</li>-->
-            <!--<li>Supplier Connection(coming soon)</li>-->
             <li>Advanced Analytics</li>
             <li>Custom barcode design</li>
             <li>Data Visualization</li>
@@ -306,8 +296,6 @@
         <button class="card-button">Choose Plan</button>
     </div>
 </div>
-
-
 <footer class="footer">
   <div class="container2">
     <div class="footer_inner">
@@ -316,10 +304,11 @@
           <div class="layout_item w-50">
             <div class="newsletter">
               <h5 class="newsletter_title">Subscribe to get exciting news about deployments,<br>upcoming events and more.</h5><br><br>
-              <form action="{% url 'email' %}" method="POST">
+              <form action="{% url 'email' %}" method="POST" id="subscription-form">
                 {% csrf_token %}
-                <input type="email" name="email"placeholder="Your email address">
-                <button>
+                <input type="email" name="email" placeholder="Your email address">
+                <input type="hidden" name="recaptcha_token" id="recaptcha-token">
+                <button type="submit">
                   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24">
                     <path fill="none" d="M0 0h24v24H0z" />
                     <path d="M16.172 11l-5.364-5.364 1.414-1.414L20 12l-7.778 7.778-1.414-1.414L16.172 13H4v-2z" />
@@ -338,7 +327,6 @@
               <li>
                   <a href="https://kasialgorithms.co.za/prompt/" class="c-link" target="_blank" rel="noopener noreferrer">Contact Us</a>
               </li>
-              
               </ul>
             </nav>
           </div>
@@ -393,9 +381,115 @@
     </div>
   </div>
 </footer>
-
     <script src="static/js/jquery-3.4.1.min.js"></script>
     <script src="static/js/bootstrap.js"></script>
     <script src="static/js/custom.js"></script>
+    <script src="https://www.google.com/recaptcha/api.js?render={{ RECAPTCHA_PUBLIC_KEY }}"></script>
+    <script>
+      document.getElementById('subscription-form').addEventListener('submit', function(event) {
+        event.preventDefault();  
+        grecaptcha.ready(function() {
+          grecaptcha.execute('{{ RECAPTCHA_PUBLIC_KEY }}', {action: 'subscribe'}).then(function(token) {
+            document.getElementById('recaptcha-token').value = token;
+            document.getElementById('subscription-form').submit();
+          });
+        });
+      });
+    </script>
 </body>
 </html>
+
+
+
+<!--from .models import SalesForecast
+
+
+def get_monthly_sales():
+    products = Product.objects.annotate(
+        month=TruncMonth('date_added'),
+        date=TruncDate('date_added')).order_by('-date_added')
+
+    monthly_totals = defaultdict(lambda: {'price': Decimal('0.00'), 'cost': Decimal('0.00'), 'profit_loss': Decimal('0.00')})
+
+    for product in products:
+        try:
+            product.profit_loss = product.price - product.cost
+        except Exception as e:
+            print(f"Error calculating profit/loss for product {product.name}: {str(e)}")
+            product.profit_loss = Decimal('0.00')
+
+        monthly_totals[product.month]['price'] += product.price
+        monthly_totals[product.month]['cost'] += product.cost
+        monthly_totals[product.month]['profit_loss'] += product.profit_loss
+
+    return monthly_totals
+# Configure OpenAI API (you'll need to set this in settings.py)
+openai.api_key = settings.OPENAI_API_KEY
+
+def generate_forecast(monthly_sales, situational_factors):
+    # Prepare the prompt for OpenAI
+    prompt = f"Based on the following monthly sales data and situational factors, provide a forecast for the next month's sales, along with explanations and tips:\n\n"
+    prompt += "Monthly Sales Data:\n"
+    for month, totals in monthly_sales.items():
+        prompt += f"{month.strftime('%B %Y')}: Price: {totals['price']}, Cost: {totals['cost']}, Profit/Loss: {totals['profit_loss']}\n"
+    
+    prompt += "\nSituational Factors:\n"
+    prompt += situational_factors
+
+    # Call OpenAI API with the new model
+    response = openai.ChatCompletion.create(
+        model="gpt-3.5-turbo",  # Use the new model
+        messages=[
+            {"role": "system", "content": "You are a helpful assistant that provides sales forecasts and insights."},
+            {"role": "user", "content": prompt}
+        ],
+        max_tokens=500,
+        temperature=0.7
+    )
+
+    # Extract the response content
+    forecast = response['choices'][0]['message']['content']
+    return forecast
+
+
+@login_required
+def sales_forecast(request):
+    monthly_sales = get_monthly_sales()
+    
+    if request.method == 'POST':
+        form = SalesForecastForm(request.POST)
+        if form.is_valid():
+            situational_factors = form.cleaned_data['situational_factors']
+            forecast = generate_forecast(monthly_sales, situational_factors)
+            
+            # Save the forecast
+            SalesForecast.objects.create(
+                user=request.user,
+                forecast_data=forecast,
+                situational_factors=situational_factors
+            )
+            
+            return redirect('view_forecast')
+    else:
+        form = SalesForecastForm()
+
+    # Get user's past forecasts
+    past_forecasts = SalesForecast.objects.filter(user=request.user).order_by('-forecast_date')
+
+    # Convert monthly_sales to a list of tuples for easier iteration in the template
+    monthly_sales_list = [(month, totals) for month, totals in monthly_sales.items()]
+
+    return render(request, 'core/sales_forecast.html', {
+        'form': form,
+        'monthly_sales': monthly_sales_list,  # Pass the list of tuples
+        'past_forecasts': past_forecasts
+    })
+
+@login_required
+def view_forecast(request):
+    # Get the latest forecast for the user
+    latest_forecast = SalesForecast.objects.filter(user=request.user).order_by('-forecast_date').first()
+    
+    return render(request, 'core/view_forecast.html', {
+        'forecast': latest_forecast.forecast_data if latest_forecast else None
+    })

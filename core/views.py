@@ -23,7 +23,7 @@ from django.core.mail import EmailMultiAlternatives
 from django.contrib.auth.hashers import check_password 
 from django.contrib import messages
 from django.db.models.functions import TruncMonth, TruncDate
-from core.forms import CategoryForm
+from core.forms import CategoryForm, SalesForecastForm
 from .models import Product, Category, Transaction, EmailTemplate, SentEmail
 from submit.models import Profile, Subscription, SubscriptionPlan, ProductPeriod
 from reportlab.lib import colors
@@ -32,6 +32,7 @@ from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.lib.units import inch
 from reportlab.pdfgen import canvas
 import io
+import openai
 import barcode  
 from django.views.decorators.http import require_GET
 from barcode.writer import ImageWriter
@@ -59,13 +60,14 @@ import os
 from functools import wraps
 from django.core.exceptions import PermissionDenied
 from django.views.decorators.http import require_GET
-
+import datetime
 from django.core.mail import send_mail
 from django.template.loader import render_to_string
 from django.contrib import messages
 from .forms import EmailForm
 from django.contrib.auth.decorators import user_passes_test
 from django.core.exceptions import PermissionDenied
+import requests
 
 
 from django.views.generic import (
@@ -78,7 +80,10 @@ from django.views.generic import (
 
 
 def index(request):
-    return render(request, 'core/index.html')
+
+    return render(request, 'core/index.html', {
+        'RECAPTCHA_PUBLIC_KEY': settings.RECAPTCHA_PUBLIC_KEY,
+    })
 
 @csrf_exempt
 def subscribe(request):
@@ -939,8 +944,22 @@ def send_email(request):
 
 def email(request):
     if request.method == 'POST':
-        email = request.POST.get('email')
+        # Verify reCAPTCHA
+        recaptcha_token = request.POST.get('recaptcha_token')
+        data = {
+            'secret': settings.RECAPTCHA_PRIVATE_KEY,
+            'response': recaptcha_token
+        }
+        r = requests.post('https://www.google.com/recaptcha/api/siteverify', data=data)
+        result = r.json()
 
+        if not result.get('success', False) or result.get('score', 0) < 0.5:  # Adjust score threshold as needed
+            messages.error(request, 'Verification failed. Please try again.')
+            return redirect('index')
+
+        email = request.POST.get('email')
+        
+        # Your existing email sending code
         email_message = EmailMessage(
             subject='New Subscription from',
             body=f'Email: {email}',
@@ -959,11 +978,9 @@ def email(request):
             to=[email],  
         )
         confirmation_email.attach_alternative(html_content, "text/html") 
-
-
         confirmation_email.send(fail_silently=False)
 
-        messages.success(request, 'Thank you for Subscribing, a confirmation email has been sent!')
+        messages.success(request)
         return redirect('index')
 
     return redirect('index')

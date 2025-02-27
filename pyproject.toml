@@ -29,6 +29,8 @@ boto = "^2.49.0"
 django-axes = "^7.0.1"
 django-otp = "^1.5.4"
 psycopg2-binary = "^2.9.10"
+openai = "0.28"
+django-recaptcha = "^4.0.0"
 
 
 [build-system]

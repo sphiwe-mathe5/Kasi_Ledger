@@ -269,3 +269,13 @@ class POSTransactionItem(models.Model):
     product = models.ForeignKey(POSProduct, on_delete=models.PROTECT)
     quantity = models.IntegerField(default=1)
     price = models.DecimalField(max_digits=10, decimal_places=2)
+
+
+class SalesForecast(models.Model):
+    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
+    forecast_date = models.DateTimeField(auto_now_add=True)
+    forecast_data = models.TextField(default="nothing")
+    situational_factors = models.TextField(default="nothing")
+
+    def __str__(self):
+        return f"Forecast for {self.user.username} on {self.forecast_date}"

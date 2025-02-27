@@ -7,10 +7,10 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 SECRET_KEY = config('SECRET_KEY')
 DEBUG = config('DEBUG', default=False, cast=bool)
-ALLOWED_HOSTS = config('ALLOWED_HOSTS', default='.vercel.app,127.0.0.1,.com').split(',')
+ALLOWED_HOSTS = config('ALLOWED_HOSTS', default='.vercel.app,127.0.0.1,localhost,.com').split(',')
 ADMIN_PATH = config('ADMIN_PATH')
 
-# Application definition
+
 
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -31,8 +31,9 @@ INSTALLED_APPS = [
     "axes",
     "allauth.account",
     "allauth.socialaccount",
-    "allauth.socialaccount.providers.google"
-    #'crispy_bootstrap4',
+    "allauth.socialaccount.providers.google",
+    "django_recaptcha",
+
 ]
 SOCIALACCOUNT_PROVIDERS = {
     "google": {
@@ -132,8 +133,8 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-# Internationalization
-# https://docs.djangoproject.com/en/4.2/topics/i18n/
+
+
 
 LANGUAGE_CODE = 'en-us'
 
@@ -174,6 +175,11 @@ PAYSTACK_SECRET_KEY = config('PAYSTACK_SECRET_KEY')
 PAYSTACK_PUBLIC_KEY = config('PAYSTACK_PUBLIC_KEY')
 SITE_URL = 'http://127.0.0.1:8000'
 SITE_URL = 'https://kasiledger.com' 
+
+
+
+RECAPTCHA_PUBLIC_KEY = config('RECAPTCHA_PUBLIC_KEY')
+RECAPTCHA_PRIVATE_KEY = config('RECAPTCHA_PRIVATE_KEY')
 
 SILENCED_SYSTEM_CHECKS = config('SILENCED_SYSTEM_CHECKS', cast=Csv())
 

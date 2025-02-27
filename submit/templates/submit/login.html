@@ -20,6 +20,7 @@
             referrerpolicy="no-referrer"
         />
         <link href="https://fonts.googleapis.com/css?family=Poppins:400,600,700&display=swap" rel="stylesheet" />
+        <script src="https://www.google.com/recaptcha/api.js" async defer></script>
     </head>
     <body>
         <section class="container forms">
@@ -32,7 +33,7 @@
                         {% endfor %}
                     </div>
                     {% endif %}
-                    <form action="{% url 'login' %}" method="POST">
+                    <form action="{% url 'login' %}" method="POST" id="login-form">
                         {% csrf_token %}
                         <div class="field input-field">
                             <input type="email" name="email" placeholder="Enter Your Email" class="input" required />
@@ -47,6 +48,8 @@
                             />
                             <i class="bx bx-hide eye-icon"></i>
                         </div>
+                        <!-- Hidden input for reCAPTCHA token -->
+                        <input type="hidden" name="recaptcha_token" id="recaptcha-token">
                         <div class="field button-field">
                             <button type="submit">Sign in</button>
                         </div>
@@ -56,19 +59,19 @@
                     <a href="#" class="forgotpassword-link">Forgot password?</a>
                 </div>
                 <div class="form-link">
-                    <span
-                        >Don't have an account? <a href="{% url 'signup' %}" class="link signup-link">Signup</a></span
-                    >
+                    <span>Don't have an account? <a href="{% url 'signup' %}" class="link signup-link">Signup</a></span>
                 </div>
             </div>
+
             <div class="form forgotpasswordform" style="display: none">
                 <div class="form-content">
                     <header>Forgot Password</header>
-                    <form action="{% url 'forgot_password' %}" method="POST">
+                    <form action="{% url 'forgot_password' %}" method="POST" id="forgot-password-form">
                         {% csrf_token %}
                         <div class="field input-field">
                             <input type="email" name="email" placeholder="Email" class="input" required />
                         </div>
+                        <input type="hidden" name="recaptcha_token" id="forgot-password-recaptcha-token">
                         <div class="field button-field newbtnbox">
                             <button type="submit">Send</button>
                             <button type="button" class="backbtn">Back</button>
@@ -77,6 +80,45 @@
                 </div>
             </div>
         </section>
+        
+
+
+        <script src="https://www.google.com/recaptcha/api.js?render={{ RECAPTCHA_PUBLIC_KEY }}"></script>
+        <script>
+            document.getElementById('forgot-password-form').addEventListener('submit', function(event) {
+                event.preventDefault();
+                
+                grecaptcha.ready(function() {
+                    grecaptcha.execute('{{ RECAPTCHA_PUBLIC_KEY }}', {action: 'forgot_password'}).then(function(token) {
+                        document.getElementById('forgot-password-recaptcha-token').value = token;
+                        document.getElementById('forgot-password-form').submit();
+                    });
+                });
+            });
+        </script>
+        
+        <script src="https://www.google.com/recaptcha/api.js?render={{ RECAPTCHA_PUBLIC_KEY }}"></script>
+        <script>
+            document.getElementById('login-form').addEventListener('submit', function(event) {
+                event.preventDefault();
+                
+                // Get the site key directly from a data attribute or rendered value
+                const siteKey = '{{ RECAPTCHA_PUBLIC_KEY }}';
+                
+                grecaptcha.ready(function() {
+                    grecaptcha.execute(siteKey, {action: 'login'})
+                    .then(function(token) {
+                        document.getElementById('recaptcha-token').value = token;
+                        document.getElementById('login-form').submit();
+                    })
+                    .catch(function(error) {
+                        console.error('reCAPTCHA error:', error);
+                        // Optionally allow form submission even if reCAPTCHA fails
+                        // document.getElementById('login-form').submit();
+                    });
+                });
+            });
+        </script>
 
         <script>
             const forms = document.querySelector(".forms");

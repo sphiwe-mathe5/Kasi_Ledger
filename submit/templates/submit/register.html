@@ -26,7 +26,7 @@
                         {% endfor %}
                     </div>
                     {% endif %}
-                    <form action="{% url 'signup' %}" method="POST">
+                    <form action="{% url 'signup' %}" method="POST" id="signup-form">
                         {% csrf_token %}
                         <div class="field input-field">
                             <input type="text" name="company_name" placeholder="Company Name" class="input" required />
@@ -53,18 +53,34 @@
                             />
                             <i class="bx bx-hide eye-icon"></i>
                         </div>
+                        <!-- Add reCAPTCHA v3 hidden input -->
+                        <input type="hidden" name="recaptcha_token" id="recaptcha-token">
                         <div class="field button-field">
                             <button type="submit">Sign up</button>
                         </div>
                     </form>
                 </div>
                 <div class="form-link">
-                    <span
-                        >Already have an account? <a href="{% url 'login' %}" class="link login-link">Sign in</a></span
-                    >
+                    <span>Already have an account? <a href="{% url 'login' %}" class="link login-link">Sign in</a></span>
                 </div>
             </div>
         </section>
+
+        <script src="https://www.google.com/recaptcha/api.js?render={{ RECAPTCHA_PUBLIC_KEY }}"></script>
+        <script>
+            // Execute reCAPTCHA and set the token in the hidden input
+            document.getElementById('signup-form').addEventListener('submit', function(event) {
+                event.preventDefault();
+                grecaptcha.ready(function() {
+                    grecaptcha.execute('{{ RECAPTCHA_PUBLIC_KEY }}', {action: 'signup'}).then(function(token) {
+                        document.getElementById('recaptcha-token').value = token;
+                        document.getElementById('signup-form').submit();
+                    });
+                });
+            });
+        </script>
+
+        <script src="https://www.google.com/recaptcha/api.js" async defer></script>
         <script src="https://accounts.google.com/gsi/client"></script>
         <script>
             const pwShowHide = document.querySelectorAll(".eye-icon");

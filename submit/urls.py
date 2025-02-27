@@ -11,6 +11,7 @@ urlpatterns = [
     path('reset-password/<str:token>/',reset_password_view,name='reset_password'),
     path('logout/', logout_view, name='logout'),
     path('settings/', user_views.profile, name='profile'),
+    
     path('subscribe/free/<int:plan_id>/', register_free_plan, name='register_free_plan'),
     path('plans/', views.subscription_plans, name='subscription_plans'),
     path('payment/callback/', views.payment_callback, name='payment_callback'),
