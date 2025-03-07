@@ -84,6 +84,7 @@ def signup_view(request):
 
         admin_password = request.POST['admin_password']
         company_name = request.POST['company_name']
+        company_category = request.POST['company_category']
         email = request.POST['email']
         password = request.POST['password']
 
@@ -91,6 +92,7 @@ def signup_view(request):
             user = CustomUser.objects.create_user(
                 username=email,
                 email=email,
+                company_category=company_category,
                 admin_password=admin_password,
                 company_name=company_name,
                 password=password,
@@ -114,7 +116,7 @@ def signup_view(request):
             )
 
             login(request, user, backend='submit.backends.EmailBackend')
-            return redirect('subscription_plans')
+            return redirect('index')
         
         except IntegrityError:
             messages.error(request, 'An account with this email already exists. Please log in or use a different email.')
@@ -253,7 +255,29 @@ def profile(request):
 
 @login_required
 def subscription_plans(request):
-    plans = SubscriptionPlan.objects.all()
+    # Exclude the free plan (if price == 0)
+    plans = SubscriptionPlan.objects.filter(is_active=True).exclude(price=0)
+
+    # Handle plan selection (if plan_id is passed via GET)
+    plan_id = request.GET.get('plan_id')
+    if plan_id:
+        # Get the selected plan
+        plan = get_object_or_404(SubscriptionPlan, id=plan_id)
+
+        # Get or create the user's subscription
+        subscription, created = Subscription.objects.get_or_create(user=request.user)
+
+        # Update the subscription with the new plan and status
+        subscription.plan = plan
+        subscription.status = 'active'  # Set status to active for paid plans
+        subscription.trial_end_date = None  # Clear the trial end date (if any)
+        subscription.save()
+
+        # Display a success message
+        messages.success(request, f"You have successfully subscribed to the {plan.name} plan.")
+        return redirect('subscription_settings')
+
+    # Render the subscription plans page
     return render(request, 'submit/subscription_plans.html', {'plans': plans})
 
 
@@ -643,15 +667,24 @@ def delete_subscription(request):
 @login_required
 def subscription_settings(request):
     try:
-        
+        # Get the user's subscription
         subscription = Subscription.objects.get(user=request.user)
-        
-        
+
+        # Debug: Print subscription details
+        print(f"Subscription Plan: {subscription.plan.name}, Status: {subscription.status}")
+
+        # Check if the trial has ended
+        if subscription.status == 'trialing' and subscription.trial_end_date <= timezone.now():
+            # Treat as if there is no subscription
+            messages.warning(request, "Your free trial has ended. Please subscribe to a plan.")
+            return redirect('subscription_plans')
+
+        # Fetch payment history for the subscription
         payment_history = PaymentHistory.objects.filter(
             subscription=subscription
         ).order_by('-paid_at')
-        
-        
+
+        # Prepare context for the template
         context = {
             'subscription': subscription,
             'payment_history': payment_history,
@@ -660,12 +693,17 @@ def subscription_settings(request):
             'next_payment': subscription.next_payment_date,  
             'plan_price': subscription.plan.price  
         }
-        
-        
+
+        # Render the subscription settings page
         return render(request, 'submit/subscription_settings.html', context)
-    
+
     except Subscription.DoesNotExist:
-        
+        # Handle case where the user doesn't have a subscription
+        messages.warning(request, "You don't have an active subscription.")
+        return redirect('subscription_plans')
+
+    except Subscription.DoesNotExist:
+        # Handle case where the user doesn't have a subscription
         messages.warning(request, "You don't have an active subscription.")
         return redirect('subscription_plans')
 

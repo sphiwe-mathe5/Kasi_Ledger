@@ -178,14 +178,14 @@ class IncomeStatement(models.Model):
 
 class Barcode(models.Model):
     code = models.CharField(max_length=13, unique=True)
+    product_name = models.CharField(max_length=255, null=True, blank=True)
+    price = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     
     @staticmethod
-    def generate_unique_code():
+    def generate_unique_code(product_name, price):
         while True:
-            
             code = ''.join([str(random.randint(0, 9)) for _ in range(12)])
-            
             
             total = 0
             for i in range(12):
@@ -195,13 +195,10 @@ class Barcode(models.Model):
                     total += int(code[i]) * 3
             check_digit = (10 - (total % 10)) % 10
             
-            
             full_code = code + str(check_digit)
             
-            
             if not Barcode.objects.filter(code=full_code).exists():
-                return full_code
-
+                return full_code, product_name, price
 
 
 class EmailTemplate(models.Model):

@@ -33,6 +33,16 @@ class CustomUser(AbstractUser):
     last_name = models.CharField(max_length=30, blank=True)
     admin_password = models.CharField(max_length=128, blank=True)
     company_name = models.CharField(max_length=100, blank=True, null=True)
+    company_category = models.CharField(
+        max_length=20,
+        choices=[
+            ('restaurant', 'Restaurant'),
+            ('clothing_brand', 'Clothing Brand'),
+            ('market', 'Market')
+        ],
+        blank=True,
+        null=True
+    )
 
     groups = models.ManyToManyField(
         'auth.Group',
@@ -140,19 +150,23 @@ class Subscription(models.Model):
         ('cancelled', 'Cancelled'),
         ('past_due', 'Past Due'),
         ('unpaid', 'Unpaid'),
+        ('trialing', 'Trialing'),  # Add a new status for trial
     )
 
     user = models.OneToOneField(CustomUser, on_delete=models.CASCADE)
     plan = models.ForeignKey(SubscriptionPlan, on_delete=models.PROTECT)
-    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='active')
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='trialing')
     paystack_subscription_code = models.CharField(max_length=100, blank=True)
     paystack_email_token = models.CharField(max_length=100, blank=True)
     next_payment_date = models.DateTimeField(null=True, blank=True)
     cancelled_at = models.DateTimeField(null=True, blank=True)
+    trial_end_date = models.DateTimeField(null=True, blank=True)  # Add this field
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
     def is_active(self):
+        if self.status == 'trialing' and self.trial_end_date > timezone.now():
+            return True
         return (
             self.status == 'active' and 
             (self.next_payment_date is None or self.next_payment_date > timezone.now())

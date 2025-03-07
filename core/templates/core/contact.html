@@ -63,19 +63,16 @@
 
 <div id="subscriptionModal" class="submodal"></div>
 
-<div id="limitReachedModal" class="limit-modal">
+<div id="trialEndedModal" class="limit-modal">
   <div class="limit-modal-content">
       <div class="limit-modal-icon">⚠️</div>
-      <h3 class="limit-modal-title">Product Limit Reached</h3>
+      <h3 class="limit-modal-title">Free Trial Ended</h3>
       <p class="limit-modal-message">
-          You have reached your product limit (<span id="productLimit"></span>).
+          Your free trial has ended. To continue using this feature, please subscribe to a plan.
           <br><br>
-          Consider Upgrading to <a href="{% url 'subscription_plans' %}" class="forgotpassword-link">Pro Plan</a> For unlimited Product Uploads
-          <br><br>
-          Your limit will reset on <span id="resetDate"></span>
-          (<span id="daysUntilReset"></span> days remaining).
+          Upgrade to a <a href="{% url 'subscription_plans' %}" class="forgotpassword-link">Pro Plan</a> for unlimited access.
       </p>
-      <button class="limit-modal-button" onclick="closeLimitModal()">Got it</button>
+      <button class="limit-modal-button" onclick="closeTrialEndedModal()">Got it</button>
   </div>
 </div>
 

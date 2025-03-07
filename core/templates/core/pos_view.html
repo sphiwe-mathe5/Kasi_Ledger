@@ -489,6 +489,68 @@
                 background-color: #cccccc;
                 cursor: not-allowed;
             }
+
+            .limit-modal {
+                display: none;
+                position: fixed;
+                z-index: 1000;
+                left: 0;
+                top: 0;
+                width: 100%;
+                height: 100%;
+                background-color: rgba(0, 0, 0, 0.5);
+            }
+            
+            .limit-modal-content {
+                background-color: white;
+                margin: 15% auto;
+                padding: 20px;
+                border-radius: 8px;
+                width: 90%;
+                max-width: 400px;
+                text-align: center;
+                box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            }
+            
+            .limit-modal-icon {
+                font-size: 48px;
+                margin-bottom: 16px;
+            }
+            
+            .limit-modal-title {
+                font-size: 24px;
+                margin-bottom: 16px;
+                color: #333;
+            }
+            
+            .limit-modal-message {
+                font-size: 16px;
+                color: #666;
+                margin-bottom: 24px;
+            }
+            
+            .limit-modal-button {
+                background-color: #007bff;
+                color: white;
+                border: none;
+                padding: 10px 20px;
+                border-radius: 4px;
+                cursor: pointer;
+                font-size: 16px;
+            }
+            
+            .limit-modal-button:hover {
+                background-color: #0056b3;
+            }
+            
+            .forgotpassword-link {
+                color: #007bff;
+                text-decoration: none;
+            }
+            
+            .forgotpassword-link:hover {
+                text-decoration: underline;
+            }
         </style>
     </head>
     <body>
@@ -498,6 +560,60 @@
                 <a href="{% url 'sales_analytics' %}" class="sign-up"><span>Sales Analytics</span></a>
             </div>
         </nav>
+
+        <!-- Subscription Required Modal -->
+<div id="subscriptionRequiredModal" class="limit-modal">
+    <div class="limit-modal-content">
+        <div class="limit-modal-icon">🔔</div>
+        <h3 class="limit-modal-title">Subscription Required</h3>
+        <p class="limit-modal-message">
+            You need to subscribe to a plan to complete sales. Choose between our Free or Pro plans.
+            <br><br>
+            <a href="{% url 'subscription_plans' %}" class="forgotpassword-link">View Plans</a>
+        </p>
+        <button class="limit-modal-button" onclick="closeSubscriptionRequiredModal()">Got it</button>
+    </div>
+  </div>
+  
+  <!-- Trial Ended Modal -->
+  <div id="trialEndedModal" class="limit-modal">
+    <div class="limit-modal-content">
+        <div class="limit-modal-icon">⚠️</div>
+        <h3 class="limit-modal-title">Free Trial Ended</h3>
+        <p class="limit-modal-message">
+            Your free trial has ended. To continue completing sales, please subscribe to a plan.
+            <br><br>
+            <a href="{% url 'subscription_plans' %}" class="forgotpassword-link">Subscribe Now</a>
+        </p>
+        <button class="limit-modal-button" onclick="closeTrialEndedModal()">Got it</button>
+    </div>
+  </div><!-- Subscription Required Modal -->
+  <div id="subscriptionRequiredModal" class="limit-modal">
+    <div class="limit-modal-content">
+        <div class="limit-modal-icon">🔔</div>
+        <h3 class="limit-modal-title">Subscription Required</h3>
+        <p class="limit-modal-message">
+            You need to subscribe to a plan to complete sales. Choose between our Free or Pro plans.
+            <br><br>
+            <a href="{% url 'subscription_plans' %}" class="forgotpassword-link">View Plans</a>
+        </p>
+        <button class="limit-modal-button" onclick="closeSubscriptionRequiredModal()">Got it</button>
+    </div>
+  </div>
+  
+  <!-- Trial Ended Modal -->
+  <div id="trialEndedModal" class="limit-modal">
+    <div class="limit-modal-content">
+        <div class="limit-modal-icon">⚠️</div>
+        <h3 class="limit-modal-title">Free Trial Ended</h3>
+        <p class="limit-modal-message">
+            Your free trial has ended. To continue completing sales, please subscribe to a plan.
+            <br><br>
+            <a href="{% url 'subscription_plans' %}" class="forgotpassword-link">Subscribe Now</a>
+        </p>
+        <button class="limit-modal-button" onclick="closeTrialEndedModal()">Got it</button>
+    </div>
+  </div>
         <div class="modal" id="addProductModal">
             <div class="modal-content">
                 <h2>Add New Product</h2>
@@ -670,6 +786,7 @@
                 const button = document.querySelector(".complete-sale-btn");
                 modal.classList.add("show");
                 button.disabled = true;
+            
                 try {
                     const response = await fetch("/complete-sale/", {
                         method: "POST",
@@ -684,12 +801,33 @@
                             "X-CSRFToken": getCookie("csrftoken"),
                         },
                     });
+            
                     const data = await response.json();
                     modal.classList.remove("show");
                     button.disabled = false;
-                    displayReceipt(data, moneyRendered, change);
-                    updatePendingOrdersList(data.new_pending_order);
-                    document.getElementById("moneyRendered").value = "";
+            
+                    if (data.success) {
+                        // Handle successful sale completion
+                        displayReceipt(data, moneyRendered, change);
+                        updatePendingOrdersList(data.new_pending_order);
+                        document.getElementById("moneyRendered").value = "";
+                    } else {
+                        // Handle errors
+                        if (data.details) {
+                            switch (data.details.type) {
+                                case 'no_subscription':
+                                    showSubscriptionRequiredModal(data.details);
+                                    break;
+                                case 'trial_ended':
+                                    showTrialEndedModal(data.details);
+                                    break;
+                                default:
+                                    alert("Error: " + data.message);
+                            }
+                        } else {
+                            alert("Error: " + data.message);
+                        }
+                    }
                 } catch (error) {
                     console.error("Error completing sale:", error);
                     modal.classList.remove("show");
@@ -812,6 +950,63 @@
                 }
                 return cookieValue;
             }
+
+
+            // Function to show the subscription required modal
+            // Function to show the subscription required modal
+            function showSubscriptionRequiredModal(details) {
+                const modalContent = `
+                    <div class="submodal-content">
+                        <div class="submodal-icon">🔔</div>
+                        <h3 class="submodal-title">${details.title}</h3>
+                        <p class="submodal-message">${details.description}</p>
+                        <a href="${details.action_url}" class="submodal-button">${details.action_text}</a>
+                    </div>
+                `;
+
+                const modal = document.getElementById("subscriptionRequiredModal");
+                modal.innerHTML = modalContent;
+                modal.style.display = "block";
+            }
+
+            // Function to show the trial ended modal
+            function showTrialEndedModal(details) {
+                const modalContent = `
+                    <div class="submodal-content">
+                        <div class="submodal-icon">⚠️</div>
+                        <h3 class="submodal-title">${details.title}</h3>
+                        <p class="submodal-message">${details.description}</p>
+                        <a href="${details.action_url}" class="submodal-button">${details.action_text}</a>
+                    </div>
+                `;
+
+                const modal = document.getElementById("trialEndedModal");
+                modal.innerHTML = modalContent;
+                modal.style.display = "block";
+            }
+
+            // Function to close the subscription required modal
+            function closeSubscriptionRequiredModal() {
+                document.getElementById("subscriptionRequiredModal").style.display = "none";
+            }
+
+            // Function to close the trial ended modal
+            function closeTrialEndedModal() {
+                document.getElementById("trialEndedModal").style.display = "none";
+            }
+
+            // Close modals when clicking outside of them
+            window.onclick = function (event) {
+                const subscriptionModal = document.getElementById("subscriptionRequiredModal");
+                const trialModal = document.getElementById("trialEndedModal");
+
+                if (event.target == subscriptionModal) {
+                    subscriptionModal.style.display = "none";
+                }
+                if (event.target == trialModal) {
+                    trialModal.style.display = "none";
+                }
+            };
         </script>
     </body>
 </html>

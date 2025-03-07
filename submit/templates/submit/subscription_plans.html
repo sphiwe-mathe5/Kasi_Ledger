@@ -95,28 +95,30 @@
         {% if messages %} {% for message in messages%}
         <div class="alert alert-{{ message.tags }}">{{ message }}</div>
         {% endfor %} {% endif %}
+
         <div class="plans-container">
             {% for plan in plans %}
-            <div class="pricing-card {% if plan.name == 'Pro' %}popular{% endif %}">
-                <div class="card-header">
-                    <h2 class="card-title">{{ plan.name }}</h2>
-                    <div class="card-price">
-                        {% if plan.price == 0 %} Free {% else %} R{{ plan.price }}<span>/month</span>
-                        {% endif %}
+                {% if plan.price != 0 %}  <!-- Skip the free plan -->
+                    <div class="pricing-card {% if plan.name == 'Pro' %}popular{% endif %}">
+                        <div class="card-header">
+                            <h2 class="card-title">{{ plan.name }}</h2>
+                            <div class="card-price">
+                                R{{ plan.price }}<span>/month</span>
+                            </div>
+                        </div>
+                        <ul class="card-features">
+                            {% for feature in plan.features %}
+                                <li>{{ feature }}</li>
+                            {% endfor %}
+                        </ul>
+                        <button
+                            class="card-button subscribe-button"
+                            onclick="initializePayment({{ plan.id }})"
+                        >
+                            Subscribe Now
+                        </button>
                     </div>
-                </div>
-                <ul class="card-features">
-                    {% for feature in plan.features %}
-                    <li>{{ feature }}</li>
-                    {% endfor %}
-                </ul>
-                <button
-                    class="card-button subscribe-button"
-                    onclick="{% if plan.price == 0 %}registerFreePlan({{ plan.id }}){% else %}initializePayment({{ plan.id }}){% endif %}"
-                >
-                    {% if plan.price == 0 %}Start Free{% else %}Subscribe Now{% endif %}
-                </button>
-            </div>
+                {% endif %}
             {% endfor %}
         </div>
         <script>

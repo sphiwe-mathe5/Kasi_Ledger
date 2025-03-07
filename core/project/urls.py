@@ -4,7 +4,7 @@ from django_otp.admin import OTPAdminSite
 from django_otp.plugins.otp_totp.models import TOTPDevice
 from django_otp.plugins.otp_totp.admin import TOTPDeviceAdmin
 from core.models import Product, IncomeStatement, Category, EmailTemplate, SentEmail, POSProduct
-from submit.models import Profile, CustomUser
+from submit.models import Profile, CustomUser, SubscriptionPlan, Subscription
 from django.contrib.auth.admin import UserAdmin
 from django.contrib.auth import views as auth_views
 from django.conf import settings
@@ -30,6 +30,8 @@ admin_site.register(AccessLog)
 admin_site.register(EmailTemplate)
 admin_site.register(SentEmail)
 admin_site.register(POSProduct)
+admin_site.register(SubscriptionPlan)
+admin_site.register(Subscription)
 
 class CustomUserAdmin(UserAdmin):
     model = CustomUser
@@ -37,7 +39,7 @@ class CustomUserAdmin(UserAdmin):
     list_filter = ('is_staff', 'is_active', 'is_authorized')
     fieldsets = (
         (None, {'fields': ('email', 'password')}),
-        ('Personal info', {'fields': ('username', 'first_name', 'last_name')}),
+        ('Personal info', {'fields': ('username', 'first_name', 'last_name', 'company_category', 'company_name')}),
         ('Permissions', {'fields': ('is_active', 'is_staff', 'is_superuser', 'is_authorized',
                                   'groups', 'user_permissions')}),
     )

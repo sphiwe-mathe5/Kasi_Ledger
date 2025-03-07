@@ -85,13 +85,13 @@ def index(request):
         'RECAPTCHA_PUBLIC_KEY': settings.RECAPTCHA_PUBLIC_KEY,
     })
 
+
 @csrf_exempt
 def subscribe(request):
     if request.method == 'POST':
         barcode = request.POST.get('barcode')
         action = request.POST.get('action', 'in')
 
-        
         user = request.user
         try:
             profile = user.profile  
@@ -101,72 +101,50 @@ def subscribe(request):
                 'message': 'User profile not found.'
             })
 
+        # Check if the user has an active subscription or is within the trial period
+        subscription = Subscription.objects.filter(user=user).first()
+
+        if not subscription:
+            return JsonResponse({
+                'success': False,
+                'message': 'Subscription not found.',
+                'details': {
+                    'type': 'no_subscription',
+                    'title': 'Subscription Required',
+                    'description': 'You need to subscribe to a plan to use this feature.',
+                    'action_url': reverse('subscription_plans'),  
+                    'action_text': 'View Plans'
+                }
+            })
+
+        # Check if the user is within the trial period or has an active subscription
+        if subscription.status == 'trialing' and subscription.trial_end_date > timezone.now():
+            # Allow access during the trial period
+            pass
+        elif subscription.status == 'active':
+            # Allow access for active subscriptions
+            pass
+        else:
+            # Deny access if the trial has ended or the subscription is inactive
+            return JsonResponse({
+                'success': False,
+                'message': 'Your free trial has ended.',
+                'details': {
+                    'type': 'trial_ended',
+                    'title': 'Free Trial Ended',
+                    'description': 'Your free trial has ended. To continue using this feature, please subscribe to a plan.',
+                    'action_url': reverse('subscription_plans'),
+                    'action_text': 'Subscribe Now'
+                }
+            })
+
+        # Proceed with the scan-in or scan-out logic
         if action == 'in':
-
-            subscription = Subscription.objects.filter(
-                user=user, 
-                status__in=['active', 'cancelled']  
-            ).first()
-            
-            if not subscription:
-                return JsonResponse({
-                    'success': False,
-                    'message': 'Subscription required',
-                    'details': {
-                        'type': 'no_subscription',
-                        'title': 'Subscription Required',
-                        'description': 'You need to subscribe to a plan to use this feature. Choose between our Free or Pro plans.',
-                        'action_url': reverse('subscription_plans'),  
-                        'action_text': 'View Plans'
-                    }
-                })
-            
-            
-            active_subscription = Subscription.objects.filter(
-                user=user, 
-                status='active'
-            ).first()
-            
-            if not active_subscription:
-                return JsonResponse({
-                    'success': False,
-                    'message': 'Inactive subscription',
-                    'details': {
-                        'type': 'inactive_subscription',
-                        'title': 'Inactive Subscription',
-                        'description': 'Your subscription is currently inactive. Please reactivate your subscription to continue.',
-                        'action_url': reverse('subscription_settings'),  
-                        'action_text': 'Manage Subscription'
-                    }
-                })
-
-            
-            current_period = ProductPeriod.get_or_create_current_period(profile)
-            
-            if current_period.product_count >= active_subscription.plan.product_limit:
-                days_until_reset = (current_period.end_date - timezone.now()).days
-                return JsonResponse({
-                    'success': False,
-                    'message': 'Product limit reached',
-                    'details': {
-                        'type': 'limit_reached',
-                        'limit': active_subscription.plan.product_limit,
-                        'days_until_reset': days_until_reset,
-                        'reset_date': current_period.end_date.strftime('%B %d, %Y')
-                    }
-                })
-
-            
-            current_period.product_count += 1
-            current_period.save()
-            
             existing_product = Product.objects.filter(barcode=barcode).first()
             if existing_product:
                 return JsonResponse({
-                    'success':
-                    False,
-                    'message':
-                    'Product with this barcode already exists. Use "Scan Out" to reduce quantity.'
+                    'success': False,
+                    'message': 'Product with this barcode already exists. Use "Scan Out" to reduce quantity.'
                 })
 
             name = request.POST.get('name')
@@ -177,10 +155,8 @@ def subscribe(request):
 
             if not all([name, price, cost, quantity, category_id]):
                 return JsonResponse({
-                    'success':
-                    False,
-                    'message':
-                    'All product details including category and quantity are required for scan in.'
+                    'success': False,
+                    'message': 'All product details including category and quantity are required for scan in.'
                 })
 
             try:
@@ -188,25 +164,18 @@ def subscribe(request):
                 cost = Decimal(cost)
                 quantity = int(quantity)
                 category = Category.objects.get(id=category_id)
-            except InvalidOperation:
+            except (InvalidOperation, ValueError):
                 return JsonResponse({
                     'success': False,
-                    'message': 'Invalid price or cost value.'
-                })
-            except ValueError:
-                return JsonResponse({
-                    'success': False,
-                    'message': 'Invalid quantity value.'
+                    'message': 'Invalid price, cost, or quantity value.'
                 })
             except Category.DoesNotExist:
                 return JsonResponse({
-                    'success':
-                    False,
-                    'message':
-                    'Selected category does not exist.'
+                    'success': False,
+                    'message': 'Selected category does not exist.'
                 })
 
-            
+            # Create the product
             product = Product.objects.create(
                 barcode=barcode,
                 name=name,
@@ -220,7 +189,7 @@ def subscribe(request):
             )
 
             message = f'Product scanned in successfully. Quantity: {quantity}'
-        else:  
+        else:  # action == 'out'
             try:
                 product = Product.objects.get(barcode=barcode)
                 if product.quantity > 0:
@@ -231,33 +200,28 @@ def subscribe(request):
                     message = f'Scanned out 1 unit. Remaining: {product.quantity}'
                 else:
                     return JsonResponse({
-                        'success':
-                        False,
-                        'message':
-                        'Product is already out of stock'
+                        'success': False,
+                        'message': 'Product is already out of stock'
                     })
             except Product.DoesNotExist:
                 return JsonResponse({
-                    'success':
-                    False,
-                    'message':
-                    'Product not found. Please scan in the product first.'
+                    'success': False,
+                    'message': 'Product not found. Please scan in the product first.'
                 })
 
         return JsonResponse({
-            'success':True,
-            'message':message,
-            'status':product.status,
-            'name':product.name,
-            'price':str(product.total_price),  
-            'cost':str(product.total_cost),
-            'quantity':product.quantity,
+            'success': True,
+            'message': message,
+            'status': product.status,
+            'name': product.name,
+            'price': str(product.total_price),  
+            'cost': str(product.total_cost),
+            'quantity': product.quantity,
             'original_quantity': product.original_quantity,
-            'category':product.category.name if product.category else ''
+            'category': product.category.name if product.category else ''
         })
 
     return JsonResponse({'success': False, 'message': 'Invalid request'})
-
 
 @login_required
 def subscribed(request):
@@ -805,32 +769,35 @@ def inventory_view(request):
 
 def generate_barcodes(request):
     if request.method == 'POST':
-        
         if not request.user.is_authenticated:
             messages.error(request, "You must be logged in to download barcodes.")
             return render(request, 'core/generate_barcodes.html')
 
-        
         try:
             subscription = Subscription.objects.get(user=request.user)
         except Subscription.DoesNotExist:
             messages.error(request, "You must have a subscription to download barcodes.")
             return render(request, 'core/generate_barcodes.html')
 
-        
-        enterprise_plan = SubscriptionPlan.objects.get(price=199.99)
-        if subscription.plan != enterprise_plan:
-            messages.error(request, "You must upgrade to the Enterprise Plan to download barcodes.")
+        # Check if the user is within the free trial period
+        if subscription.status == 'trialing' and subscription.trial_end_date > timezone.now():
+            # Allow barcode generation during the free trial
+            pass
+        else:
+            # Deny barcode generation if the trial has ended or the user doesn't have a subscription
+            messages.error(request, "Your free trial has ended. Please subscribe to a plan to generate barcodes.")
             return render(request, 'core/generate_barcodes.html')
 
         quantity = int(request.POST.get('quantity', 1))
         format_type = request.POST.get('format', 'pdf')
 
         generated_codes = []
-        for _ in range(quantity):
-            code = Barcode.generate_unique_code()
-            Barcode.objects.create(code=code)
-            generated_codes.append(code)
+        for i in range(1, quantity + 1):
+            product_name = request.POST.get(f'product_name_{i}')
+            price = request.POST.get(f'price_{i}')
+            code, product_name, price = Barcode.generate_unique_code(product_name, price)
+            Barcode.objects.create(code=code, product_name=product_name, price=price)
+            generated_codes.append((code, product_name, price))
 
         if format_type == 'pdf':
             response = HttpResponse(content_type='application/pdf')
@@ -841,15 +808,21 @@ def generate_barcodes(request):
             
             x_start = 20 * mm
             y_start = height - 30 * mm
-            barcode_height = 25 * mm
-            spacing = 35 * mm
-            codes_per_page = 20
+            barcode_height = 20 * mm  # Adjusted height for cleaner layout
+            spacing = 30 * mm  # Consistent spacing between barcodes
+            codes_per_page = 20  # Number of codes per page
+            barcodes_per_row = 2  # Number of barcodes per row (adjust as needed)
+            row_spacing = 45 * mm  # Vertical spacing between rows
+            col_spacing = 70 * mm  # Horizontal spacing between barcodes in a row
             
             with tempfile.TemporaryDirectory() as temp_dir:
-                for idx, code in enumerate(generated_codes):
+                for idx, (code, product_name, price) in enumerate(generated_codes):
                     if idx > 0 and idx % codes_per_page == 0:
-                        c.showPage()
-                        y_start = height - 30 * mm
+                        c.showPage()  # Start a new page
+                        y_start = height - 30 * mm  # Reset Y position
+                    
+                    row = (idx % codes_per_page) // barcodes_per_row  # Calculate which row the barcode is in
+                    col = (idx % barcodes_per_row)  # Calculate which column the barcode is in
                     
                     ean = barcode.get('ean13', code, writer=ImageWriter())
                     temp_path = os.path.join(temp_dir, f'barcode_{code}.png')
@@ -863,10 +836,20 @@ def generate_barcodes(request):
                     img_buffer.close()
                     
                     if os.path.exists(temp_path):
-                        y_pos = y_start - ((idx % codes_per_page) * spacing)
+                        # Calculate position for the barcode and text
+                        y_pos = y_start - (row * row_spacing)
+                        x_pos = x_start + (col * col_spacing)
+                        
                         try:
-                            c.drawImage(temp_path, x_start, y_pos, width=60*mm, height=barcode_height)
-                            c.drawString(x_start, y_pos - 5*mm, code)
+                            # Draw the barcode image
+                            c.drawImage(temp_path, x_pos, y_pos, width=60*mm, height=barcode_height)
+                            
+                            # Draw product details below the barcode
+                            c.setFont("Helvetica", 10)  # Smaller font for details
+                            c.drawString(x_pos + 10*mm , y_pos - 5*mm, f"Company: {request.user.company_name}")
+                            c.drawString(x_pos + 10*mm, y_pos - 10*mm, f"Product: {product_name}")
+                            c.drawString(x_pos + 10*mm, y_pos - 15*mm, f"Price: R{price}")
+                            c.drawString(x_pos + 10*mm, y_pos - 20*mm, f"Barcode: {code}")
                         except Exception as e:
                             print(f"Error drawing image: {e}")
                     else:
@@ -879,12 +862,17 @@ def generate_barcodes(request):
         else:  
             zip_buffer = BytesIO()
             with zipfile.ZipFile(zip_buffer, 'w') as zip_file:
-                for code in generated_codes:
+                for code, product_name, price in generated_codes:
                     ean = barcode.get('ean13', code, writer=ImageWriter())
                     img_buffer = BytesIO()
                     ean.write(img_buffer)
                     
                     zip_file.writestr(f'barcode_{code}.png', img_buffer.getvalue())
+                    
+                    # Create a text file with product info
+                    product_info = f"Product Name: {product_name}\nPrice: ${price}\nBarcode: {code}"
+                    zip_file.writestr(f'barcode_{code}_info.txt', product_info)
+                    
                     img_buffer.close()
             
             response = HttpResponse(zip_buffer.getvalue(), content_type='application/zip')
@@ -1021,6 +1009,37 @@ def add_product(request):
 def complete_sale(request):
     if request.method == 'POST':
         try:
+            # Check if the user has an active subscription or is within the trial period
+            subscription = Subscription.objects.filter(user=request.user).first()
+
+            if not subscription:
+                return JsonResponse({
+                    'success': False,
+                    'message': 'Subscription required.',
+                    'details': {
+                        'type': 'no_subscription',
+                        'title': 'Subscription Required',
+                        'description': 'You need to subscribe to a plan to complete sales. Choose between our Free or Pro plans.',
+                        'action_url': reverse('subscription_plans'),  
+                        'action_text': 'View Plans'
+                    }
+                }, status=403)
+
+            # Check if the trial has ended
+            if subscription.status == 'trialing' and subscription.trial_end_date <= timezone.now():
+                return JsonResponse({
+                    'success': False,
+                    'message': 'Your free trial has ended.',
+                    'details': {
+                        'type': 'trial_ended',
+                        'title': 'Free Trial Ended',
+                        'description': 'Your free trial has ended. To continue completing sales, please subscribe to a plan.',
+                        'action_url': reverse('subscription_plans'),  
+                        'action_text': 'Subscribe Now'
+                    }
+                }, status=403)
+
+            # If the user has an active subscription or is within the trial period, proceed with the sale
             data = json.loads(request.body)
             transaction = POSTransaction.objects.create(
                 total_amount=data['total_amount'],
@@ -1029,7 +1048,7 @@ def complete_sale(request):
                 user=request.user
             )
 
-            
+            # Add transaction items
             product_details = []
             for item in data['items']:
                 product = POSProduct.objects.get(id=item['product_id'], user=request.user)
@@ -1045,6 +1064,7 @@ def complete_sale(request):
                     'price': item['price']
                 })
 
+            # Prepare the response with the new pending order details
             new_pending_order = {
                 'id': transaction.id,
                 'order_number': transaction.order_number,

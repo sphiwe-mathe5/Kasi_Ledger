@@ -100,6 +100,18 @@ form{
     cursor: pointer;
 
 }
+
+.field select,
+.field button{
+    height: 100%;
+    width: 100%;
+    border: none;
+    font-size: 16px;
+    font-weight: 400;
+    border-radius: 6px;
+    cursor: pointer;
+
+}
 .field input{
     border: 2px solid #ecedec;
     border-radius: 10px;
@@ -109,7 +121,21 @@ form{
     padding-left: 10px;
     transition: 0.2s ease-in-out;
 }
+
+.field select{
+    border: 2px solid #ecedec;
+    border-radius: 10px;
+    height: 50px;
+    display: flex;
+    align-items: center;
+    padding-left: 10px;
+    transition: 0.2s ease-in-out;
+}
 .field input:focus{
+    border-bottom-width: 2px;
+}
+
+.field select:focus{
     border-bottom-width: 2px;
 }
 .eye-icon{
@@ -250,4 +276,22 @@ button.backbtn:hover{
 
 .alert-danger {
     color: #721c24;
+}
+
+
+.navbar-brand span {
+    font-size: 24px;
+    font-weight: 700;
+    color: #272727;
+    text-transform: uppercase;
+    margin-left: 5rem;
+    
+  }
+
+  .navbar-brand span a:hover {
+    text-decoration: none;
+  }
+p{
+    margin-left: 1rem;
+    margin-top: 2rem;
 }

@@ -250,8 +250,8 @@ function saveProduct(barcode, action) {
                     case 'inactive_subscription':
                         showSubscriptionModal(response.details);
                         break;
-                    case 'limit_reached':
-                        showLimitModal(response.details);
+                    case 'trial_ended':  // New case for trial ended
+                        showTrialEndedModal(response.details);
                         break;
                     default:
                         alert("Error: " + response.message);
@@ -267,6 +267,32 @@ function saveProduct(barcode, action) {
 });
 }
 
+function showTrialEndedModal(details) {
+  const modalContent = `
+      <div class="submodal-content">
+          <div class="submodal-icon">⚠️</div>
+          <h3 class="submodal-title">${details.title}</h3>
+          <p class="submodal-message">${details.description}</p>
+          <a href="${details.action_url}" class="submodal-button">${details.action_text}</a>
+      </div>
+  `;
+  
+  $("#trialEndedModal")
+      .html(modalContent)
+      .show();
+}
+
+function closeTrialEndedModal() {
+  document.getElementById("trialEndedModal").style.display = "none";
+}
+
+// Close modal when clicking outside of it
+window.onclick = function(event) {
+  var modal = document.getElementById("trialEndedModal");
+  if (event.target == modal) {
+      modal.style.display = "none";
+  }
+}
 
 function showSubscriptionModal(details) {
   const modalContent = `

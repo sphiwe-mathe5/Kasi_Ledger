@@ -19,6 +19,13 @@
         <section class="container forms">
             <div class="form signup">
                 <div class="form-content">
+
+                    <a class="navbar-brand" href="index.html">
+                        <span>Kasi Ledger</span>
+                    </a>
+
+                    <b><p>Create an Account to get started</p></b>
+
                     {% if messages %}
                     <div class="alerts">
                         {% for message in messages %}
@@ -30,6 +37,14 @@
                         {% csrf_token %}
                         <div class="field input-field">
                             <input type="text" name="company_name" placeholder="Company Name" class="input" required />
+                        </div>
+                        <div class="field input-field">
+                            <select name="company_category" class="input" required>
+                                <option value="" disabled selected>Select Company Category</option>
+                                <option value="restaurant">Restaurant</option>
+                                <option value="clothing_brand">Clothing Brand</option>
+                                <option value="market">Market</option>
+                            </select>
                         </div>
                         <div class="field input-field">
                             <input type="email" name="email" placeholder="Email" class="input" required />

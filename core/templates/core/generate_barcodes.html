@@ -47,6 +47,14 @@
                 border: 1px solid #ccc;
                 font-size: 16px;
             }
+            input[type="text"],
+            select {
+                width: calc(100% - 20px);
+                padding: 10px;
+                border-radius: 5px;
+                border: 1px solid #ccc;
+                font-size: 16px;
+            }
             button {
                 background-color: #28a745;
                 color: white;
@@ -158,11 +166,14 @@
                 <label for="quantity"><i class="fas fa-barcode icon"></i>Number of barcodes:</label>
                 <input type="number" name="quantity" id="quantity" min="1" max="100" value="1" required />
             </div>
+            <div id="product-details">
+                <!-- Product details fields will be dynamically added here -->
+            </div>
             <div>
                 <label for="format"><i class="fas fa-file-download icon"></i>Download format:</label>
                 <select name="format" id="format">
                     <option value="pdf">PDF (all barcodes in one file)</option>
-                    <option value="zip">ZIP (individual image files)</option>
+                    
                 </select>
             </div>
             <button type="submit"><i class="fas fa-download icon"></i>Download Barcodes</button>
@@ -186,8 +197,23 @@
                 }, 2000);
             });
 
-            
-            
+            document.getElementById('quantity').addEventListener('input', function () {
+                const quantity = parseInt(this.value);
+                const productDetailsDiv = document.getElementById('product-details');
+                productDetailsDiv.innerHTML = ''; // Clear existing fields
+        
+                for (let i = 1; i <= quantity; i++) {
+                    productDetailsDiv.innerHTML += `
+                        <div>
+                            <h4>Product ${i}</h4>
+                            <label for="product_name_${i}">Product Name:</label>
+                            <input type="text" name="product_name_${i}" id="product_name_${i}" required />
+                            <label for="price_${i}">Price:</label>
+                            <input type="number" name="price_${i}" id="price_${i}" step="0.01" required />
+                        </div>
+                    `;
+                }
+            });
         </script>
     </body>
 </html>
