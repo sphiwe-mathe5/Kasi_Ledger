@@ -6,6 +6,7 @@ import random
 from django.template.loader import render_to_string
 import logging
 from django.db import transaction
+import datetime
 from datetime import datetime, timedelta
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import render
@@ -366,7 +367,7 @@ def process_sale(request):
                 'total': float(total),
                 'money_rendered': float(money_rendered),
                 'change': float(change),
-                'date': datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+                'date': datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
                 'seller': request.user.username
             }
             
