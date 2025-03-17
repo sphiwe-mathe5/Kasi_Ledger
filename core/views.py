@@ -786,7 +786,7 @@ def generate_barcodes(request):
             pass
         else:
             # Deny barcode generation if the trial has ended or the user doesn't have a subscription
-            messages.error(request, "Your free trial has ended. Please subscribe to a plan to generate barcodes.")
+            messages.error(request, "This Feature requires an Enterprise plan. Please subscribe to a plan to generate barcodes.")
             return render(request, 'core/generate_barcodes.html')
 
         quantity = int(request.POST.get('quantity', 1))

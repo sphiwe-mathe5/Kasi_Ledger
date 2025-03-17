@@ -12,6 +12,7 @@ from django.views.decorators.http import require_POST
 import hmac
 from datetime import timedelta
 import hashlib
+from submit.utility import delete_expired_free_trials
 import logging
 from django.http import JsonResponse, HttpResponse
 from django.views.decorators.csrf import csrf_exempt
@@ -78,10 +79,12 @@ def signup_view(request):
         r = requests.post('https://www.google.com/recaptcha/api/siteverify', data=data)
         result = r.json()
 
-        if not result['success'] or result['score'] < 0.5:  # Adjust score threshold as needed
+        # Check if the reCAPTCHA verification fails or score is below threshold
+        if not result['success'] or result['score'] < 0.5:
             messages.error(request, 'reCAPTCHA verification failed. Please try again.')
             return redirect('signup')
 
+        # Continue processing only if reCAPTCHA is successful
         admin_password = request.POST['admin_password']
         company_name = request.POST['company_name']
         company_category = request.POST['company_category']
@@ -89,6 +92,7 @@ def signup_view(request):
         password = request.POST['password']
 
         try:
+            # Create the user
             user = CustomUser.objects.create_user(
                 username=email,
                 email=email,
@@ -98,6 +102,7 @@ def signup_view(request):
                 password=password,
             )
 
+            # Send a welcome email
             current_site = get_current_site(request)
             context = {
                 'user': user,
@@ -115,9 +120,10 @@ def signup_view(request):
                 fail_silently=False,
             )
 
+            # Log the user in and redirect to the index page
             login(request, user, backend='submit.backends.EmailBackend')
             return redirect('index')
-        
+
         except IntegrityError:
             messages.error(request, 'An account with this email already exists. Please log in or use a different email.')
             return redirect('signup')  
@@ -125,6 +131,7 @@ def signup_view(request):
     return render(request, 'submit/register.html', {
         'RECAPTCHA_PUBLIC_KEY': settings.RECAPTCHA_PUBLIC_KEY,
     })
+
 
 def forgot_password_view(request):
     if request.method == 'POST':
@@ -255,6 +262,9 @@ def profile(request):
 
 @login_required
 def subscription_plans(request):
+    # Delete expired free trial subscriptions for the current user
+    delete_expired_free_trials(request.user)
+
     # Exclude the free plan (if price == 0)
     plans = SubscriptionPlan.objects.filter(is_active=True).exclude(price=0)
 
@@ -666,6 +676,9 @@ def delete_subscription(request):
 
 @login_required
 def subscription_settings(request):
+
+    delete_expired_free_trials(request.user)
+
     try:
         # Get the user's subscription
         subscription = Subscription.objects.get(user=request.user)
