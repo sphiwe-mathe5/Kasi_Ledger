@@ -1054,22 +1054,62 @@
 
 
             // Global settings object
+// Global settings object
             const speechSettings = {
                 volume: 1,
                 rate: 1,
                 pitch: 1,
-                voice: null
+                voice: null,
+                speakerDeviceId: null // Add speaker device ID storage
             };
-
+            
             // Initialize speech synthesis
-            function initSpeech() {
+            async function initSpeech() {
                 // Load voices (some browsers need this)
                 window.speechSynthesis.getVoices();
                 
                 // Show voice controls if available
                 setTimeout(populateVoiceList, 500);
+                
+                // Initialize speaker devices list
+                await setupSpeakerDevices();
             }
-
+            
+            // Set up speaker device selection
+            async function setupSpeakerDevices() {
+                if (!navigator.mediaDevices?.enumerateDevices) return;
+                
+                try {
+                    const devices = await navigator.mediaDevices.enumerateDevices();
+                    const audioOutputs = devices.filter(d => d.kind === 'audiooutput');
+                    
+                    if (audioOutputs.length > 1) {
+                        const speakerSelect = document.createElement('select');
+                        speakerSelect.id = 'speaker-select';
+                        speakerSelect.innerHTML = audioOutputs.map(device => 
+                            `<option value="${device.deviceId}">${device.label || 'Speaker'}</option>`
+                        ).join('');
+                        
+                        speakerSelect.addEventListener('change', () => {
+                            speechSettings.speakerDeviceId = speakerSelect.value;
+                        });
+                        
+                        const container = document.querySelector('.voice-controls');
+                        const label = document.createElement('label');
+                        label.textContent = 'Output Speaker: ';
+                        label.appendChild(speakerSelect);
+                        container.appendChild(label);
+                        
+                        // Set default to first non-default speaker if available
+                        if (audioOutputs.length > 1) {
+                            speechSettings.speakerDeviceId = audioOutputs[1].deviceId;
+                        }
+                    }
+                } catch (error) {
+                    console.error('Error enumerating devices:', error);
+                }
+            }
+            
             // Populate voice selection dropdown
             function populateVoiceList() {
                 const voices = window.speechSynthesis.getVoices();
@@ -1091,7 +1131,7 @@
                     document.querySelector('.voice-controls').style.display = 'block';
                 }
             }
-
+            
             // Handle voice selection change
             document.getElementById('voice-select')?.addEventListener('change', function() {
                 const selectedOption = this.selectedOptions[0];
@@ -1099,19 +1139,19 @@
                     ? JSON.parse(selectedOption.dataset.voice) 
                     : null;
             });
-
+            
             // Handle speed change
             document.getElementById('speech-rate')?.addEventListener('input', function() {
                 speechSettings.rate = parseFloat(this.value);
             });
-
+            
             // Handle pitch change
             document.getElementById('speech-pitch')?.addEventListener('input', function() {
                 speechSettings.pitch = parseFloat(this.value);
             });
-
-            // Main announce function
-            function announceOrder(button) {
+            
+            // Main announce function with speaker support
+            async function announceOrder(button) {
                 const orderNumber = button.getAttribute('data-order-number');
                 
                 if ('speechSynthesis' in window) {
@@ -1141,7 +1181,19 @@
                     
                     // Visual feedback
                     button.disabled = true;
-                    button.innerHTML = '<svg viewBox="0 0 24 24" width="24" height="24"><path d="M12 2a3 3 0 0 0-3 3v6a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3zm0 14a5 5 0 0 1-5-5H5a7 7 0 0 0 14 0h-2a5 5 0 0 1-5 5z"/></svg> ......';
+                    button.innerHTML = '<svg viewBox="0 0 24 24" width="24" height="24"><path d="M12 2a3 3 0 0 0-3 3v6a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3zm0 14a5 5 0 0 1-5-5H5a7 7 0 0 0 14 0h-2a5 5 0 0 1-5 5z"/></svg> .......';
+                    
+                    // Try to route to specific speaker if available
+                    if (speechSettings.speakerDeviceId && audioContext?.setSinkId) {
+                        try {
+                            await audioContext.setSinkId(speechSettings.speakerDeviceId);
+                        } catch (error) {
+                            console.error('Failed to set speaker:', error);
+                        }
+                    }
+                    
+                    // Force audio activation (helps in Chrome)
+                    document.body.dispatchEvent(new Event('click'));
                     
                     // Speak it
                     window.speechSynthesis.speak(utterance);
@@ -1155,12 +1207,20 @@
                     alert("Text-to-speech not supported in your browser");
                 }
             }
-
+            
+            // Create audio context for speaker control
+            let audioContext;
+            try {
+                audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            } catch (e) {
+                console.error('AudioContext not supported:', e);
+            }
+            
             // Initialize when page loads
             window.addEventListener('DOMContentLoaded', function() {
                 initSpeech();
             });
-
+            
             // Some browsers need this event to load voices
             window.speechSynthesis.onvoiceschanged = populateVoiceList;
         </script>
