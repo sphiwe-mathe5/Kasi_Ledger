@@ -1054,60 +1054,20 @@
 
 
             // Global settings object
-// Global settings object
             const speechSettings = {
                 volume: 1,
                 rate: 1,
                 pitch: 1,
-                voice: null,
-                speakerDeviceId: null // Add speaker device ID storage
+                voice: null
             };
             
             // Initialize speech synthesis
-            async function initSpeech() {
+            function initSpeech() {
                 // Load voices (some browsers need this)
                 window.speechSynthesis.getVoices();
                 
                 // Show voice controls if available
                 setTimeout(populateVoiceList, 500);
-                
-                // Initialize speaker devices list
-                await setupSpeakerDevices();
-            }
-            
-            // Set up speaker device selection
-            async function setupSpeakerDevices() {
-                if (!navigator.mediaDevices?.enumerateDevices) return;
-                
-                try {
-                    const devices = await navigator.mediaDevices.enumerateDevices();
-                    const audioOutputs = devices.filter(d => d.kind === 'audiooutput');
-                    
-                    if (audioOutputs.length > 1) {
-                        const speakerSelect = document.createElement('select');
-                        speakerSelect.id = 'speaker-select';
-                        speakerSelect.innerHTML = audioOutputs.map(device => 
-                            `<option value="${device.deviceId}">${device.label || 'Speaker'}</option>`
-                        ).join('');
-                        
-                        speakerSelect.addEventListener('change', () => {
-                            speechSettings.speakerDeviceId = speakerSelect.value;
-                        });
-                        
-                        const container = document.querySelector('.voice-controls');
-                        const label = document.createElement('label');
-                        label.textContent = 'Output Speaker: ';
-                        label.appendChild(speakerSelect);
-                        container.appendChild(label);
-                        
-                        // Set default to first non-default speaker if available
-                        if (audioOutputs.length > 1) {
-                            speechSettings.speakerDeviceId = audioOutputs[1].deviceId;
-                        }
-                    }
-                } catch (error) {
-                    console.error('Error enumerating devices:', error);
-                }
             }
             
             // Populate voice selection dropdown
@@ -1150,8 +1110,8 @@
                 speechSettings.pitch = parseFloat(this.value);
             });
             
-            // Main announce function with speaker support
-            async function announceOrder(button) {
+            // Main announce function with forced speaker output
+            function announceOrder(button) {
                 const orderNumber = button.getAttribute('data-order-number');
                 
                 if ('speechSynthesis' in window) {
@@ -1181,19 +1141,21 @@
                     
                     // Visual feedback
                     button.disabled = true;
-                    button.innerHTML = '<svg viewBox="0 0 24 24" width="24" height="24"><path d="M12 2a3 3 0 0 0-3 3v6a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3zm0 14a5 5 0 0 1-5-5H5a7 7 0 0 0 14 0h-2a5 5 0 0 1-5 5z"/></svg> .......';
+                    button.innerHTML = '<svg viewBox="0 0 24 24" width="24" height="24"><path d="M12 2a3 3 0 0 0-3 3v6a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3zm0 14a5 5 0 0 1-5-5H5a7 7 0 0 0 14 0h-2a5 5 0 0 1-5 5z"/></svg> Announcing...';
                     
-                    // Try to route to specific speaker if available
-                    if (speechSettings.speakerDeviceId && audioContext?.setSinkId) {
-                        try {
-                            await audioContext.setSinkId(speechSettings.speakerDeviceId);
-                        } catch (error) {
-                            console.error('Failed to set speaker:', error);
-                        }
+                    // Force audio to external speaker (Chrome-specific)
+                    try {
+                        // This helps route audio to external speakers in Chrome
+                        document.body.click();
+                        
+                        // Additional method to encourage external speaker usage
+                        const audio = new Audio();
+                        audio.src = 'data:audio/wav;base64,UklGRl9vT19XQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQ...';
+                        audio.volume = 0; // Silent
+                        audio.play().then(() => audio.remove());
+                    } catch (e) {
+                        console.log("Speaker routing helper failed", e);
                     }
-                    
-                    // Force audio activation (helps in Chrome)
-                    document.body.dispatchEvent(new Event('click'));
                     
                     // Speak it
                     window.speechSynthesis.speak(utterance);
@@ -1201,19 +1163,11 @@
                     // Reset button after speech completes
                     utterance.onend = function() {
                         button.disabled = false;
-                        button.innerHTML = '<svg viewBox="0 0 24 24" width="24" height="24"><path d="M12 2a3 3 0 0 0-3 3v6a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3zm0 14a5 5 0 0 1-5-5H5a7 7 0 0 0 14 0h-2a5 5 0 0 1-5 5z"/></svg> ';
+                        button.innerHTML = '<svg viewBox="0 0 24 24" width="24" height="24"><path d="M12 2a3 3 0 0 0-3 3v6a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3zm0 14a5 5 0 0 1-5-5H5a7 7 0 0 0 14 0h-2a5 5 0 0 1-5 5z"/></svg> Call Out';
                     };
                 } else {
                     alert("Text-to-speech not supported in your browser");
                 }
-            }
-            
-            // Create audio context for speaker control
-            let audioContext;
-            try {
-                audioContext = new (window.AudioContext || window.webkitAudioContext)();
-            } catch (e) {
-                console.error('AudioContext not supported:', e);
             }
             
             // Initialize when page loads
