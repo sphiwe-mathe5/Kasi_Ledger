@@ -32,10 +32,21 @@
                         <a href="{% url 'login' %}" class="sign-in"><span>Sign in</span></a>
                         <a href="{% url 'signup' %}" class="sign-up"><span>Sign Up</span></a>
                     {% else %}
+                    {% if user.company_category == 'restaurant' %}
+                    <a href="{% url 'contact' %}" class="sign-up">Inventory</a>
+                    <a href="{% url 'subscribed' %}" class="sign-up">POS</a>
+                    <a href="{% url 'pos_view' %}" class="sign-up">POS2</a>
+                    <a href="{% url 'list_income_statements' %}" class="sign-up">Statements</a>
+                    {% elif user.company_category == 'clothing_brand' %}
                         <a href="{% url 'contact' %}" class="sign-up">Inventory</a>
                         <a href="{% url 'subscribed' %}" class="sign-up">POS</a>
-                        <a href="{% url 'pos_view' %}" class="sign-up">POS2</a>
-                        <a href="{% url 'list_income_statements' %}" class="sign-up">Statement</a>
+                        <a href="{% url 'generate_barcodes' %}" class="sign-up">Barcodes</a>
+                        <a href="{% url 'list_income_statements' %}" class="sign-up">Statements</a>
+                    {% elif user.company_category == 'market' %}
+                        <a href="{% url 'contact' %}" class="sign-up">Inventory</a>
+                        <a href="{% url 'subscribed' %}" class="sign-up">POS</a>
+                        <a href="{% url 'list_income_statements' %}" class="sign-up">Statements</a>
+                    {% endif %}
                         <div class="user-info d-flex align-items-center">
                           <div class="user-icon" id="userIcon" onclick="togglePopup()">
                               {% if user.profile_picture %}
@@ -47,6 +58,7 @@
                           <div id="userPopup" class="user-popup">
                             <div class="popup-content">
                               <p class="user-name"><strong>{{ user.company_name }}</strong></p>
+                              
                             
                               <p class="user-email">{{ user.email }}</p>
 
@@ -69,12 +81,12 @@
                                     <span>Subscription</span>
                                   </a>
                                 </li>
-                                <li>
+                                <!--<li>
                                   <a href="{% url 'generate_barcodes' %}" class="menu-item">
                                     <i class="fa-solid fa-barcode"></i>
                                     <span>Barcode Design</span>
                                   </a>
-                                </li>
+                                </li>-->
                                 <li>
                                   <a href="{% url 'logout' %}" class="menu-item">
                                     <i class="fa-solid fa-right-from-bracket"></i>
