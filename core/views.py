@@ -982,7 +982,7 @@ def pos_view(request):
     pending_orders = POSTransaction.objects.filter(
         user=request.user,
         collected=False
-    ).order_by('-created_at')
+    ).order_by('created_at')
     
     return render(request, 'core/pos_view.html', {
         'products': products,
