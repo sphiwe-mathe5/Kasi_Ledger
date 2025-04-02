@@ -325,6 +325,15 @@
                 .print-btn {
                     font-size: 0.9rem;
                 }
+            
+                .order-item {
+                    border: 1px solid #e2e8f0;
+                    border-radius: 0.5rem;
+                    width: 20rem;
+                    padding: 1rem;
+                    margin: 0 -3rem;
+                    background-color: white;
+                }
             }
             #cartItems {
                 font-family: Arial, sans-serif;
@@ -551,6 +560,28 @@
             .forgotpassword-link:hover {
                 text-decoration: underline;
             }
+
+            .callout-btn {
+                background-color: #4CAF50;
+                color: white;
+                border: none;
+                padding: 7px 15px;
+                border-radius: 4px;
+                cursor: pointer;
+                display: flex;
+                align-items: center;
+                margin-bottom: 10px;
+                gap: 6px;
+                transition: background-color 0.3s;
+            }
+            
+            .callout-btn:hover {
+                background-color: #45a049;
+            }
+            
+            .callout-btn svg {
+                fill: currentColor;
+            }
         </style>
     </head>
     <body>
@@ -678,6 +709,8 @@
                 <hr />
                 <button class="print-btn" onclick="window.print()">Print Receipt</button>
             </div>
+
+            
             <div class="pending-orders">
                 <h2>Pending Orders</h2>
                 <div class="order-list">
@@ -689,13 +722,24 @@
                                 <span>Total: R{{ order.total_amount }}</span>
                                 <span>Time: {{ order.created_at|time:"H:i" }}</span>
                             </div>
-                            <button class="collect-btn" data-order-id="{{ order.id }}" onclick="handleCollect(this)">
-                                <div class="loader"></div>
-                                <svg class="check-icon" viewBox="0 0 24 24">
-                                    <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z" />
-                                </svg>
-                                <span class="btn-text"></span>
-                            </button>
+
+                            <div class="order-actions">
+                                <button class="callout-btn" data-order-number="{{ order.order_number }}" onclick="announceOrder(this)">
+                                    <svg viewBox="0 0 24 24" width="24" height="24">
+                                        <path d="M12 2a3 3 0 0 0-3 3v6a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3zm0 14a5 5 0 0 1-5-5H5a7 7 0 0 0 14 0h-2a5 5 0 0 1-5 5z"/>
+                                    </svg>
+ 
+                                </button>
+                                <button class="collect-btn" data-order-id="{{ order.id }}" onclick="handleCollect(this)">
+                                    <div class="loader"></div>
+                                    <svg class="check-icon" viewBox="0 0 24 24">
+                                        <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z" />
+                                    </svg>
+                                    <span class="btn-text"></span>
+                                </button>
+                            </div>
+
+
                         </div>
                         <div class="order-products">
                             {% for item in order.items.all %}
@@ -1007,6 +1051,118 @@
                     trialModal.style.display = "none";
                 }
             };
+
+
+            // Global settings object
+            const speechSettings = {
+                volume: 1,
+                rate: 1,
+                pitch: 1,
+                voice: null
+            };
+
+            // Initialize speech synthesis
+            function initSpeech() {
+                // Load voices (some browsers need this)
+                window.speechSynthesis.getVoices();
+                
+                // Show voice controls if available
+                setTimeout(populateVoiceList, 500);
+            }
+
+            // Populate voice selection dropdown
+            function populateVoiceList() {
+                const voices = window.speechSynthesis.getVoices();
+                const voiceSelect = document.getElementById('voice-select');
+                
+                // Clear existing options
+                voiceSelect.innerHTML = '<option value="">Default Voice</option>';
+                
+                // Add available voices
+                voices.forEach(voice => {
+                    const option = document.createElement('option');
+                    option.textContent = `${voice.name} (${voice.lang})`;
+                    option.setAttribute('data-voice', JSON.stringify(voice));
+                    voiceSelect.appendChild(option);
+                });
+                
+                // Show controls if we have voices
+                if (voices.length > 0) {
+                    document.querySelector('.voice-controls').style.display = 'block';
+                }
+            }
+
+            // Handle voice selection change
+            document.getElementById('voice-select')?.addEventListener('change', function() {
+                const selectedOption = this.selectedOptions[0];
+                speechSettings.voice = selectedOption.dataset.voice 
+                    ? JSON.parse(selectedOption.dataset.voice) 
+                    : null;
+            });
+
+            // Handle speed change
+            document.getElementById('speech-rate')?.addEventListener('input', function() {
+                speechSettings.rate = parseFloat(this.value);
+            });
+
+            // Handle pitch change
+            document.getElementById('speech-pitch')?.addEventListener('input', function() {
+                speechSettings.pitch = parseFloat(this.value);
+            });
+
+            // Main announce function
+            function announceOrder(button) {
+                const orderNumber = button.getAttribute('data-order-number');
+                
+                if ('speechSynthesis' in window) {
+                    // Stop any current speech
+                    window.speechSynthesis.cancel();
+                    
+                    // Create the announcement
+                    const utterance = new SpeechSynthesisUtterance();
+                    utterance.text = `Order ${orderNumber} is ready`;
+                    
+                    // Apply settings
+                    utterance.volume = speechSettings.volume;
+                    utterance.rate = speechSettings.rate;
+                    utterance.pitch = speechSettings.pitch;
+                    
+                    // Set voice if selected
+                    if (speechSettings.voice) {
+                        const voices = window.speechSynthesis.getVoices();
+                        const selectedVoice = voices.find(v => 
+                            v.name === speechSettings.voice.name && 
+                            v.lang === speechSettings.voice.lang
+                        );
+                        if (selectedVoice) {
+                            utterance.voice = selectedVoice;
+                        }
+                    }
+                    
+                    // Visual feedback
+                    button.disabled = true;
+                    button.innerHTML = '<svg viewBox="0 0 24 24" width="24" height="24"><path d="M12 2a3 3 0 0 0-3 3v6a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3zm0 14a5 5 0 0 1-5-5H5a7 7 0 0 0 14 0h-2a5 5 0 0 1-5 5z"/></svg> ......';
+                    
+                    // Speak it
+                    window.speechSynthesis.speak(utterance);
+                    
+                    // Reset button after speech completes
+                    utterance.onend = function() {
+                        button.disabled = false;
+                        button.innerHTML = '<svg viewBox="0 0 24 24" width="24" height="24"><path d="M12 2a3 3 0 0 0-3 3v6a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3zm0 14a5 5 0 0 1-5-5H5a7 7 0 0 0 14 0h-2a5 5 0 0 1-5 5z"/></svg> ';
+                    };
+                } else {
+                    alert("Text-to-speech not supported in your browser");
+                }
+            }
+
+            // Initialize when page loads
+            window.addEventListener('DOMContentLoaded', function() {
+                initSpeech();
+            });
+
+            // Some browsers need this event to load voices
+            window.speechSynthesis.onvoiceschanged = populateVoiceList;
         </script>
     </body>
 </html>
