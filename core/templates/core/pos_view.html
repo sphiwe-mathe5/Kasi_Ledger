@@ -666,14 +666,25 @@
                         <i class="fas fa-plus"></i>
                     </span>
                     <div class="grid">
-                        {% for product in products %}
-                        <div
-                            class="product-item"
-                            onclick="addToCart({{ product.id }}, '{{ product.name }}', {{ product.price }})"
-                        >
-                            <h3>{{ product.name }} R{{ product.price }}</h3>
-                        </div>
-                        {% endfor %}
+<!-- Loop for POS Products -->
+                {% for product in products %}
+                <div class="product-item" onclick="addToCart({{ product.id }}, '{{ product.name }}', {{ product.price }})">
+                    <h3>{{ product.name }} R{{ product.price }}</h3>
+                </div>
+                {% empty %}
+                    <p>No POS products available.</p>
+                {% endfor %}
+
+                <!-- Loop for regular Products -->
+                {% for item in items %}
+                <div class="product-item" onclick="addToCart({{ item.id }}, '{{ item.name }}', {{ item.price_per_unit }}, 'inventory')">
+                    <h3>{{ item.name }} R{{ item.price_per_unit|floatformat:2 }}</h3>
+                </div>
+            {% empty %}
+                <p>No regular products available.</p>
+            {% endfor %}
+            
+
                     </div>
                 </div>
                 <div class="cart-section">
@@ -738,13 +749,17 @@
                                     <span class="btn-text"></span>
                                 </button>
                             </div>
-
-
                         </div>
                         <div class="order-products">
                             {% for item in order.items.all %}
                             <div class="product-item">
-                                <span class="product-name">{{ item.product.name }}</span>
+                                <span class="product-name">
+                                    {% if item.product %}
+                                        {{ item.product.name }}  {# POS Product #}
+                                    {% else %}
+                                        {{ item.product_name }} {# Inventory Product #}
+                                    {% endif %}
+                                </span>
                                 <span class="product-quantity">x{{ item.quantity }}</span>
                                 <span class="product-price">R{{ item.price }}</span>
                             </div>
@@ -785,7 +800,7 @@
                 const data = await response.json();
                 location.reload();
             };
-            function addToCart(id, name, price) {
+            function addToCart(id, name, price, productType) {
                 const existingItem = cart.find((item) => item.product_id === id);
                 if (existingItem) {
                     existingItem.quantity += 1;
@@ -795,6 +810,7 @@
                         name: name,
                         price: price,
                         quantity: 1,
+                        type: productType  // undefined or 'pos' for POS products
                     });
                 }
                 updateCartDisplay();
@@ -855,6 +871,8 @@
                         displayReceipt(data, moneyRendered, change);
                         updatePendingOrdersList(data.new_pending_order);
                         document.getElementById("moneyRendered").value = "";
+                        cart = [];  // Clear the cart after successful sale
+                        updateCartDisplay();
                     } else {
                         // Handle errors
                         if (data.details) {
@@ -879,6 +897,7 @@
                     alert("Error completing sale. Please try again.");
                 }
             }
+
             function updatePendingOrdersList(order) {
                 const orderList = document.querySelector(".order-list");
                 const orderItem = document.createElement("div");
@@ -904,17 +923,13 @@
                         </button>
                     </div>
                     <div class="order-products">
-                        ${order.products
-                            .map(
-                                (item) => `
+                        ${order.products.map(item => `
                             <div class="product-item">
-                                <span class="product-name">${item.name}</span>
+                                <span class="product-name">${item.name || 'Product'}</span>
                                 <span class="product-quantity">x${item.quantity}</span>
                                 <span class="product-price">R${item.price}</span>
                             </div>
-                        `
-                            )
-                            .join("")}
+                        `).join('')}
                     </div>
                 `;
                 orderList.insertBefore(orderItem, orderList.firstChild);
@@ -935,7 +950,7 @@
             }
             function displayReceipt(data, moneyRendered, change) {
                 document.getElementById("orderNumber").textContent = data.order_number;
-                document.getElementById("receiptItems").innerHTML = cart
+                document.getElementById("receiptItems").innerHTML = data.new_pending_order.products
                     .map(
                         (item) =>
                             `<p>${item.name} x ${item.quantity} = R${(item.price * item.quantity).toFixed(2)}</p>`
@@ -945,8 +960,6 @@
                 document.getElementById("receiptMoneyRendered").textContent = moneyRendered.toFixed(2);
                 document.getElementById("receiptChange").textContent = change.toFixed(2);
                 document.getElementById("receipt").style.display = "block";
-                cart = [];
-                updateCartDisplay();
             }
             async function handleCollect(button) {
                 const orderId = button.getAttribute("data-order-id");
@@ -1060,7 +1073,7 @@
                 pitch: 1,
                 voice: null
             };
-
+            
             // Initialize speech synthesis
             function initSpeech() {
                 // Load voices (some browsers need this)
@@ -1069,7 +1082,7 @@
                 // Show voice controls if available
                 setTimeout(populateVoiceList, 500);
             }
-
+            
             // Populate voice selection dropdown
             function populateVoiceList() {
                 const voices = window.speechSynthesis.getVoices();
@@ -1091,7 +1104,7 @@
                     document.querySelector('.voice-controls').style.display = 'block';
                 }
             }
-
+            
             // Handle voice selection change
             document.getElementById('voice-select')?.addEventListener('change', function() {
                 const selectedOption = this.selectedOptions[0];
@@ -1099,18 +1112,18 @@
                     ? JSON.parse(selectedOption.dataset.voice) 
                     : null;
             });
-
+            
             // Handle speed change
             document.getElementById('speech-rate')?.addEventListener('input', function() {
                 speechSettings.rate = parseFloat(this.value);
             });
-
+            
             // Handle pitch change
             document.getElementById('speech-pitch')?.addEventListener('input', function() {
                 speechSettings.pitch = parseFloat(this.value);
             });
-
-            // Main announce function
+            
+            // Main announce function with forced speaker output
             function announceOrder(button) {
                 const orderNumber = button.getAttribute('data-order-number');
                 
@@ -1141,7 +1154,21 @@
                     
                     // Visual feedback
                     button.disabled = true;
-                    button.innerHTML = '<svg viewBox="0 0 24 24" width="24" height="24"><path d="M12 2a3 3 0 0 0-3 3v6a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3zm0 14a5 5 0 0 1-5-5H5a7 7 0 0 0 14 0h-2a5 5 0 0 1-5 5z"/></svg> ......';
+                    button.innerHTML = '<svg viewBox="0 0 24 24" width="24" height="24"><path d="M12 2a3 3 0 0 0-3 3v6a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3zm0 14a5 5 0 0 1-5-5H5a7 7 0 0 0 14 0h-2a5 5 0 0 1-5 5z"/></svg> Announcing...';
+                    
+                    // Force audio to external speaker (Chrome-specific)
+                    try {
+                        // This helps route audio to external speakers in Chrome
+                        document.body.click();
+                        
+                        // Additional method to encourage external speaker usage
+                        const audio = new Audio();
+                        audio.src = 'data:audio/wav;base64,UklGRl9vT19XQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQ...';
+                        audio.volume = 0; // Silent
+                        audio.play().then(() => audio.remove());
+                    } catch (e) {
+                        console.log("Speaker routing helper failed", e);
+                    }
                     
                     // Speak it
                     window.speechSynthesis.speak(utterance);
@@ -1149,18 +1176,18 @@
                     // Reset button after speech completes
                     utterance.onend = function() {
                         button.disabled = false;
-                        button.innerHTML = '<svg viewBox="0 0 24 24" width="24" height="24"><path d="M12 2a3 3 0 0 0-3 3v6a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3zm0 14a5 5 0 0 1-5-5H5a7 7 0 0 0 14 0h-2a5 5 0 0 1-5 5z"/></svg> ';
+                        button.innerHTML = '<svg viewBox="0 0 24 24" width="24" height="24"><path d="M12 2a3 3 0 0 0-3 3v6a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3zm0 14a5 5 0 0 1-5-5H5a7 7 0 0 0 14 0h-2a5 5 0 0 1-5 5z"/></svg> Call Out';
                     };
                 } else {
                     alert("Text-to-speech not supported in your browser");
                 }
             }
-
+            
             // Initialize when page loads
             window.addEventListener('DOMContentLoaded', function() {
                 initSpeech();
             });
-
+            
             // Some browsers need this event to load voices
             window.speechSynthesis.onvoiceschanged = populateVoiceList;
         </script>

@@ -264,9 +264,18 @@ class POSTransaction(models.Model):
 
 class POSTransactionItem(models.Model):
     transaction = models.ForeignKey(POSTransaction, on_delete=models.CASCADE, related_name='items')
-    product = models.ForeignKey(POSProduct, on_delete=models.PROTECT)
+    product = models.ForeignKey(POSProduct, on_delete=models.PROTECT, null=True, blank=True)
     quantity = models.IntegerField(default=1)
     price = models.DecimalField(max_digits=10, decimal_places=2)
+    product_name = models.CharField(max_length=255, blank=True)  # Add this field
+    
+    def save(self, *args, **kwargs):
+        if not self.product_name:
+            if self.product:
+                self.product_name = self.product.name
+            elif hasattr(self, '_inventory_product_name'):
+                self.product_name = self._inventory_product_name
+        super().save(*args, **kwargs)
 
 
 class SalesForecast(models.Model):

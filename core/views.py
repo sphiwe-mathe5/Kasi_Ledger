@@ -979,6 +979,16 @@ def email(request):
 @login_required
 def pos_view(request):
     products = POSProduct.objects.filter(user=request.user)
+    items = Product.objects.filter(
+        profile=request.user.profile,
+        status='IN',
+        quantity__gt=0
+    )
+    
+    # Calculate price per unit for inventory products
+    for item in items:
+        item.price_per_unit = item.price / item.original_quantity if item.original_quantity else 0
+    
     pending_orders = POSTransaction.objects.filter(
         user=request.user,
         collected=False
@@ -986,8 +996,11 @@ def pos_view(request):
     
     return render(request, 'core/pos_view.html', {
         'products': products,
+        'items': items,
         'pending_orders': pending_orders
     })
+
+
 
 @login_required
 @csrf_exempt
@@ -1010,9 +1023,8 @@ def add_product(request):
 def complete_sale(request):
     if request.method == 'POST':
         try:
-            # Check if the user has an active subscription or is within the trial period
+            # Check subscription status (keep your existing subscription checks)
             subscription = Subscription.objects.filter(user=request.user).first()
-
             if not subscription:
                 return JsonResponse({
                     'success': False,
@@ -1026,7 +1038,6 @@ def complete_sale(request):
                     }
                 }, status=403)
 
-            # Check if the trial has ended
             if subscription.status == 'trialing' and subscription.trial_end_date <= timezone.now():
                 return JsonResponse({
                     'success': False,
@@ -1040,53 +1051,84 @@ def complete_sale(request):
                     }
                 }, status=403)
 
-            # If the user has an active subscription or is within the trial period, proceed with the sale
             data = json.loads(request.body)
-            transaction = POSTransaction.objects.create(
-                total_amount=data['total_amount'],
-                money_rendered=data.get('money_rendered'),
-                change=data.get('change', 0),
-                user=request.user
-            )
-
-            # Add transaction items
-            product_details = []
-            for item in data['items']:
-                product = POSProduct.objects.get(id=item['product_id'], user=request.user)
-                POSTransactionItem.objects.create(
-                    transaction=transaction,
-                    product=product,
-                    quantity=item['quantity'],
-                    price=item['price']
+            
+            with transaction.atomic():
+                # Create transaction
+                pos_transaction = POSTransaction.objects.create(
+                    total_amount=data['total_amount'],
+                    money_rendered=data.get('money_rendered'),
+                    change=data.get('change', 0),
+                    user=request.user
                 )
-                product_details.append({
-                    'name': product.name,
-                    'quantity': item['quantity'],
-                    'price': item['price']
+
+                product_details = []
+                
+                for item in data['items']:
+                    if item.get('type') == 'inventory':
+                        # Handle Inventory Products (with quantity deduction)
+                        product = Product.objects.select_for_update().get(
+                            id=item['product_id'],
+                            profile=request.user.profile,
+                            status='IN'
+                        )
+                        
+                        # Verify and update quantity
+                        if product.quantity < item['quantity']:
+                            raise Exception(f'Not enough stock for {product.name}')
+                        
+                        product.quantity -= item['quantity']
+                        if product.quantity <= 0:
+                            product.status = 'OUT'
+                        product.save()
+                        
+                        # Create transaction item without linking to POSProduct
+                        POSTransactionItem.objects.create(
+                            transaction=pos_transaction,
+                            product=None,
+                            quantity=item['quantity'],
+                            price=item['price'],
+                            product_name=product.name
+                        )
+                    else:
+                        # Handle POS Products (no quantity tracking)
+                        product = POSProduct.objects.get(
+                            id=item['product_id'],
+                            user=request.user
+                        )
+                        
+                        # Create transaction item linked to POSProduct
+                        POSTransactionItem.objects.create(
+                            transaction=pos_transaction,
+                            product=product,
+                            quantity=item['quantity'],
+                            price=item['price']
+                        )
+                    
+                    product_details.append({
+                        'name': item['name'],
+                        'quantity': item['quantity'],
+                        'price': item['price']
+                    })
+
+                return JsonResponse({
+                    'success': True,
+                    'new_pending_order': {
+                        'id': pos_transaction.id,
+                        'order_number': pos_transaction.order_number,
+                        'total_amount': pos_transaction.total_amount,
+                        'created_at': pos_transaction.created_at.isoformat(),
+                        'products': product_details
+                    },
+                    'order_number': pos_transaction.order_number,
+                    'total': str(pos_transaction.total_amount),
+                    'change': str(pos_transaction.change)
                 })
 
-            # Prepare the response with the new pending order details
-            new_pending_order = {
-                'id': transaction.id,
-                'order_number': transaction.order_number,
-                'total_amount': transaction.total_amount,
-                'created_at': transaction.created_at.isoformat(),
-                'products': product_details  
-            }
-
-            return JsonResponse({
-                'success': True,
-                'new_pending_order': new_pending_order,
-                'order_number': transaction.order_number,
-                'total': str(transaction.total_amount),
-                'change': str(transaction.change)
-            })
-
+        except (POSProduct.DoesNotExist, Product.DoesNotExist) as e:
+            return JsonResponse({'success': False, 'error': str(e)}, status=400)
         except Exception as e:
-            return JsonResponse({
-                'success': False,
-                'error': str(e)
-            }, status=400)
+            return JsonResponse({'success': False, 'error': str(e)}, status=400)
 
 @login_required
 @csrf_exempt
