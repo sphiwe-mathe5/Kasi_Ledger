@@ -56,8 +56,16 @@
 <nav class="navbar">
   <a href="{% url 'index' %}" class="logo">KASI LEDGER</a>
   <div class="quote_btn-container">
+    {% if user.company_category == 'restaurant' %}
+      <a href="{% url 'sales_analytics' %}" class="sign-up"><span>Sales Analytics</span></a>
+      <a href="{% url 'index' %}" class="sign-up"><span>Home</span></a>
+    {% elif user.company_category == 'clothing_brand' %}
       <a href="{% url 'subscribed' %}" class="sign-up"><span>POS</span></a>
-      <a href="{% url 'list_income_statements' %}" class="sign-up"><span>Statements</span></a>
+      <a href="{% url 'index' %}" class="sign-up"><span>Home</span></a>
+    {% elif user.company_category == 'market' %}
+      <a href="{% url 'subscribed' %}" class="sign-up"><span>POS</span></a>
+      <a href="{% url 'index' %}" class="sign-up"><span>Home</span></a>
+    {% endif %}
   </div>
 </nav>
 
