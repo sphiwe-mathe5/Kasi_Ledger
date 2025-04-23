@@ -6,9 +6,8 @@ function setScanMode(mode) {
   scanMode = mode;
   document.getElementById("scanInBtn").style.fontWeight =
     mode === "in" ? "bold" : "normal";
-  document.getElementById("currentMode").textContent = `Current Mode: ${
-    mode.charAt(0).toUpperCase() + mode.slice(1)
-  }`;
+  document.getElementById("currentMode").textContent = 
+    `Current Mode: ${mode.charAt(0).toUpperCase() + mode.slice(1)}`;
   document.getElementById("productDetails").style.display =
     mode === "in" ? "block" : "none";
 }
@@ -21,6 +20,11 @@ function onScanSuccess(decodedText, decodedResult) {
   }
   lastScanTime = currentTime;
 
+  processBarcode(decodedText);
+}
+
+// New function to process barcodes from any source (scanner or manual entry)
+function processBarcode(barcode) {
   if (scanMode === "in" && !validateInputs()) {
     alert("Please fill in all product details before scanning in.");
     return;
@@ -29,14 +33,26 @@ function onScanSuccess(decodedText, decodedResult) {
   //playBeep();
 
   if (scanMode === "bulk") {
-    saveBulkProducts(decodedText);
+    saveBulkProducts(barcode);
   } else {
-    saveProduct(decodedText, scanMode);
+    saveProduct(barcode, scanMode);
   }
 }
 
-function onScanFailure(error) {
+// New function to handle manual barcode entry
+function handleManualBarcode() {
+  const manualBarcode = document.getElementById("manualBarcode").value.trim();
   
+  if (!manualBarcode) {
+    alert("Please enter a barcode value");
+    return;
+  }
+  
+  processBarcode(manualBarcode);
+}
+
+function onScanFailure(error) {
+  // Existing empty function
 }
 
 let html5QrcodeScanner = new Html5QrcodeScanner("reader", {
@@ -58,7 +74,6 @@ function validateInputs() {
   let productCategory = document.getElementById("productCategory").value;
   return productName && productPrice && productCost && productCategory;
 }
-
 
 let lastUpdate = new Date().toISOString();
 
@@ -174,7 +189,6 @@ function updateMonthlyTotals() {
   });
 }
 
-
 function fetchLatestProducts() {
   $.ajax({
     url: ENQUIRE,
@@ -191,13 +205,20 @@ function fetchLatestProducts() {
   });
 }
 
-
 $(document).ready(function () {
   fetchLatestProducts(); 
-
   
+  // Add event listener for manual barcode button
+  $("#useManualBarcodeBtn").on("click", handleManualBarcode);
+  
+  // Add event listener for Enter key in manual barcode field
+  $("#manualBarcode").on("keypress", function(e) {
+    if (e.which === 13) { // Enter key
+      e.preventDefault();
+      handleManualBarcode();
+    }
+  });
 });
-
 
 function saveProduct(barcode, action) {
   let data = {
@@ -240,6 +261,7 @@ function saveProduct(barcode, action) {
                 document.getElementById("productCost").value = "";
                 document.getElementById("productQuantity").value = "1";
                 document.getElementById("productCategory").value = "";
+                document.getElementById("manualBarcode").value = ""; // Clear manual barcode field
             }
             
             fetchLatestProducts();
@@ -264,7 +286,7 @@ function saveProduct(barcode, action) {
     error: function () {
         alert("Error communicating with the server.");
     },
-});
+  });
 }
 
 function showTrialEndedModal(details) {
@@ -319,7 +341,6 @@ function showLimitModal(details) {
 function closeLimitModal() {
   document.getElementById("limitReachedModal").style.display = "none";
 }
-
 
 window.onclick = function(event) {
   var modal = document.getElementById("limitReachedModal");
@@ -378,7 +399,6 @@ document.addEventListener("DOMContentLoaded", function () {
           row.style.display = "none";
         }
       });
-
       
       const dateContainer = table.closest(".table-container");
       if (dateContainer) {
@@ -390,7 +410,6 @@ document.addEventListener("DOMContentLoaded", function () {
             visibleCount;
         }
       }
-
       
       const totalRow = table.querySelector(".total-row");
       if (totalRow) {
@@ -398,9 +417,29 @@ document.addEventListener("DOMContentLoaded", function () {
       }
     });
   }
-
   
   searchInput.addEventListener("input", filterTable);
   categoryFilter.addEventListener("change", filterTable);
   statusFilter.addEventListener("change", filterTable);
 });
+
+
+const openModalBtn = document.getElementById('openModalBtn');
+const closeModalBtn = document.getElementById('closeModalBtn');
+const modal = document.getElementById('scanGuideModal');
+
+openModalBtn.addEventListener('click', () => {
+  modal.style.display = 'block';
+});
+
+closeModalBtn.addEventListener('click', () => {
+  modal.style.display = 'none';
+});
+
+// Close modal when clicking outside of the modal content
+window.addEventListener('click', (event) => {
+  if (event.target === modal) {
+    modal.style.display = 'none';
+  }
+});
+

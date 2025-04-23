@@ -998,3 +998,71 @@ input[type="password"]:focus {
     from { opacity: 0; }
     to { opacity: 1; }
 }
+
+.barcode-input-group {
+  display: flex;
+  gap: 8px;
+}
+
+.use-manual-btn {
+  background-color: #4CAF50;
+  color: white;
+  border: none;
+  padding: 5px 12px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.use-manual-btn:hover {
+  background-color: #45a049;
+}
+
+
+
+
+
+
+.scanner-section {
+  flex: 1;
+  background: white;
+  padding: 20px;
+  border-radius: 8px;
+  min-width: 300px;
+}
+.cart-section {
+  flex: 2;
+  background: white;
+  padding: 20px;
+  border-radius: 8px;
+}
+h4 {
+  font-size: 20px;
+}
+#reader {
+  width: 100%;
+  min-height: 300px;
+}
+button {
+  padding: 10px 20px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 18px;
+}
+
+#scanner-status {
+  margin-top: 10px;
+  padding: 10px;
+  border-radius: 4px;
+  text-align: center;
+}
+
+#result {
+  grid-column: span 4;
+  font-size: 30px;
+  text-align: right;
+  padding: 20px;
+  background-color: #f5f5f5;
+  border: 1px solid #ddd;
+}

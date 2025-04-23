@@ -19,6 +19,77 @@
             href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap"
         />
 
+        <style>
+            .mode-selector {
+                display: flex;
+                justify-content: center; /* Centers items horizontally */
+                align-items: center;     /* Optional: centers items vertically */
+                margin-bottom: 20px;
+                border-bottom: 1px solid #ddd;
+                flex-wrap: wrap;         /* Allows buttons to wrap on smaller screens */
+            }
+            
+            
+            .mode-btn {
+                padding: 10px 20px;
+                background: #f1f1f1;
+                border: none;
+                cursor: pointer;
+                font-size: 16px;
+                transition: all 0.3s;
+            }
+            
+            .mode-btn.active {
+                background: #4CAF50;
+                color: white;
+            }
+            
+            .mode-section {
+                margin-bottom: 20px;
+            }
+            
+            .products-grid {
+                display: grid;
+                grid-template-columns: repeat(3, 1fr);
+                gap: 16px;
+                padding: 10px;
+            }
+        
+            .product-card {
+                border: 1px solid #ccc;
+                border-radius: 6px;
+                padding: 10px;
+                background-color: #f9f9f9;
+                text-align: center;
+                font-size: 10px;
+                box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+                transition: transform 0.2s ease, box-shadow 0.2s ease;
+                cursor: pointer;
+            }
+        
+            .product-card:hover {
+                transform: translateY(-3px);
+                box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+            }
+        
+            .product-card h5 {
+                font-size: 13px;
+                margin: 0;
+                color: #333;
+            }
+        
+            @media screen and (max-width: 768px) {
+                .products-grid {
+                    grid-template-columns: repeat(2, 1fr);
+                }
+            }
+        
+            @media screen and (max-width: 480px) {
+                .products-grid {
+                    grid-template-columns: 1fr;
+                }
+            }
+        </style>
     </head>
     <body>
         <nav class="navbar">
@@ -62,15 +133,49 @@
                 <div class="processing-text">Processing Sale...</div>
             </div>
         </div>
+
+        <div class="mode-selector">
+            <button id="scanModeBtn" class="mode-btn active" onclick="setMode('scan')">Scan Mode</button>
+            <button id="manualModeBtn" class="mode-btn" onclick="setMode('manual')">Manual Mode</button>
+        </div>
         <div class="container">
-            <div class="scanner-section">
-                <h4>Scanner</h4>
-                <div id="reader"></div>
-                <div id="scanner-status"></div>
-                <audio id="beepAudio">
-                    <source src="{% static 'js/BEEP.wav' %}" type="audio/mpeg" />
-                </audio>
+
+
+            
+            <!-- Scanner Section (shown by default) -->
+            <div id="scannerSection" class="mode-section">
+                <div class="scanner-section">
+                    <h4>Scanner</h4>
+                    <div id="reader"></div>
+                    <div id="scanner-status"></div>
+                    <audio id="beepAudio">
+                        <source src="{% static 'js/BEEP.wav' %}" type="audio/mpeg" />
+                    </audio>
+                </div>
             </div>
+            
+            <!-- Manual Product Selection Section (hidden by default) -->
+            <div id="manualSection" class="mode-section" style="display: none;">
+                <div class="scanner-section">
+                    <h4>Your Products</h4>
+                    <div class="products-grid">
+                        {% for product in products %}
+                            {% if product.quantity > 0 %}
+                                <div class="product-card clickable-product" 
+                                     data-barcode="{{ product.barcode }}"
+                                     data-name="{{ product.name }}"
+                                     data-price="{{ product.unit_price }}"
+                                     data-quantity="{{ product.quantity }}"
+                                     onclick="addProductToCart('{{ product.barcode }}')">
+                                    <h5>{{ product.name }} R{{ product.unit_price }}</h5>
+                                </div>
+                            {% endif %}
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+            
+
             <div class="cart-section">
                 <h4>Current Sale</h4>
                 <div class="table-container">
