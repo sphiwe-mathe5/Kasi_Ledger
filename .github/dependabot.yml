@@ -1,0 +1,15 @@
+version: 2
+updates:
+  - package-ecosystem: "pip"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 5
+    commit-message:
+      prefix: "fix(deps)"
+    pull-request-branch-name:
+      separator: "-"
+    allow:
+      - dependency-type: "all"
+    auto-merge: true
+
