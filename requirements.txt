@@ -11,7 +11,7 @@ chardet==5.2.0
 charset-normalizer==3.3.2
 colorama==0.4.6
 crispy-bootstrap4==2024.1
-cryptography==43.0.3
+cryptography==44.0.1
 cssselect2==0.7.0
 Django==4.2.11
 django-allauth==65.1.0
