@@ -412,3 +412,13 @@ SECURE_REFERRER_POLICY = "strict-origin-when-cross-origin"
 SECURE_CROSS_ORIGIN_OPENER_POLICY = "same-origin"
 SECURE_CROSS_ORIGIN_EMBEDDER_POLICY = "require-corp"
 SECURE_CROSS_ORIGIN_RESOURCE_POLICY = "same-origin"
+
+
+if os.environ.get('RAILWAY_ENVIRONMENT'):
+    import dj_database_url
+
+    DATABASES = {
+        'default': dj_database_url.config(conn_max_age=600, ssl_require=True)
+    }
+
+    ALLOWED_HOSTS = ['*']
