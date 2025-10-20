@@ -52,7 +52,7 @@ tinycss2==1.4.0
 tinyhtml5==2.0.0
 tqdm==4.67.1
 typing_extensions==4.12.2
-tzdata==2024.1
+tzdata>=2025.2
 urllib3==2.2.2
 # WeasyPrint kept at 63.0 (requires Pillow <11)
 weasyprint==63.0
