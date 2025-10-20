@@ -1,596 +1,859 @@
 {% load static %}
 <!DOCTYPE html>
 <html lang="en">
-    <head>
-        <meta charset="UTF-8" />
-        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        <link
-            rel="stylesheet"
-            href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap"
-        />
-        <link
-            rel="stylesheet"
-            href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css"
-        />
-        <title>POS System</title>
-        <link rel="icon" href="{% static 'images/kasicon.png' %}" />
-        <link rel="stylesheet" href="{% static 'css/list.css' %}" />
-        <style>
-            :root {
-                --primary-color: #3498db;
-                --secondary-color: #2ecc71;
-                --background-color: #fffff;
-                --text-color: #333;
-                --border-color: #ddd;
-            }
-            body {
-                font-family: "Arial", Poppins;
-                line-height: 1.6;
-                color: var(--text-color);
-                background-color: var(--background-color);
-                margin: 0;
-                padding: 0;
-            }
-            .navbar {
-                background-color: white;
-                color: white;
-                padding: 1rem;
-                display: flex;
-                justify-content: space-between;
-                align-items: center;
-            }
-            .nav-links a {
-                color: black;
-                text-decoration: none;
-                font-weight: bold;
-                font-family: "Arial", Poppins;
-            }
-            .add-product-btn {
-                background-color: black;
-                color: white;
-                border: none;
-                padding: 0.5rem 1rem;
-                cursor: pointer;
-                border-radius: 4px;
-            }
-            .main-content {
-                padding: 2rem;
-            }
-            .flex-container {
-                display: flex;
-                gap: 2rem;
-                margin-bottom: 2rem;
-            }
-            .product-grid,
-            .cart-section {
-                flex: 1;
-                background-color: white;
-                border: 1px solid #ddd;
-                border-radius: 8px;
-                padding: 1rem;
-            }
-            .cart-section {
-                max-width: 500px;
-            }
-            .product-grid h2 {
-                margin-top: -15px;
-                display: inline-block;
-                font-size: 24px;
-                margin-right: 10px;
-            }
-            .cart-section h2 {
-                margin-top: -15px;
-                font-size: 1.1rem;
-            }
-            .grid {
-                display: grid;
-                grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-                gap: 1rem;
-            }
-            .product-item {
-                background-color: #f4f4f4;
-                padding: 3px 10px;
-                border-radius: 8px;
-                font-family: Arial, Poppins;
-                cursor: pointer;
-                transition: background-color 0.3s ease;
-            }
-            .product-item h3 {
-                font-size: 0.9rem;
-            }
-            .product-item:hover {
-                background-color: #e0e0e0;
-            }
-            .cart-section input,
-            .cart-section button {
-                width: 70%;
-                padding: 0.5rem;
-                border: 1px solid #ddd;
-                border-radius: 8px;
-                margin-top: 1rem;
-                font-family: Arial, Poppins;
-            }
-            .complete-sale-btn {
-                background-color: var(--secondary-color);
-                color: white;
-                border: none;
-                cursor: pointer;
-                border-radius: 4px;
-                font-family: Arial, Poppins;
-            }
-            .pending-orders {
-                padding: 1rem;
-            }
-            .order-list {
-                display: flex;
-                flex-direction: column;
-                gap: 1rem;
-            }
-            .order-item {
-                border: 1px solid #e2e8f0;
-                border-radius: 0.5rem;
-                padding: 1rem;
-                background-color: white;
-            }
-            .order-header {
-                display: flex;
-                justify-content: space-between;
-                align-items: center;
-                margin-bottom: 0.75rem;
-            }
-            .order-info {
-                display: flex;
-                gap: 1rem;
-                align-items: center;
-            }
-            .order-products {
-                background-color: #f8fafc;
-                border-radius: 0.375rem;
-                padding: 0.75rem;
-                display: flex;
-                flex-direction: column;
-                gap: 0.5rem;
-            }
-            .product-item {
-                display: flex;
-                justify-content: space-between;
-                align-items: center;
-                padding: 0.5rem;
-                border-bottom: 1px solid #e2e8f0;
-            }
-            .product-item:last-child {
-                border-bottom: none;
-            }
-            .product-name {
-                flex: 1;
-                font-weight: 500;
-            }
-            .product-quantity {
-                margin: 0 1rem;
-                color: #64748b;
-            }
-            .product-price {
-                font-weight: 500;
-                color: #0f172a;
-            }
-            .collect-btn {
-                background: none;
-                border: none;
-                color: green;
-                font-size: 20px;
-                cursor: pointer;
-                transition: color 0.3s ease;
-            }
-            .collect-btn:hover {
-                color: darkgreen;
-            }
-            .collect-btn i {
-                margin-right: 8px;
-            }
-            .modal {
-                display: none;
-                position: fixed;
-                z-index: 1;
-                left: 0;
-                top: 0;
-                width: 100%;
-                height: 100%;
-                background-color: rgba(0, 0, 0, 0.5);
-            }
-            .modal-content {
-                background-color: white;
-                margin: 15% auto;
-                padding: 2rem;
-                border-radius: 8px;
-                width: 80%;
-                max-width: 500px;
-            }
-            .modal-content input {
-                width: 100%;
-                padding: 0.5rem;
-                margin-bottom: 1rem;
-                border: 1px solid #ddd;
-                border-radius: 8px;
-            }
-            .form-actions {
-                display: flex;
-                justify-content: flex-end;
-                gap: 1rem;
-            }
-            .submit-btn,
-            .cancel-btn {
-                padding: 0.5rem 1rem;
-                border: none;
-                border-radius: 4px;
-                cursor: pointer;
-            }
-            .submit-btn {
-                background-color: var(--secondary-color);
-                color: white;
-            }
-            .cancel-btn {
-                background-color: #e74c3c;
-                color: white;
-            }
-            @media (max-width: 768px) {
-                .flex-container {
-                    flex-direction: column;
-                }
-            }
-            .receipt {
-                display: none;
-                width: 300px;
-                padding: 20px;
-                border: 1px solid #000;
-                margin: 20px auto;
-            }
-            @media print {
-                body * {
-                    visibility: hidden;
-                }
-                .receipt,
-                .receipt * {
-                    visibility: visible;
-                }
-                .receipt {
-                    position: absolute;
-                    left: 0;
-                    top: 0;
-                }
-            }
-            .receipt {
-                background-color: #fff;
-                width: 90%;
-                max-width: 400px;
-                padding: 20px;
-                border-radius: 10px;
-                box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-                font-family: "Courier New", Courier, monospace;
-                position: relative;
-                text-align: center;
-                transition: all 0.3s ease-in-out;
-            }
-            .receipt h2 {
-                font-size: 1.5rem;
-                margin-bottom: 15px;
-                font-weight: bold;
-            }
-            .receipt hr {
-                border: 0;
-                border-top: 1px solid #ddd;
-                margin: 10px 0;
-            }
-            .receipt p {
-                margin: 10px 0;
-                font-size: 1rem;
-            }
-            .receipt strong {
-                font-size: 1.1rem;
-                font-weight: bold;
-            }
-            .close-btn {
-                position: absolute;
-                top: 10px;
-                right: 10px;
-                background-color: transparent;
-                border: none;
-                font-size: 1.5rem;
-                cursor: pointer;
-                color: #333;
-            }
-            .print-btn {
-                background-color: #4caf50;
-                color: white;
-                padding: 10px 20px;
-                border: none;
-                border-radius: 5px;
-                font-size: 1rem;
-                cursor: pointer;
-                transition: background-color 0.3s;
-            }
-            .print-btn:hover {
-                background-color: #45a049;
-            }
-            @media (max-width: 500px) {
-                .receipt {
-                    padding: 15px;
-                    width: 100%;
-                }
-                .receipt h2 {
-                    font-size: 1.2rem;
-                }
-                .receipt p {
-                    font-size: 0.9rem;
-                }
-                .print-btn {
-                    font-size: 0.9rem;
-                }
-            
-                .order-item {
-                    border: 1px solid #e2e8f0;
-                    border-radius: 0.5rem;
-                    width: 20rem;
-                    padding: 1rem;
-                    margin: 0 -3rem;
-                    background-color: white;
-                }
-            }
-            #cartItems {
-                font-family: Arial, sans-serif;
-            }
-            .cart-item {
-                display: flex;
-                justify-content: space-between;
-                align-items: center;
-                margin-bottom: 10px;
-                padding: 5px 0;
-                border-bottom: 1px solid #ddd;
-            }
-            .cart-item button {
-                background: none;
-                border: none;
-                color: red;
-                cursor: pointer;
-                padding: 5px;
-            }
-            .cart-item button:hover {
-                color: darkred;
-            }
-            .cart-item .item-info {
-                flex: 1;
-                padding-right: 10px;
-            }
-            .add-product-icon {
-                display: inline-block;
-                background-color: #4caf50;
-                color: white;
-                border-radius: 50%;
-                width: 30px;
-                height: 30px;
-                display: flex;
-                justify-content: center;
-                align-items: center;
-                cursor: pointer;
-                font-size: 20px;
-                transition: background-color 0.3s ease;
-            }
-            .add-product-icon:hover {
-                background-color: #45a049;
-            }
-            .collect-btn {
-                position: relative;
-                padding: 8px 16px;
-                background-color: #e6f4ea;
-                color: #34a853;
-                border: none;
-                border-radius: 4px;
-                cursor: pointer;
-                font-family: Arial, sans-serif;
-                font-size: 14px;
-                transition: all 0.3s ease;
-                display: inline-flex;
-                align-items: center;
-                gap: 8px;
-            }
-            .collect-btn:hover:not(.loading) {
-                background-color: #d4eede;
-            }
-            .collect-btn.loading {
-                background-color: #f1f3f4;
-                color: #80868b;
-                cursor: not-allowed;
-            }
-            .check-icon {
-                width: 16px;
-                height: 16px;
-                fill: currentColor;
-            }
-            .loader {
-                display: none;
-                width: 16px;
-                height: 16px;
-                border: 2px solid #80868b;
-                border-radius: 50%;
-                border-top-color: transparent;
-                animation: spin 0.8s linear infinite;
-            }
-            .collect-btn.loading .loader {
-                display: inline-block;
-            }
-            .collect-btn.loading .check-icon,
-            .collect-btn.loading .btn-text {
-                display: none;
-            }
-            @keyframes spin {
-                to {
-                    transform: rotate(360deg);
-                }
-            }
-            @keyframes fadeOut {
-                from {
-                    opacity: 1;
-                }
-                to {
-                    opacity: 0;
-                }
-            }
-            .fade-out {
-                animation: fadeOut 0.5s forwards;
-            }
-            .modals {
-                display: none;
-                position: fixed;
-                top: 0;
-                left: 0;
-                width: 100%;
-                height: 100%;
-                background-color: rgba(0, 0, 0, 0.5);
-                z-index: 1000;
-                justify-content: center;
-                align-items: center;
-            }
-            .modals.show {
-                display: flex;
-            }
-            .modals-content {
-                background-color: white;
-                padding: 30px;
-                border-radius: 8px;
-                text-align: center;
-                box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-            }
-            .sale-loader {
-                width: 48px;
-                height: 48px;
-                border: 4px solid #f3f3f3;
-                border-top: 4px solid #3498db;
-                border-radius: 50%;
-                animation: spin 1s linear infinite;
-                margin: 20px auto;
-            }
-            .processing-text {
-                color: #333;
-                margin: 15px 0;
-                font-size: 18px;
-            }
-            @keyframes spin {
-                0% {
-                    transform: rotate(0deg);
-                }
-                100% {
-                    transform: rotate(360deg);
-                }
-            }
-            .complete-sale-btn {
-                padding: 10px 20px;
-                background-color: #4caf50;
-                color: white;
-                border: none;
-                border-radius: 4px;
-                cursor: pointer;
-                font-size: 16px;
-                transition: background-color 0.3s;
-            }
-            .complete-sale-btn:hover {
-                background-color: #45a049;
-            }
-            .complete-sale-btn:disabled {
-                background-color: #cccccc;
-                cursor: not-allowed;
-            }
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link
+        rel="stylesheet"
+        href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap"
+    />
+    <link
+        rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css"
+    />
+    <title>POS System</title>
+    <link rel="icon" href="{% static 'images/kasicon.png' %}" />
+    <link rel="stylesheet" href="{% static 'css/list.css' %}" />
+<style>
+    :root {
+        --primary-color: #3498db;
+        --secondary-color: #2ecc71;
+        --background-color: #fffff;
+        --text-color: #333;
+        --border-color: #ddd;
+    }
+    body {
+        font-family: "Arial", Poppins;
+        line-height: 1.6;
+        color: var(--text-color);
+        background-color: var(--background-color);
+        margin: 0;
+        padding: 0;
+    }
+    .user-name {
+        font-size: 1.5rem;
+        font-weight: bold;
+        color: var(--text-color);
+        margin: 0 0px 8px;
+        margin-top: 4rem;
+        text-align: center;
+    }
+    .user-info {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        position: relative;
+        margin-left: 50rem;
+    }
 
-            .limit-modal {
-                display: none;
-                position: fixed;
-                z-index: 1000;
-                left: 0;
-                top: 0;
-                width: 100%;
-                height: 100%;
-                background-color: rgba(0, 0, 0, 0.5);
-            }
-            
-            .limit-modal-content {
-                background-color: white;
-                margin: 15% auto;
-                padding: 20px;
-                border-radius: 8px;
-                width: 90%;
-                max-width: 400px;
-                text-align: center;
-                box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-            }
-            
-            .limit-modal-icon {
-                font-size: 48px;
-                margin-bottom: 16px;
-            }
-            
-            .limit-modal-title {
-                font-size: 24px;
-                margin-bottom: 16px;
-                color: #333;
-            }
-            
-            .limit-modal-message {
-                font-size: 16px;
-                color: #666;
-                margin-bottom: 24px;
-            }
-            
-            .limit-modal-button {
-                background-color: #007bff;
-                color: white;
-                border: none;
-                padding: 10px 20px;
-                border-radius: 4px;
-                cursor: pointer;
-                font-size: 16px;
-            }
-            
-            .limit-modal-button:hover {
-                background-color: #0056b3;
-            }
-            
-            .forgotpassword-link {
-                color: #007bff;
-                text-decoration: none;
-            }
-            
-            .forgotpassword-link:hover {
-                text-decoration: underline;
-            }
+    .user-circle {
+        width: 32px;
+        height: 32px;
+        background: #f8f9fa;
+        border: 2px solid #e1e5e9;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        margin-top: 3.3rem;
+        color: #6c757d;
+    }
 
-            .callout-btn {
-                background-color: #4CAF50;
-                color: white;
-                border: none;
-                padding: 7px 15px;
-                border-radius: 4px;
-                cursor: pointer;
-                display: flex;
-                align-items: center;
-                margin-bottom: 10px;
-                gap: 6px;
-                transition: background-color 0.3s;
-            }
-            
-            .callout-btn:hover {
-                background-color: #45a049;
-            }
-            
-            .callout-btn svg {
-                fill: currentColor;
-            }
-        </style>
-    </head>
-    <body>
-        <nav class="navbar">
-            <a href="{% url 'index' %}" class="logo">KASI LEDGER</a>
-            <div class="quote_btn-container">
-                <a href="{% url 'logout' %}" class="sign-up"><span>Logout</span></a>
-            </div>
-        </nav>
+    .user-circle:hover {
+        background: #e9ecef;
+        border-color: #3498db;
+        color: #3498db;
+    }
+
+    .user-dropdown {
+        position: absolute;
+        top: 60px;
+        right: 20px;
+        background-color: white;
+        border-radius: 8px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        z-index: 1000;
+        width: 300px;
+        overflow: hidden;
+
+        /* start hidden */
+        opacity: 0;
+        transform: translateY(20px);
+        pointer-events: none;       /* 🔥 prevents blocking clicks when hidden */
+        transition: opacity 0.3s ease-out, transform 0.3s ease-out;
+    }
+
+    /* visible when toggled */
+    .user-dropdown.show {
+        opacity: 1;
+        transform: translateY(0);
+        pointer-events: auto;       /* 🔥 clickable only when shown */
+    }
+
+    .dropdown-header {
+        padding: 16px;
+    }
+
+    .dropdown-email {
+        color: #6c757d;
+        font-size: 14px;
+        margin-top: 4px;
+    }
+
+    /* menu is always present, no need for display:none */
+    .dropdown-menu {
+        display: block;
+    }
+
+    .dropdown-item {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 12px 16px;
+        color: #333;
+        text-decoration: none;
+        border: none;
+        background: none;
+        width: 100%;
+        cursor: pointer;
+        transition: background-color 0.2s ease;
+    }
+
+    .dropdown-item:hover {
+        background: #f8f9fa;
+    }
+
+    .dropdown-item.logout {
+        color: #dc3545;
+    }
+
+    .dropdown-item.logout:hover {
+        background: #fff5f5;
+    }
+
+    .dropdown-icon {
+        width: 16px;
+        height: 16px;
+    }
+    .user-info {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+    }
+
+    .user-initials {
+        width: 40px;
+        height: 40px;
+        background: #3498db;
+        color: white;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: bold;
+        font-size: 1rem;
+    }
+    .add-product-btn {
+        background-color: black;
+        color: white;
+        border: none;
+        padding: 0.5rem 1rem;
+        cursor: pointer;
+        border-radius: 4px;
+    }
+    .main-content {
+        padding: 2rem;
+    }
+    .flex-container {
+        display: flex;
+        gap: 2rem;
+        margin-bottom: 2rem;
+    }
+    .product-grid,
+    .cart-section {
+        flex: 1;
+        background-color: white;
+        border-radius: 8px;
+        padding: 1rem;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+    }
+    .cart-section {
+        max-width: 500px;
+    }
+    .product-grid h2 {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 25px;
+        color: #333;
+        font-size: 28px;
+    }
+    .cart-section h2 {
+        margin-top: -15px;
+        font-size: 1.1rem;
+    }
+    .grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+        gap: 1rem;
+        margin-top: 1rem;
+    }
+    .product-item {
+        background: #f8f9fa;
+        border: 2px solid transparent;
+        border-radius: 12px;
+        padding: 20px;
+        text-align: center;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        min-height: 80px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .product-item:hover {
+        background: #4caf50;
+        color: white;
+        transform: translateY(-5px);
+        box-shadow: 0 10px 25px rgba(76, 175, 80, 0.3);
+    }
+
+    .product-item h3 {
+        font-size: 16px;
+        font-weight: 600;
+    }
+    .cart-section input,
+    .cart-section button {
+        width: 80%;
+        padding: 0.5rem;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        margin-top: 1rem;
+        font-family: Arial, Poppins;
+    }
+
+    .delete-btn {
+        cursor: pointer;
+        background: none;
+        border: none;
+        color: red;
+    }
+
+    .complete-sale-btn {
+        width: 100%;
+        padding: 15px;
+        background: #4caf50;
+        color: white;
+        border: none;
+        border-radius: 10px;
+        font-size: 18px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+
+    .complete-sale-btn:hover {
+        background: #45a049;
+        transform: translateY(-2px);
+    }
+
+    .pending-orders {
+        max-width: 800px;
+
+        margin-right: 40rem;
+    }
+    .order-list {
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+    }
+
+    .order-item {
+        background: white;
+        border-radius: 8px;
+        padding: 20px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        border: 1px solid #e0e0e0;
+    }
+    .order-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 0.75rem;
+    }
+    .order-info {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+    }
+
+    .order-info strong {
+        color: #333;
+        font-size: 16px;
+    }
+
+    .order-info span {
+        color: #666;
+        font-size: 14px;
+    }
+    .order-products {
+        background-color: #f8fafc;
+        border-radius: 0.375rem;
+        padding: 0.75rem;
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+    .product-item {
+        display: flex;
+        justify-content: space-between;
+        padding: 0.5rem;
+        border-bottom: 1px solid #e2e8f0;
+        margin-right: 2rem;
+    }
+    .product-item:last-child {
+        border-bottom: none;
+    }
+    .product-name {
+        flex: 1;
+        font-weight: 500;
+    }
+    .product-quantity {
+        margin: 0 1rem;
+        color: #64748b;
+    }
+    .product-price {
+        font-weight: 500;
+        color: #0f172a;
+    }
+    .collect-btn {
+        background: none;
+        border: none;
+        color: green;
+        font-size: 20px;
+        cursor: pointer;
+        transition: color 0.3s ease;
+    }
+    .collect-btn:hover {
+        color: darkgreen;
+    }
+    .collect-btn i {
+        margin-right: 8px;
+    }
+    .modal {
+        display: none;
+        position: fixed;
+        z-index: 1;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.5);
+    }
+    .modal-content {
+        background-color: white;
+        margin: 15% auto;
+        padding: 2rem;
+        border-radius: 8px;
+        width: 80%;
+        max-width: 500px;
+    }
+    .modal-content input {
+        width: 100%;
+        padding: 0.5rem;
+        margin-bottom: 1rem;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+    }
+    .form-actions {
+        display: flex;
+        justify-content: flex-end;
+        gap: 1rem;
+    }
+    .submit-btn,
+    .cancel-btn {
+        padding: 0.5rem 1rem;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+    }
+    .submit-btn {
+        background-color: var(--secondary-color);
+        color: white;
+    }
+    .cancel-btn {
+        background-color: #e74c3c;
+        color: white;
+    }
+    @media (max-width: 768px) {
+        .flex-container {
+            flex-direction: column;
+        }
+    }
+    .receipt {
+        display: none;
+        width: 300px;
+        padding: 20px;
+        border: 1px solid #000;
+        margin: 20px auto;
+    }
+    @media print {
+        body * {
+            visibility: hidden;
+        }
+        .receipt,
+        .receipt * {
+            visibility: visible;
+        }
+        .receipt {
+            position: absolute;
+            left: 0;
+            top: 0;
+        }
+    }
+    .receipt {
+        background-color: #fff;
+        width: 90%;
+        max-width: 400px;
+        padding: 20px;
+        border-radius: 10px;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        font-family: "Courier New", Courier, monospace;
+        position: relative;
+        text-align: center;
+        transition: all 0.3s ease-in-out;
+    }
+    .receipt h2 {
+        font-size: 1.5rem;
+        margin-bottom: 15px;
+        font-weight: bold;
+    }
+    .receipt hr {
+        border: 0;
+        border-top: 1px solid #ddd;
+        margin: 10px 0;
+    }
+    .receipt p {
+        margin: 10px 0;
+        font-size: 1rem;
+    }
+    .receipt strong {
+        font-size: 1.1rem;
+        font-weight: bold;
+    }
+    .close-btn {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        background-color: transparent;
+        border: none;
+        font-size: 1.5rem;
+        cursor: pointer;
+        color: #333;
+    }
+    .print-btn {
+        background-color: #4caf50;
+        color: white;
+        padding: 10px 20px;
+        border: none;
+        border-radius: 5px;
+        font-size: 1rem;
+        cursor: pointer;
+        transition: background-color 0.3s;
+    }
+    .print-btn:hover {
+        background-color: #45a049;
+    }
+    @media (max-width: 500px) {
+        .receipt {
+            padding: 15px;
+            width: 100%;
+        }
+        .receipt h2 {
+            font-size: 1.2rem;
+        }
+        .receipt p {
+            font-size: 0.9rem;
+        }
+        .print-btn {
+            font-size: 0.9rem;
+        }
+    
+        .order-item {
+            border: 1px solid #e2e8f0;
+            border-radius: 0.5rem;
+            width: 20rem;
+            padding: 1rem;
+            margin: 0 -3rem;
+            background-color: white;
+        }
+        .user-name {
+            font-size: 1rem;
+            font-weight: bold;
+            color: var(--text-color);
+            margin: 0 0px 8px;
+            margin-top: 4rem;
+            text-align: center;
+        }
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            position: relative;
+            margin-left: 5rem;
+        }
+        .pending-orders {
+            margin-left: 2rem;
+        }
+        .pending-orders h2 {
+            font-size: 1.2rem;
+            margin-bottom: 1rem;
+        }
+    }
+    #cartItems {
+        margin-bottom: 20px;
+
+    }
+    .cart-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 10px;
+        padding: 5px 0;
+        border-bottom: 1px solid #ddd;
+    }
+    .cart-item button {
+        background: none;
+        border: none;
+        color: red;
+        cursor: pointer;
+        padding: 5px;
+    }
+    .cart-item button:hover {
+        color: darkred;
+    }
+    .cart-item .item-info {
+        flex: 1;
+        padding-right: 10px;
+    }
+    .cart-section {
+        flex: 1;
+        background: white;
+        border-radius: 15px;
+        padding: 25px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        height: fit-content;
+    }
+
+    .cart-section h2 {
+        color: #333;
+        margin-bottom: 20px;
+        font-size: 24px;
+    }
+    .add-product-icon {
+        background: #4caf50;
+        color: white;
+        width: 35px;
+        height: 35px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        margin-left: 6rem;
+        margin-top: -1rem;
+    }
+
+    .add-product-icon:hover {
+        background: #45a049;
+        transform: scale(1.1);
+    }
+    .collect-btn {
+        position: relative;
+        padding: 8px 16px;
+        background-color: #e6f4ea;
+        color: #34a853;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        font-family: Arial, sans-serif;
+        font-size: 14px;
+        transition: all 0.3s ease;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+    }
+    .collect-btn:hover:not(.loading) {
+        background-color: #d4eede;
+    }
+    .collect-btn.loading {
+        background-color: #f1f3f4;
+        color: #80868b;
+        cursor: not-allowed;
+    }
+    .check-icon {
+        width: 16px;
+        height: 16px;
+        fill: currentColor;
+    }
+    .loader {
+        display: none;
+        width: 16px;
+        height: 16px;
+        border: 2px solid #80868b;
+        border-radius: 50%;
+        border-top-color: transparent;
+        animation: spin 0.8s linear infinite;
+    }
+    .collect-btn.loading .loader {
+        display: inline-block;
+    }
+    .collect-btn.loading .check-icon,
+    .collect-btn.loading .btn-text {
+        display: none;
+    }
+    @keyframes spin {
+        to {
+            transform: rotate(360deg);
+        }
+    }
+    @keyframes fadeOut {
+        from {
+            opacity: 1;
+        }
+        to {
+            opacity: 0;
+        }
+    }
+    .fade-out {
+        animation: fadeOut 0.5s forwards;
+    }
+    .modals {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.5);
+        z-index: 1000;
+        justify-content: center;
+        align-items: center;
+    }
+    .modals.show {
+        display: flex;
+    }
+    .modals-content {
+        background-color: white;
+        padding: 30px;
+        border-radius: 8px;
+        text-align: center;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    }
+    .sale-loader {
+        width: 48px;
+        height: 48px;
+        border: 4px solid #f3f3f3;
+        border-top: 4px solid #3498db;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+        margin: 20px auto;
+    }
+    .processing-text {
+        color: #333;
+        margin: 15px 0;
+        font-size: 18px;
+    }
+    @keyframes spin {
+        0% {
+            transform: rotate(0deg);
+        }
+        100% {
+            transform: rotate(360deg);
+        }
+    }
+    .complete-sale-btn {
+        padding: 10px 20px;
+        background-color: #4caf50;
+        color: white;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 16px;
+        transition: background-color 0.3s;
+    }
+    .complete-sale-btn:hover {
+        background-color: #45a049;
+    }
+    .complete-sale-btn:disabled {
+        background-color: #cccccc;
+        cursor: not-allowed;
+    }
+
+    .limit-modal {
+        display: none;
+        position: fixed;
+        z-index: 1000;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.5);
+    }
+    
+    .limit-modal-content {
+        background-color: white;
+        margin: 15% auto;
+        padding: 20px;
+        border-radius: 8px;
+        width: 90%;
+        max-width: 400px;
+        text-align: center;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    }
+    
+    .limit-modal-icon {
+        font-size: 48px;
+        margin-bottom: 16px;
+    }
+    
+    .limit-modal-title {
+        font-size: 24px;
+        margin-bottom: 16px;
+        color: #333;
+    }
+    
+    .limit-modal-message {
+        font-size: 16px;
+        color: #666;
+        margin-bottom: 24px;
+    }
+    
+    .limit-modal-button {
+        background-color: #007bff;
+        color: white;
+        border: none;
+        padding: 10px 20px;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 16px;
+    }
+    
+    .limit-modal-button:hover {
+        background-color: #0056b3;
+    }
+    
+    .forgotpassword-link {
+        color: #007bff;
+        text-decoration: none;
+    }
+    
+    .forgotpassword-link:hover {
+        text-decoration: underline;
+    }
+
+    .callout-btn {
+        background-color: #4CAF50;
+        color: white;
+        border: none;
+        padding: 7px 15px;
+        border-radius: 4px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        margin-bottom: 10px;
+        gap: 6px;
+        transition: background-color 0.3s;
+    }
+    
+    .callout-btn:hover {
+        background-color: #45a049;
+    }
+    
+    .callout-btn svg {
+        fill: currentColor;
+    }
+
+    .search-container {
+        display: flex;
+        flex-direction: column;
+        gap: 5px;
+    }
+
+    #productSearch {
+        padding: 10px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        font-size: 16px;
+        width: 50%;
+    }
+
+    .btn-icon {
+        padding: 10px;
+        border: none;
+        border-radius: 50%;
+        cursor: pointer;
+        font-size: 16px;
+        width: 35px;
+        height: 35px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.3s ease;
+        background-color: #f8f9fa;
+        color: #6c757d;
+    }
+
+    .btn-icon:hover {
+        background-color: #e9ecef;
+        color: #495057;
+        transform: scale(1.1);
+    }
+
+    .btn-icon.active {
+        background-color: #007bff;
+        color: white;
+    }
+</style>
+</head>
+<body>
+
+<div class="user-info">
+    <p class="user-name"><strong>Hello, {{ user.company_name }}</strong></p>
+    <div class="user-circle" onclick="toggleUserDropdown()">
+        {{ user.company_name|slice:":1" }}
+    </div>
+
+    <div class="user-dropdown" id="userDropdown">
+        <div class="dropdown-header">
+            <div><strong>{{ user.company_name }}</strong></div>
+            <div class="dropdown-email">{{ user.email }}</div>
+        </div>
+        <div class="dropdown-menu">
+            <a href="{% url 'console' %}" class="dropdown-item">
+                <i class="fa-solid fa-terminal"></i>
+                Console
+            </a>
+            <a href="{% url 'sales_analytics' %}" class="dropdown-item"> 
+                <i class="fa-solid fa-money-bill-1"></i>
+                Analytics
+            </a>
+            <a href="{% url 'profile' %}" class="dropdown-item">
+                <i class="fa-solid fa-gear"></i>
+                Settings
+            </a>
+            <a href="{% url 'logout' %}" class="dropdown-item logout">
+                <i class="fa-solid fa-right-from-bracket"></i>
+                Logout
+            </a>
+        </div>
+    </div>
+</div>
 
         <!-- Subscription Required Modal -->
 <div id="subscriptionRequiredModal" class="limit-modal">
@@ -604,10 +867,10 @@
         </p>
         <button class="limit-modal-button" onclick="closeSubscriptionRequiredModal()">Got it</button>
     </div>
-  </div>
+</div>
   
-  <!-- Trial Ended Modal -->
-  <div id="trialEndedModal" class="limit-modal">
+
+<div id="trialEndedModal" class="limit-modal">
     <div class="limit-modal-content">
         <div class="limit-modal-icon">⚠️</div>
         <h3 class="limit-modal-title">Free Trial Ended</h3>
@@ -618,8 +881,9 @@
         </p>
         <button class="limit-modal-button" onclick="closeTrialEndedModal()">Got it</button>
     </div>
-  </div><!-- Subscription Required Modal -->
-  <div id="subscriptionRequiredModal" class="limit-modal">
+</div>
+
+<div id="subscriptionRequiredModal" class="limit-modal">
     <div class="limit-modal-content">
         <div class="limit-modal-icon">🔔</div>
         <h3 class="limit-modal-title">Subscription Required</h3>
@@ -630,10 +894,10 @@
         </p>
         <button class="limit-modal-button" onclick="closeSubscriptionRequiredModal()">Got it</button>
     </div>
-  </div>
+</div>
   
-  <!-- Trial Ended Modal -->
-  <div id="trialEndedModal" class="limit-modal">
+
+<div id="trialEndedModal" class="limit-modal">
     <div class="limit-modal-content">
         <div class="limit-modal-icon">⚠️</div>
         <h3 class="limit-modal-title">Free Trial Ended</h3>
@@ -644,32 +908,52 @@
         </p>
         <button class="limit-modal-button" onclick="closeTrialEndedModal()">Got it</button>
     </div>
-  </div>
-        <div class="modal" id="addProductModal">
-            <div class="modal-content">
-                <h2>Add New Product</h2>
-                <form id="addProductForm">
-                    <input type="text" id="productName" placeholder="Product Name" required />
-                    <input type="number" id="productPrice" placeholder="Price" step="0.01" required />
-                    <div class="form-actions">
-                        <button type="submit" class="submit-btn">Add Product</button>
-                        <button type="button" class="cancel-btn" onclick="closeModal()">Cancel</button>
-                    </div>
-                </form>
+</div>
+
+<div class="modal" id="addProductModal">
+    <div class="modal-content">
+        <h2>Add New Product</h2>
+        <form id="addProductForm">
+            <input type="text" id="productName" placeholder="Product Name" required />
+            <input type="number" id="productPrice" placeholder="Price" step="0.01" required />
+            <div class="form-actions">
+                <button type="submit" class="submit-btn">Add Product</button>
+                <button type="button" class="cancel-btn" onclick="closeModal()">Cancel</button>
             </div>
-        </div>
-        <div class="main-content">
-            <div class="flex-container">
-                <div class="product-grid">
-                    <h2>Products</h2>
+        </form>
+    </div>
+</div>
+
+<div class="main-content">
+    <div class="flex-container">
+        <div class="product-grid">
+            <div style="display: flex; justify-content: space-between; align-items: center; ">
+                <h2 style="margin: 0;">Menu</h2>
+                <div>
+
+                    <button id="toggleMenuBtn" class="btn btn-icon" onclick="toggleMenu()" title="Hide Menu" style="margin-right: 10px;">
+                        <i class="fas fa-eye-slash"></i>
+                    </button>
+
                     <span class="add-product-icon" onclick="showAddProductModal()">
                         <i class="fas fa-plus"></i>
                     </span>
-                    <div class="grid">
-<!-- Loop for POS Products -->
+                </div>
+            </div>
+            
+            <!-- Search Bar -->
+            <div class="search-container" style="margin-bottom: 20px;">
+                <input type="text" id="productSearch" placeholder="Search products by name..." 
+                       class="form-control" onkeyup="filterProducts()">
+            </div>
+            
+            <div class="grid" id="productsGrid">
+                <!-- Loop for POS Products -->
                 {% for product in products %}
-                <div class="product-item" onclick="addToCart({{ product.id }}, '{{ product.name }}', {{ product.price }})">
-                    <h3>{{ product.name }} R{{ product.price }}</h3>
+                <div class="product-item" 
+                     data-name="{{ product.name|lower }}"
+                     onclick="addToCart({{ product.id }}, '{{ product.name }}', {{ product.price }})">
+                    <h3>{{ product.name|slice:":15" }}{% if product.name|length > 15 %}...{% endif %} R{{ product.price }}</h3>
                 </div>
                 {% empty %}
                     <p>No POS products available.</p>
@@ -677,16 +961,25 @@
 
                 <!-- Loop for regular Products -->
                 {% for item in items %}
-                <div class="product-item" onclick="addToCart({{ item.id }}, '{{ item.name }}', {{ item.price_per_unit }}, 'inventory')">
-                    <h3>{{ item.name }} R{{ item.price_per_unit|floatformat:2 }}</h3>
+                <div class="product-item" 
+                     data-name="{{ item.name|lower }}"
+                     onclick="addToCart({{ item.id }}, '{{ item.name }}', {{ item.price_per_unit|floatformat:2 }}, 'inventory')">
+                    <h3>{{ item.name|slice:":15" }}{% if item.name|length > 15 %}...{% endif %} R{{ item.price_per_unit|floatformat:2 }}</h3>
                 </div>
-            {% empty %}
-                <p>No regular products available.</p>
-            {% endfor %}
+                {% empty %}
+                    <p>No regular products available.</p>
+                {% endfor %}
+            </div>
             
+            <!-- No results message (initially hidden) -->
+            <div id="noResults" style="display: none; text-align: center; padding: 20px;">
+                <p>No products found matching your search.</p>
+            </div>
+        </div>
 
-                    </div>
-                </div>
+
+
+
                 <div class="cart-section">
                     <h2>Current Sale</h2>
                     <div id="cartItems"></div>
@@ -695,12 +988,14 @@
                     <button class="complete-sale-btn" onclick="completeSale()">Complete Sale</button>
                 </div>
             </div>
+
             <div id="processingModal" class="modals">
                 <div class="modals-content">
                     <div class="sale-loader"></div>
                     <div class="processing-text">Processing Sale...</div>
                 </div>
             </div>
+
             <div class="receipt" id="receipt">
                 <button class="close-btn" onclick="closeReceipt()">×</button>
                 <h2>{{ user.company_name }}</h2>
@@ -723,7 +1018,7 @@
 
             
             <div class="pending-orders">
-                <h2>Pending Orders</h2>
+                <h2>Orders</h2>
                 <div class="order-list">
                     {% for order in pending_orders %}
                     <div class="order-item" id="order-{{ order.id }}">
@@ -774,422 +1069,527 @@
                 </div>
             </div>
         </div>
-        <script>
-            let cart = [];
-            let total = 0;
-            function showAddProductModal() {
-                document.getElementById("addProductModal").style.display = "block";
+    <script>
+        let cart = [];
+        let total = 0;
+        function showAddProductModal() {
+            document.getElementById("addProductModal").style.display = "block";
+        }
+        function closeModal() {
+            document.getElementById("addProductModal").style.display = "none";
+        }
+        function closeReceipt() {
+            document.getElementById("receipt").style.display = "none";
+        }
+        document.getElementById("addProductForm").onsubmit = async (e) => {
+            e.preventDefault();
+            const name = document.getElementById("productName").value;
+            const price = document.getElementById("productPrice").value;
+            const response = await fetch("/add-product/", {
+                method: "POST",
+                body: JSON.stringify({ name, price }),
+                headers: {
+                    "Content-Type": "application/json",
+                },
+            });
+            const data = await response.json();
+            location.reload();
+        };
+        function addToCart(id, name, price, productType) {
+            const existingItem = cart.find((item) => item.product_id === id);
+            if (existingItem) {
+                existingItem.quantity += 1;
+            } else {
+                cart.push({
+                    product_id: id,
+                    name: name,
+                    price: price,
+                    quantity: 1,
+                    type: productType  // undefined or 'pos' for POS products
+                });
             }
-            function closeModal() {
-                document.getElementById("addProductModal").style.display = "none";
-            }
-            function closeReceipt() {
-                document.getElementById("receipt").style.display = "none";
-            }
-            document.getElementById("addProductForm").onsubmit = async (e) => {
-                e.preventDefault();
-                const name = document.getElementById("productName").value;
-                const price = document.getElementById("productPrice").value;
-                const response = await fetch("/add-product/", {
+            updateCartDisplay();
+        }
+        function updateCartDisplay() {
+            const cartDiv = document.getElementById("cartItems");
+            cartDiv.innerHTML = "";
+            total = 0;
+            cart.forEach((item) => {
+                const itemTotal = item.price * item.quantity;
+                total += itemTotal;
+                cartDiv.innerHTML += `
+                <div class="cart-item">
+                    <div class="item-info">
+                        ${item.name} x ${item.quantity} = R${itemTotal.toFixed(2)}
+                    </div>
+                        <span class="delete-btn" onclick="removeFromCart(${item.product_id})">
+                        <i class="fas fa-trash-alt"></i>
+                        </span>
+
+                </div>
+            `;
+            });
+            document.getElementById("total").textContent = `Total: R${total.toFixed(2)}`;
+        }
+        function removeFromCart(productId) {
+            cart = cart.filter((item) => item.product_id !== productId);
+            updateCartDisplay();
+        }
+        async function completeSale() {
+            const moneyRendered = parseFloat(document.getElementById("moneyRendered").value) || 0;
+            const change = moneyRendered - total;
+            const modal = document.getElementById("processingModal");
+            const button = document.querySelector(".complete-sale-btn");
+            modal.classList.add("show");
+            button.disabled = true;
+        
+            try {
+                const response = await fetch("/complete-sale/", {
                     method: "POST",
-                    body: JSON.stringify({ name, price }),
+                    body: JSON.stringify({
+                        items: cart,
+                        total_amount: total,
+                        money_rendered: moneyRendered,
+                        change: change,
+                    }),
                     headers: {
                         "Content-Type": "application/json",
+                        "X-CSRFToken": getCookie("csrftoken"),
                     },
                 });
+        
                 const data = await response.json();
-                location.reload();
-            };
-            function addToCart(id, name, price, productType) {
-                const existingItem = cart.find((item) => item.product_id === id);
-                if (existingItem) {
-                    existingItem.quantity += 1;
+                modal.classList.remove("show");
+                button.disabled = false;
+        
+                if (data.success) {
+                    // Handle successful sale completion
+                    displayReceipt(data, moneyRendered, change);
+                    updatePendingOrdersList(data.new_pending_order);
+                    document.getElementById("moneyRendered").value = "";
+                    cart = [];  // Clear the cart after successful sale
+                    updateCartDisplay();
                 } else {
-                    cart.push({
-                        product_id: id,
-                        name: name,
-                        price: price,
-                        quantity: 1,
-                        type: productType  // undefined or 'pos' for POS products
-                    });
+                    // Handle errors
+                    if (data.details) {
+                        switch (data.details.type) {
+                            case 'no_subscription':
+                                showSubscriptionRequiredModal(data.details);
+                                break;
+                            case 'trial_ended':
+                                showTrialEndedModal(data.details);
+                                break;
+                            default:
+                                alert("Error: " + data.message);
+                        }
+                    } else {
+                        alert("Error: " + data.message);
+                    }
                 }
-                updateCartDisplay();
+            } catch (error) {
+                console.error("Error completing sale:", error);
+                modal.classList.remove("show");
+                button.disabled = false;
+                alert("Error completing sale. Please try again.");
             }
-            function updateCartDisplay() {
-                const cartDiv = document.getElementById("cartItems");
-                cartDiv.innerHTML = "";
-                total = 0;
-                cart.forEach((item) => {
-                    const itemTotal = item.price * item.quantity;
-                    total += itemTotal;
-                    cartDiv.innerHTML += `
-                    <div class="cart-item">
-                        <div class="item-info">
-                            ${item.name} x ${item.quantity} = R${itemTotal.toFixed(2)}
-                        </div>
-                        <button onclick="removeFromCart(${item.product_id})">
-                            <i class="fas fa-trash-alt"></i> <!-- Red trash icon -->
-                        </button>
+        }
+
+        function updatePendingOrdersList(order) {
+            const orderList = document.querySelector(".order-list");
+            const orderItem = document.createElement("div");
+            orderItem.classList.add("order-item");
+            orderItem.id = `order-${order.id}`;
+            orderItem.innerHTML = `
+                <div class="order-header">
+                    <div class="order-info">
+                        <strong>Order #${order.order_number}</strong>
+                        <span>Total: R${order.total_amount}</span>
+                        <span>Time: ${new Date(order.created_at).toLocaleTimeString([], {
+                            hour: "2-digit",
+                            minute: "2-digit",
+                            hour12: false,
+                        })}</span>
                     </div>
-                `;
+                    <button class="collect-btn" data-order-id="${order.id}" onclick="handleCollect(this)">
+                        <div class="loader"></div>
+                        <svg class="check-icon" viewBox="0 0 24 24">
+                            <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z"/>
+                        </svg>
+                        <span class="btn-text"></span>
+                    </button>
+                </div>
+                <div class="order-products">
+                    ${order.products.map(item => `
+                        <div class="product-item">
+                            <span class="product-name">${item.name || 'Product'}</span>
+                            <span class="product-quantity">x${item.quantity}</span>
+                            <span class="product-price">R${item.price}</span>
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+            orderList.insertBefore(orderItem, orderList.firstChild);
+        }
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== "") {
+                const cookies = document.cookie.split(";");
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    if (cookie.substring(0, name.length + 1) === name + "=") {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+        function displayReceipt(data, moneyRendered, change) {
+            document.getElementById("orderNumber").textContent = data.order_number;
+            document.getElementById("receiptItems").innerHTML = data.new_pending_order.products
+                .map(
+                    (item) =>
+                        `<p>${item.name} x ${item.quantity} = R${(item.price * item.quantity).toFixed(2)}</p>`
+                )
+                .join("");
+            document.getElementById("receiptTotal").textContent = data.total;
+            document.getElementById("receiptMoneyRendered").textContent = moneyRendered.toFixed(2);
+            document.getElementById("receiptChange").textContent = change.toFixed(2);
+            document.getElementById("receipt").style.display = "block";
+        }
+        async function handleCollect(button) {
+            const orderId = button.getAttribute("data-order-id");
+            if (!orderId) {
+                console.error("Order ID is missing");
+                return;
+            }
+            button.classList.add("loading");
+            try {
+                const response = await fetch(`/mark-collected/${orderId}/`, {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "X-CSRFToken": getCookie("csrftoken"),
+                    },
                 });
-                document.getElementById("total").textContent = `Total: R${total.toFixed(2)}`;
+                if (response.ok) {
+                    const orderElement = document.getElementById(`order-${orderId}`);
+                    if (orderElement) {
+                        orderElement.classList.add("fade-out");
+                        setTimeout(() => {
+                            orderElement.remove();
+                        }, 500);
+                    }
+                } else {
+                    throw new Error("Failed to mark as collected");
+                }
+            } catch (error) {
+                console.error("Error:", error);
+                button.classList.remove("loading");
+                alert("Failed to mark as collected. Please try again.");
             }
-            function removeFromCart(productId) {
-                cart = cart.filter((item) => item.product_id !== productId);
-                updateCartDisplay();
+        }
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== "") {
+                const cookies = document.cookie.split(";");
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    if (cookie.substring(0, name.length + 1) === name + "=") {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
             }
-            async function completeSale() {
-                const moneyRendered = parseFloat(document.getElementById("moneyRendered").value) || 0;
-                const change = moneyRendered - total;
-                const modal = document.getElementById("processingModal");
-                const button = document.querySelector(".complete-sale-btn");
-                modal.classList.add("show");
+            return cookieValue;
+        }
+
+
+        // Function to show the subscription required modal
+        // Function to show the subscription required modal
+        function showSubscriptionRequiredModal(details) {
+            const modalContent = `
+                <div class="submodal-content">
+                    <div class="submodal-icon">🔔</div>
+                    <h3 class="submodal-title">${details.title}</h3>
+                    <p class="submodal-message">${details.description}</p>
+                    <a href="${details.action_url}" class="submodal-button">${details.action_text}</a>
+                </div>
+            `;
+
+            const modal = document.getElementById("subscriptionRequiredModal");
+            modal.innerHTML = modalContent;
+            modal.style.display = "block";
+        }
+
+        // Function to show the trial ended modal
+        function showTrialEndedModal(details) {
+            const modalContent = `
+                <div class="submodal-content">
+                    <div class="submodal-icon">⚠️</div>
+                    <h3 class="submodal-title">${details.title}</h3>
+                    <p class="submodal-message">${details.description}</p>
+                    <a href="${details.action_url}" class="submodal-button">${details.action_text}</a>
+                </div>
+            `;
+
+            const modal = document.getElementById("trialEndedModal");
+            modal.innerHTML = modalContent;
+            modal.style.display = "block";
+        }
+
+        // Function to close the subscription required modal
+        function closeSubscriptionRequiredModal() {
+            document.getElementById("subscriptionRequiredModal").style.display = "none";
+        }
+
+        // Function to close the trial ended modal
+        function closeTrialEndedModal() {
+            document.getElementById("trialEndedModal").style.display = "none";
+        }
+
+        // Close modals when clicking outside of them
+        window.onclick = function (event) {
+            const subscriptionModal = document.getElementById("subscriptionRequiredModal");
+            const trialModal = document.getElementById("trialEndedModal");
+
+            if (event.target == subscriptionModal) {
+                subscriptionModal.style.display = "none";
+            }
+            if (event.target == trialModal) {
+                trialModal.style.display = "none";
+            }
+        };
+
+
+        // Global settings object
+        const speechSettings = {
+            volume: 1,
+            rate: 1,
+            pitch: 1,
+            voice: null
+        };
+        
+        // Initialize speech synthesis
+        function initSpeech() {
+            // Load voices (some browsers need this)
+            window.speechSynthesis.getVoices();
+            
+            // Show voice controls if available
+            setTimeout(populateVoiceList, 500);
+        }
+        
+        // Populate voice selection dropdown
+        function populateVoiceList() {
+            const voices = window.speechSynthesis.getVoices();
+            const voiceSelect = document.getElementById('voice-select');
+            
+            // Clear existing options
+            voiceSelect.innerHTML = '<option value="">Default Voice</option>';
+            
+            // Add available voices
+            voices.forEach(voice => {
+                const option = document.createElement('option');
+                option.textContent = `${voice.name} (${voice.lang})`;
+                option.setAttribute('data-voice', JSON.stringify(voice));
+                voiceSelect.appendChild(option);
+            });
+            
+            // Show controls if we have voices
+            if (voices.length > 0) {
+                document.querySelector('.voice-controls').style.display = 'block';
+            }
+        }
+        
+        // Handle voice selection change
+        document.getElementById('voice-select')?.addEventListener('change', function() {
+            const selectedOption = this.selectedOptions[0];
+            speechSettings.voice = selectedOption.dataset.voice 
+                ? JSON.parse(selectedOption.dataset.voice) 
+                : null;
+        });
+        
+        // Handle speed change
+        document.getElementById('speech-rate')?.addEventListener('input', function() {
+            speechSettings.rate = parseFloat(this.value);
+        });
+        
+        // Handle pitch change
+        document.getElementById('speech-pitch')?.addEventListener('input', function() {
+            speechSettings.pitch = parseFloat(this.value);
+        });
+        
+        // Main announce function with forced speaker output
+        function announceOrder(button) {
+            const orderNumber = button.getAttribute('data-order-number');
+            
+            if ('speechSynthesis' in window) {
+                // Stop any current speech
+                window.speechSynthesis.cancel();
+                
+                // Create the announcement
+                const utterance = new SpeechSynthesisUtterance();
+                utterance.text = `Order ${orderNumber} is ready`;
+                
+                // Apply settings
+                utterance.volume = speechSettings.volume;
+                utterance.rate = speechSettings.rate;
+                utterance.pitch = speechSettings.pitch;
+                
+                // Set voice if selected
+                if (speechSettings.voice) {
+                    const voices = window.speechSynthesis.getVoices();
+                    const selectedVoice = voices.find(v => 
+                        v.name === speechSettings.voice.name && 
+                        v.lang === speechSettings.voice.lang
+                    );
+                    if (selectedVoice) {
+                        utterance.voice = selectedVoice;
+                    }
+                }
+                
+                // Visual feedback
                 button.disabled = true;
-            
+                button.innerHTML = '<svg viewBox="0 0 24 24" width="24" height="24"><path d="M12 2a3 3 0 0 0-3 3v6a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3zm0 14a5 5 0 0 1-5-5H5a7 7 0 0 0 14 0h-2a5 5 0 0 1-5 5z"/></svg> Announcing...';
+                
+                // Force audio to external speaker (Chrome-specific)
                 try {
-                    const response = await fetch("/complete-sale/", {
-                        method: "POST",
-                        body: JSON.stringify({
-                            items: cart,
-                            total_amount: total,
-                            money_rendered: moneyRendered,
-                            change: change,
-                        }),
-                        headers: {
-                            "Content-Type": "application/json",
-                            "X-CSRFToken": getCookie("csrftoken"),
-                        },
-                    });
-            
-                    const data = await response.json();
-                    modal.classList.remove("show");
+                    // This helps route audio to external speakers in Chrome
+                    document.body.click();
+                    
+                    // Additional method to encourage external speaker usage
+                    const audio = new Audio();
+                    audio.src = 'data:audio/wav;base64,UklGRl9vT19XQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQ...';
+                    audio.volume = 0; // Silent
+                    audio.play().then(() => audio.remove());
+                } catch (e) {
+                    console.log("Speaker routing helper failed", e);
+                }
+                
+                // Speak it
+                window.speechSynthesis.speak(utterance);
+                
+                // Reset button after speech completes
+                utterance.onend = function() {
                     button.disabled = false;
-            
-                    if (data.success) {
-                        // Handle successful sale completion
-                        displayReceipt(data, moneyRendered, change);
-                        updatePendingOrdersList(data.new_pending_order);
-                        document.getElementById("moneyRendered").value = "";
-                        cart = [];  // Clear the cart after successful sale
-                        updateCartDisplay();
-                    } else {
-                        // Handle errors
-                        if (data.details) {
-                            switch (data.details.type) {
-                                case 'no_subscription':
-                                    showSubscriptionRequiredModal(data.details);
-                                    break;
-                                case 'trial_ended':
-                                    showTrialEndedModal(data.details);
-                                    break;
-                                default:
-                                    alert("Error: " + data.message);
-                            }
-                        } else {
-                            alert("Error: " + data.message);
-                        }
-                    }
-                } catch (error) {
-                    console.error("Error completing sale:", error);
-                    modal.classList.remove("show");
-                    button.disabled = false;
-                    alert("Error completing sale. Please try again.");
-                }
+                    button.innerHTML = '<svg viewBox="0 0 24 24" width="24" height="24"><path d="M12 2a3 3 0 0 0-3 3v6a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3zm0 14a5 5 0 0 1-5-5H5a7 7 0 0 0 14 0h-2a5 5 0 0 1-5 5z"/></svg> Call Out';
+                };
+            } else {
+                alert("Text-to-speech not supported in your browser");
             }
+        }
+        
+        // Initialize when page loads
+        window.addEventListener('DOMContentLoaded', function() {
+            initSpeech();
+        });
+        
+        // Some browsers need this event to load voices
+        window.speechSynthesis.onvoiceschanged = populateVoiceList;
+    </script>
+    <script>
+    function toggleUserDropdown() {
+        const dropdown = document.getElementById("userDropdown");
+        dropdown.classList.toggle("show");
+    }
 
-            function updatePendingOrdersList(order) {
-                const orderList = document.querySelector(".order-list");
-                const orderItem = document.createElement("div");
-                orderItem.classList.add("order-item");
-                orderItem.id = `order-${order.id}`;
-                orderItem.innerHTML = `
-                    <div class="order-header">
-                        <div class="order-info">
-                            <strong>Order #${order.order_number}</strong>
-                            <span>Total: R${order.total_amount}</span>
-                            <span>Time: ${new Date(order.created_at).toLocaleTimeString([], {
-                                hour: "2-digit",
-                                minute: "2-digit",
-                                hour12: false,
-                            })}</span>
-                        </div>
-                        <button class="collect-btn" data-order-id="${order.id}" onclick="handleCollect(this)">
-                            <div class="loader"></div>
-                            <svg class="check-icon" viewBox="0 0 24 24">
-                                <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z"/>
-                            </svg>
-                            <span class="btn-text"></span>
-                        </button>
-                    </div>
-                    <div class="order-products">
-                        ${order.products.map(item => `
-                            <div class="product-item">
-                                <span class="product-name">${item.name || 'Product'}</span>
-                                <span class="product-quantity">x${item.quantity}</span>
-                                <span class="product-price">R${item.price}</span>
-                            </div>
-                        `).join('')}
-                    </div>
-                `;
-                orderList.insertBefore(orderItem, orderList.firstChild);
-            }
-            function getCookie(name) {
-                let cookieValue = null;
-                if (document.cookie && document.cookie !== "") {
-                    const cookies = document.cookie.split(";");
-                    for (let i = 0; i < cookies.length; i++) {
-                        const cookie = cookies[i].trim();
-                        if (cookie.substring(0, name.length + 1) === name + "=") {
-                            cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-                            break;
-                        }
-                    }
-                }
-                return cookieValue;
-            }
-            function displayReceipt(data, moneyRendered, change) {
-                document.getElementById("orderNumber").textContent = data.order_number;
-                document.getElementById("receiptItems").innerHTML = data.new_pending_order.products
-                    .map(
-                        (item) =>
-                            `<p>${item.name} x ${item.quantity} = R${(item.price * item.quantity).toFixed(2)}</p>`
-                    )
-                    .join("");
-                document.getElementById("receiptTotal").textContent = data.total;
-                document.getElementById("receiptMoneyRendered").textContent = moneyRendered.toFixed(2);
-                document.getElementById("receiptChange").textContent = change.toFixed(2);
-                document.getElementById("receipt").style.display = "block";
-            }
-            async function handleCollect(button) {
-                const orderId = button.getAttribute("data-order-id");
-                if (!orderId) {
-                    console.error("Order ID is missing");
-                    return;
-                }
-                button.classList.add("loading");
-                try {
-                    const response = await fetch(`/mark-collected/${orderId}/`, {
-                        method: "POST",
-                        headers: {
-                            "Content-Type": "application/json",
-                            "X-CSRFToken": getCookie("csrftoken"),
-                        },
-                    });
-                    if (response.ok) {
-                        const orderElement = document.getElementById(`order-${orderId}`);
-                        if (orderElement) {
-                            orderElement.classList.add("fade-out");
-                            setTimeout(() => {
-                                orderElement.remove();
-                            }, 500);
-                        }
-                    } else {
-                        throw new Error("Failed to mark as collected");
-                    }
-                } catch (error) {
-                    console.error("Error:", error);
-                    button.classList.remove("loading");
-                    alert("Failed to mark as collected. Please try again.");
-                }
-            }
-            function getCookie(name) {
-                let cookieValue = null;
-                if (document.cookie && document.cookie !== "") {
-                    const cookies = document.cookie.split(";");
-                    for (let i = 0; i < cookies.length; i++) {
-                        const cookie = cookies[i].trim();
-                        if (cookie.substring(0, name.length + 1) === name + "=") {
-                            cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-                            break;
-                        }
-                    }
-                }
-                return cookieValue;
-            }
+    // Close dropdown if clicking outside
+    window.addEventListener("click", function(event) {
+        const dropdown = document.getElementById("userDropdown");
+        const userInfo = document.querySelector(".user-info");
 
+        if (!userInfo.contains(event.target)) {
+            dropdown.classList.remove("show");
+        }
+    });
+    </script>
 
-            // Function to show the subscription required modal
-            // Function to show the subscription required modal
-            function showSubscriptionRequiredModal(details) {
-                const modalContent = `
-                    <div class="submodal-content">
-                        <div class="submodal-icon">🔔</div>
-                        <h3 class="submodal-title">${details.title}</h3>
-                        <p class="submodal-message">${details.description}</p>
-                        <a href="${details.action_url}" class="submodal-button">${details.action_text}</a>
-                    </div>
-                `;
+<script>
+let isMenuHidden = false;
 
-                const modal = document.getElementById("subscriptionRequiredModal");
-                modal.innerHTML = modalContent;
-                modal.style.display = "block";
-            }
+function toggleMenu() {
+    const productsGrid = document.getElementById('productsGrid');
+    const toggleBtn = document.getElementById('toggleMenuBtn');
+    const searchInput = document.getElementById('productSearch');
+    
+    isMenuHidden = !isMenuHidden;
+    
+    if (isMenuHidden) {
+        // Hide the menu but keep search functional
+        productsGrid.style.display = 'none';
+        toggleBtn.innerHTML = '<i class="fas fa-eye"></i>';
+        toggleBtn.title = 'Show Menu';
+        toggleBtn.classList.add('active');
+        
+        // Focus on search input when menu is hidden
+        searchInput.focus();
+    } else {
+        // Show the menu
+        productsGrid.style.display = 'grid';
+        toggleBtn.innerHTML = '<i class="fas fa-eye-slash"></i>';
+        toggleBtn.title = 'Hide Menu';
+        toggleBtn.classList.remove('active');
+        
+        // Re-apply any existing search filter
+        filterProducts();
+    }
+}
 
-            // Function to show the trial ended modal
-            function showTrialEndedModal(details) {
-                const modalContent = `
-                    <div class="submodal-content">
-                        <div class="submodal-icon">⚠️</div>
-                        <h3 class="submodal-title">${details.title}</h3>
-                        <p class="submodal-message">${details.description}</p>
-                        <a href="${details.action_url}" class="submodal-button">${details.action_text}</a>
-                    </div>
-                `;
+function filterProducts() {
+    const searchTerm = document.getElementById('productSearch').value.toLowerCase();
+    const productItems = document.querySelectorAll('.product-item');
+    const productsGrid = document.getElementById('productsGrid');
+    const noResults = document.getElementById('noResults');
+    let visibleCount = 0;
+    
+    // If menu is hidden and user searches, show the grid temporarily
+    if (isMenuHidden && searchTerm) {
+        productsGrid.style.display = 'grid';
+    }
+    
+    productItems.forEach(item => {
+        const productName = item.dataset.name;
+        
+        // Check if search term matches product name
+        const matches = productName.includes(searchTerm);
+        
+        if (matches || searchTerm === '') {
+            item.style.display = 'block';
+            visibleCount++;
+        } else {
+            item.style.display = 'none';
+        }
+    });
+    
+    // Show/hide no results message
+    if (visibleCount === 0 && searchTerm !== '') {
+        noResults.style.display = 'block';
+        productsGrid.style.display = 'none';
+    } else {
+        noResults.style.display = 'none';
+        if (!isMenuHidden || searchTerm) {
+            productsGrid.style.display = 'grid';
+        }
+    }
+    
+    // If menu was hidden and user cleared search, hide grid again
+    if (isMenuHidden && searchTerm === '') {
+        productsGrid.style.display = 'none';
+    }
+}
 
-                const modal = document.getElementById("trialEndedModal");
-                modal.innerHTML = modalContent;
-                modal.style.display = "block";
-            }
+// Add keyboard shortcut (Ctrl+M or Cmd+M) to toggle menu
+document.addEventListener('keydown', function(e) {
+    if ((e.ctrlKey || e.metaKey) && e.key === 'm') {
+        e.preventDefault();
+        toggleMenu();
+    }
+});
 
-            // Function to close the subscription required modal
-            function closeSubscriptionRequiredModal() {
-                document.getElementById("subscriptionRequiredModal").style.display = "none";
-            }
-
-            // Function to close the trial ended modal
-            function closeTrialEndedModal() {
-                document.getElementById("trialEndedModal").style.display = "none";
-            }
-
-            // Close modals when clicking outside of them
-            window.onclick = function (event) {
-                const subscriptionModal = document.getElementById("subscriptionRequiredModal");
-                const trialModal = document.getElementById("trialEndedModal");
-
-                if (event.target == subscriptionModal) {
-                    subscriptionModal.style.display = "none";
-                }
-                if (event.target == trialModal) {
-                    trialModal.style.display = "none";
-                }
-            };
-
-
-            // Global settings object
-            const speechSettings = {
-                volume: 1,
-                rate: 1,
-                pitch: 1,
-                voice: null
-            };
-            
-            // Initialize speech synthesis
-            function initSpeech() {
-                // Load voices (some browsers need this)
-                window.speechSynthesis.getVoices();
-                
-                // Show voice controls if available
-                setTimeout(populateVoiceList, 500);
-            }
-            
-            // Populate voice selection dropdown
-            function populateVoiceList() {
-                const voices = window.speechSynthesis.getVoices();
-                const voiceSelect = document.getElementById('voice-select');
-                
-                // Clear existing options
-                voiceSelect.innerHTML = '<option value="">Default Voice</option>';
-                
-                // Add available voices
-                voices.forEach(voice => {
-                    const option = document.createElement('option');
-                    option.textContent = `${voice.name} (${voice.lang})`;
-                    option.setAttribute('data-voice', JSON.stringify(voice));
-                    voiceSelect.appendChild(option);
-                });
-                
-                // Show controls if we have voices
-                if (voices.length > 0) {
-                    document.querySelector('.voice-controls').style.display = 'block';
-                }
-            }
-            
-            // Handle voice selection change
-            document.getElementById('voice-select')?.addEventListener('change', function() {
-                const selectedOption = this.selectedOptions[0];
-                speechSettings.voice = selectedOption.dataset.voice 
-                    ? JSON.parse(selectedOption.dataset.voice) 
-                    : null;
-            });
-            
-            // Handle speed change
-            document.getElementById('speech-rate')?.addEventListener('input', function() {
-                speechSettings.rate = parseFloat(this.value);
-            });
-            
-            // Handle pitch change
-            document.getElementById('speech-pitch')?.addEventListener('input', function() {
-                speechSettings.pitch = parseFloat(this.value);
-            });
-            
-            // Main announce function with forced speaker output
-            function announceOrder(button) {
-                const orderNumber = button.getAttribute('data-order-number');
-                
-                if ('speechSynthesis' in window) {
-                    // Stop any current speech
-                    window.speechSynthesis.cancel();
-                    
-                    // Create the announcement
-                    const utterance = new SpeechSynthesisUtterance();
-                    utterance.text = `Order ${orderNumber} is ready`;
-                    
-                    // Apply settings
-                    utterance.volume = speechSettings.volume;
-                    utterance.rate = speechSettings.rate;
-                    utterance.pitch = speechSettings.pitch;
-                    
-                    // Set voice if selected
-                    if (speechSettings.voice) {
-                        const voices = window.speechSynthesis.getVoices();
-                        const selectedVoice = voices.find(v => 
-                            v.name === speechSettings.voice.name && 
-                            v.lang === speechSettings.voice.lang
-                        );
-                        if (selectedVoice) {
-                            utterance.voice = selectedVoice;
-                        }
-                    }
-                    
-                    // Visual feedback
-                    button.disabled = true;
-                    button.innerHTML = '<svg viewBox="0 0 24 24" width="24" height="24"><path d="M12 2a3 3 0 0 0-3 3v6a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3zm0 14a5 5 0 0 1-5-5H5a7 7 0 0 0 14 0h-2a5 5 0 0 1-5 5z"/></svg> Announcing...';
-                    
-                    // Force audio to external speaker (Chrome-specific)
-                    try {
-                        // This helps route audio to external speakers in Chrome
-                        document.body.click();
-                        
-                        // Additional method to encourage external speaker usage
-                        const audio = new Audio();
-                        audio.src = 'data:audio/wav;base64,UklGRl9vT19XQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQ...';
-                        audio.volume = 0; // Silent
-                        audio.play().then(() => audio.remove());
-                    } catch (e) {
-                        console.log("Speaker routing helper failed", e);
-                    }
-                    
-                    // Speak it
-                    window.speechSynthesis.speak(utterance);
-                    
-                    // Reset button after speech completes
-                    utterance.onend = function() {
-                        button.disabled = false;
-                        button.innerHTML = '<svg viewBox="0 0 24 24" width="24" height="24"><path d="M12 2a3 3 0 0 0-3 3v6a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3zm0 14a5 5 0 0 1-5-5H5a7 7 0 0 0 14 0h-2a5 5 0 0 1-5 5z"/></svg> Call Out';
-                    };
-                } else {
-                    alert("Text-to-speech not supported in your browser");
-                }
-            }
-            
-            // Initialize when page loads
-            window.addEventListener('DOMContentLoaded', function() {
-                initSpeech();
-            });
-            
-            // Some browsers need this event to load voices
-            window.speechSynthesis.onvoiceschanged = populateVoiceList;
-        </script>
-    </body>
+// Initialize on page load
+document.addEventListener('DOMContentLoaded', function() {
+    filterProducts();
+});
+</script>
+</body>
 </html>

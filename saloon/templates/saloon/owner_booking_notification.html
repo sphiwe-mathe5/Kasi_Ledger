@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>New Booking Notification</title>
+</head>
+<body style="margin: 0; padding: 0; font-family: Arial, sans-serif; background-color: #f4f4f4;">
+    <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #f4f4f4; padding: 20px;">
+        <tr>
+            <td align="center">
+                <table width="600" cellpadding="0" cellspacing="0" style="background-color: #ffffff; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+                    
+                    <!-- Header -->
+                    <tr>
+                        <td style="background-color: #2196F3; padding: 30px; text-align: center;">
+                            <h1 style="margin: 0; color: #ffffff; font-size: 28px;">🔔 New Booking!</h1>
+                        </td>
+                    </tr>
+                    
+                    <!-- Content -->
+                    <tr>
+                        <td style="padding: 30px;">
+                            <p style="margin: 0 0 20px 0; font-size: 16px; color: #333333;">
+                                Hi {{ salon.user.company_name }},
+                            </p>
+                            
+                            <p style="margin: 0 0 20px 0; font-size: 16px; color: #333333;">
+                                You have received a new booking! Please review the details below and contact the customer to confirm.
+                            </p>
+                            
+                            <!-- Booking Details Box -->
+                            <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #fff3cd; border-left: 4px solid #ffc107; border-radius: 6px; margin: 20px 0;">
+                                <tr>
+                                    <td style="padding: 20px;">
+                                        <h2 style="margin: 0 0 15px 0; font-size: 20px; color: #333333;">Booking Details</h2>
+                                        
+                                        <table width="100%" cellpadding="0" cellspacing="0">
+                                            <tr>
+                                                <td style="padding: 8px 0; font-size: 14px; color: #666666;">
+                                                    <strong>Booking Number:</strong>
+                                                </td>
+                                                <td style="padding: 8px 0; font-size: 14px; color: #333333; text-align: right;">
+                                                    <strong>{{ booking.booking_number }}</strong>
+                                                </td>
+                                            </tr>
+                                            
+                                            <tr>
+                                                <td style="padding: 8px 0; font-size: 14px; color: #666666;">
+                                                    <strong>Status:</strong>
+                                                </td>
+                                                <td style="padding: 8px 0; font-size: 14px; text-align: right;">
+                                                    <span style="background-color: #FF9800; color: #ffffff; padding: 4px 12px; border-radius: 12px; font-size: 12px; font-weight: bold;">
+                                                        PENDING
+                                                    </span>
+                                                </td>
+                                            </tr>
+                                        </table>
+                                    </td>
+                                </tr>
+                            </table>
+                            
+                            <!-- Customer Information -->
+                            <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #f9f9f9; border-radius: 6px; margin: 20px 0;">
+                                <tr>
+                                    <td style="padding: 20px;">
+                                        <h3 style="margin: 0 0 15px 0; font-size: 18px; color: #333333;">Customer Information</h3>
+                                        
+                                        <table width="100%" cellpadding="0" cellspacing="0">
+                                            <tr>
+                                                <td style="padding: 8px 0; font-size: 14px; color: #666666;">
+                                                    <strong>Name:</strong>
+                                                </td>
+                                                <td style="padding: 8px 0; font-size: 14px; color: #333333; text-align: right;">
+                                                    {{ booking.customer_name }}
+                                                </td>
+                                            </tr>
+                                            
+                                            <tr>
+                                                <td style="padding: 8px 0; font-size: 14px; color: #666666;">
+                                                    <strong>Phone:</strong>
+                                                </td>
+                                                <td style="padding: 8px 0; font-size: 14px; color: #333333; text-align: right;">
+                                                    <a href="tel:{{ booking.customer_phone }}" style="color: #2196F3; text-decoration: none;">
+                                                        {{ booking.customer_phone }}
+                                                    </a>
+                                                </td>
+                                            </tr>
+                                            
+                                            {% if booking.customer_email %}
+                                            <tr>
+                                                <td style="padding: 8px 0; font-size: 14px; color: #666666;">
+                                                    <strong>Email:</strong>
+                                                </td>
+                                                <td style="padding: 8px 0; font-size: 14px; color: #333333; text-align: right;">
+                                                    <a href="mailto:{{ booking.customer_email }}" style="color: #2196F3; text-decoration: none;">
+                                                        {{ booking.customer_email }}
+                                                    </a>
+                                                </td>
+                                            </tr>
+                                            {% endif %}
+                                        </table>
+                                    </td>
+                                </tr>
+                            </table>
+                            
+                            <!-- Appointment Details -->
+                            <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #f9f9f9; border-radius: 6px; margin: 20px 0;">
+                                <tr>
+                                    <td style="padding: 20px;">
+                                        <h3 style="margin: 0 0 15px 0; font-size: 18px; color: #333333;">Appointment Details</h3>
+                                        
+                                        <table width="100%" cellpadding="0" cellspacing="0">
+                                            <tr>
+                                                <td style="padding: 8px 0; font-size: 14px; color: #666666;">
+                                                    <strong>Service:</strong>
+                                                </td>
+                                                <td style="padding: 8px 0; font-size: 14px; color: #333333; text-align: right;">
+                                                    {{ booking.style.name }}
+                                                </td>
+                                            </tr>
+                                            
+                                            <tr>
+                                                <td style="padding: 8px 0; font-size: 14px; color: #666666;">
+                                                    <strong>Date:</strong>
+                                                </td>
+                                                <td style="padding: 8px 0; font-size: 14px; color: #333333; text-align: right;">
+                                                    {{ booking.booking_date|date:"l, F d, Y" }}
+                                                </td>
+                                            </tr>
+                                            
+                                            <tr>
+                                                <td style="padding: 8px 0; font-size: 14px; color: #666666;">
+                                                    <strong>Time:</strong>
+                                                </td>
+                                                <td style="padding: 8px 0; font-size: 14px; color: #333333; text-align: right;">
+                                                    {{ booking.booking_time|time:"g:i A" }}
+                                                </td>
+                                            </tr>
+                                            
+                                            {% if booking.worker %}
+                                            <tr>
+                                                <td style="padding: 8px 0; font-size: 14px; color: #666666;">
+                                                    <strong>Assigned Stylist:</strong>
+                                                </td>
+                                                <td style="padding: 8px 0; font-size: 14px; color: #333333; text-align: right;">
+                                                    {{ booking.worker.full_name }}
+                                                </td>
+                                            </tr>
+                                            {% else %}
+                                            <tr>
+                                                <td style="padding: 8px 0; font-size: 14px; color: #666666;">
+                                                    <strong>Assigned Stylist:</strong>
+                                                </td>
+                                                <td style="padding: 8px 0; font-size: 14px; color: #999999; text-align: right; font-style: italic;">
+                                                    Any available
+                                                </td>
+                                            </tr>
+                                            {% endif %}
+                                            
+                                            {% if booking.customer_notes %}
+                                            <tr>
+                                                <td colspan="2" style="padding: 12px 0; font-size: 14px; color: #666666; border-top: 1px solid #e0e0e0; margin-top: 10px;">
+                                                    <strong>Customer Notes:</strong><br>
+                                                    <span style="color: #333333; font-style: italic;">{{ booking.customer_notes }}</span>
+                                                </td>
+                                            </tr>
+                                            {% endif %}
+                                            
+                                            <tr>
+                                                <td style="padding: 8px 0; font-size: 14px; color: #666666; border-top: 2px solid #e0e0e0; padding-top: 12px;">
+                                                    <strong>Price:</strong>
+                                                </td>
+                                                <td style="padding: 8px 0; font-size: 18px; color: #4CAF50; text-align: right; border-top: 2px solid #e0e0e0; padding-top: 12px;">
+                                                    <strong>R{{ booking.price }}</strong>
+                                                </td>
+                                            </tr>
+                                        </table>
+                                    </td>
+                                </tr>
+                            </table>
+                            
+                            <!-- Action Button -->
+                            <table width="100%" cellpadding="0" cellspacing="0" style="margin: 30px 0;">
+                                <tr>
+                                    <td align="center">
+                                        <a href="{% url 'saloon:salon_profile' user.salon_profile.slug %}#recent-bookings" target="_blank"
+                                           style="display: inline-block; padding: 15px 40px; background-color: #4CAF50; color: #ffffff; text-decoration: none; border-radius: 6px; font-size: 16px; font-weight: bold;">
+                                            View Booking Dashboard
+                                        </a>
+                                    </td>
+                                </tr>
+                            </table>
+                            
+                            <p style="margin: 20px 0 0 0; font-size: 14px; color: #666666; text-align: center;">
+                                Please contact the customer as soon as possible to confirm their appointment.
+                            </p>
+                        </td>
+                    </tr>
+                    
+                    <!-- Footer -->
+                    <tr>
+                        <td style="background-color: #f9f9f9; padding: 20px; text-align: center; border-top: 1px solid #e0e0e0;">
+                            <p style="margin: 0; font-size: 12px; color: #999999;">
+                                This is an automated notification from Kasi Ledger.
+                            </p>
+                            <p style="margin: 10px 0 0 0; font-size: 12px; color: #999999;">
+                                © 2025 Kasi Ledger. All rights reserved.
+                            </p>
+                        </td>
+                    </tr>
+                    
+                </table>
+            </td>
+        </tr>
+    </table>
+</body>
+</html>

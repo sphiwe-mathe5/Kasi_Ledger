@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" href="{% static 'images/kasicon.png' %}">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <title>Setup Your Salon Profile</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            color: black;
+            padding: 30px;
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .back-btn {
+            color: #4169E1;
+            text-decoration: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+            border: 1px solid #4169E1;
+            transition: all 0.3s ease;
+            font-size: 14px;
+        }
+
+        .back-btn:hover {
+            background: #4169E1;
+            transform: translateY(-1px);
+            color: white;
+        }
+
+        .header h1 {
+            font-size: 28px;
+            font-weight: 600;
+        }
+
+        .content {
+            padding: 30px;
+        }
+
+        .section {
+            margin-bottom: 35px;
+        }
+
+        .section-title {
+            font-size: 20px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 20px;
+            padding-bottom: 8px;
+            border-bottom: 2px solid #4169E1;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            font-weight: 500;
+            color: #333;
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+
+        .form-group input[type="text"],
+        .form-group input[type="tel"],
+        .form-group input[type="url"],
+        .form-group textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e1e5e9;
+            border-radius: 6px;
+            font-size: 14px;
+            font-family: inherit;
+            transition: border-color 0.3s ease;
+        }
+
+        .form-group input:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #4169E1;
+        }
+
+        .form-group textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+
+        .working-hours {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+        }
+
+        .day-row {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+        }
+
+        .day-checkbox {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            min-width: 120px;
+        }
+
+        .day-checkbox input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+        }
+
+        .day-checkbox label {
+            font-weight: 500;
+            color: #333;
+            cursor: pointer;
+            margin: 0;
+        }
+
+        .time-inputs {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .time-inputs input[type="time"] {
+            padding: 8px 12px;
+            border: 2px solid #e1e5e9;
+            border-radius: 6px;
+            font-size: 14px;
+            transition: border-color 0.3s ease;
+        }
+
+        .time-inputs input[type="time"]:focus {
+            outline: none;
+            border-color: #4169E1;
+        }
+
+        .time-separator {
+            color: #6c757d;
+            font-weight: 500;
+        }
+
+        .submit-btn {
+            background: #4169E1;
+            color: white;
+            border: none;
+            padding: 14px 32px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 500;
+            transition: background-color 0.3s ease;
+            width: 100%;
+            margin-top: 20px;
+        }
+
+        .submit-btn:hover {
+            background: #3557c7;
+        }
+
+        .profile-link {
+            background: #e8f4f8;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 20px;
+            border-left: 4px solid #4169E1;
+        }
+
+        .profile-link p {
+            color: #333;
+            font-size: 14px;
+            margin: 0;
+        }
+
+        .profile-link a {
+            color: #4169E1;
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        .profile-link a:hover {
+            text-decoration: underline;
+        }
+
+        @media (max-width: 768px) {
+            .header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 15px;
+            }
+
+            .day-row {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 10px;
+            }
+
+            .time-inputs {
+                width: 100%;
+            }
+
+            .time-inputs input[type="time"] {
+                flex: 1;
+            }
+
+            .content {
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Added styled header with back button -->
+        <div class="header">
+            <a href="{% url 'dashboard' %}" class="back-btn">← Back</a>
+            <h1>Setup Your Salon Profile</h1>
+        </div>
+
+        <div class="content">
+            <form method="POST" action="{% url 'saloon:create_salon_profile' %}">
+                {% csrf_token %}
+                
+                <!-- Styled basic information section -->
+                <div class="section">
+                    <h2 class="section-title">Basic Information</h2>
+                    
+                    <div class="form-group">
+                        <label for="bio">Bio / About Your Salon:</label>
+                        <textarea id="bio" name="bio" required>{{ profile.bio }}</textarea>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="address">Address:</label>
+                        <textarea id="address" name="address" required>{{ profile.address }}</textarea>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="city">City:</label>
+                        <input type="text" id="city" name="city" value="{{ profile.city }}" required>
+                    </div>
+                </div>
+                
+                <!-- Styled contact information section -->
+                <div class="section">
+                    <h2 class="section-title">Contact Information</h2>
+                    
+                    <div class="form-group">
+                        <label for="whatsapp_number">WhatsApp Number:</label>
+                        <input type="tel" id="whatsapp_number" name="whatsapp_number" value="{{ profile.whatsapp_number }}" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="facebook_url">Facebook URL:</label>
+                        <input type="url" id="facebook_url" name="facebook_url" value="{{ profile.facebook_url }}" placeholder="https://facebook.com/yoursalon">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="instagram_url">Instagram URL:</label>
+                        <input type="url" id="instagram_url" name="instagram_url" value="{{ profile.instagram_url }}" placeholder="https://instagram.com/yoursalon">
+                    </div>
+                </div>
+                
+                <!-- Styled working hours section with improved layout -->
+                <div class="section">
+                    <h2 class="section-title">Working Hours</h2>
+                    
+                    <div class="working-hours">
+                        <div class="day-row">
+                            <div class="day-checkbox">
+                                <input type="checkbox" id="monday_open" name="monday_open" {% if working_hours.monday %}checked{% endif %}>
+                                <label for="monday_open">Monday</label>
+                            </div>
+                            <div class="time-inputs">
+                                <input type="time" name="monday_opening" value="{{ working_hours.monday.opening_time|time:'H:i' }}">
+                                <span class="time-separator">to</span>
+                                <input type="time" name="monday_closing" value="{{ working_hours.monday.closing_time|time:'H:i' }}">
+                            </div>
+                        </div>
+                        
+                        <div class="day-row">
+                            <div class="day-checkbox">
+                                <input type="checkbox" id="tuesday_open" name="tuesday_open" {% if working_hours.tuesday %}checked{% endif %}>
+                                <label for="tuesday_open">Tuesday</label>
+                            </div>
+                            <div class="time-inputs">
+                                <input type="time" name="tuesday_opening" value="{{ working_hours.tuesday.opening_time|time:'H:i' }}">
+                                <span class="time-separator">to</span>
+                                <input type="time" name="tuesday_closing" value="{{ working_hours.tuesday.closing_time|time:'H:i' }}">
+                            </div>
+                        </div>
+                        
+                        <div class="day-row">
+                            <div class="day-checkbox">
+                                <input type="checkbox" id="wednesday_open" name="wednesday_open" {% if working_hours.wednesday %}checked{% endif %}>
+                                <label for="wednesday_open">Wednesday</label>
+                            </div>
+                            <div class="time-inputs">
+                                <input type="time" name="wednesday_opening" value="{{ working_hours.wednesday.opening_time|time:'H:i' }}">
+                                <span class="time-separator">to</span>
+                                <input type="time" name="wednesday_closing" value="{{ working_hours.wednesday.closing_time|time:'H:i' }}">
+                            </div>
+                        </div>
+                        
+                        <div class="day-row">
+                            <div class="day-checkbox">
+                                <input type="checkbox" id="thursday_open" name="thursday_open" {% if working_hours.thursday %}checked{% endif %}>
+                                <label for="thursday_open">Thursday</label>
+                            </div>
+                            <div class="time-inputs">
+                                <input type="time" name="thursday_opening" value="{{ working_hours.thursday.opening_time|time:'H:i' }}">
+                                <span class="time-separator">to</span>
+                                <input type="time" name="thursday_closing" value="{{ working_hours.thursday.closing_time|time:'H:i' }}">
+                            </div>
+                        </div>
+                        
+                        <div class="day-row">
+                            <div class="day-checkbox">
+                                <input type="checkbox" id="friday_open" name="friday_open" {% if working_hours.friday %}checked{% endif %}>
+                                <label for="friday_open">Friday</label>
+                            </div>
+                            <div class="time-inputs">
+                                <input type="time" name="friday_opening" value="{{ working_hours.friday.opening_time|time:'H:i' }}">
+                                <span class="time-separator">to</span>
+                                <input type="time" name="friday_closing" value="{{ working_hours.friday.closing_time|time:'H:i' }}">
+                            </div>
+                        </div>
+                        
+                        <div class="day-row">
+                            <div class="day-checkbox">
+                                <input type="checkbox" id="saturday_open" name="saturday_open" {% if working_hours.saturday %}checked{% endif %}>
+                                <label for="saturday_open">Saturday</label>
+                            </div>
+                            <div class="time-inputs">
+                                <input type="time" name="saturday_opening" value="{{ working_hours.saturday.opening_time|time:'H:i' }}">
+                                <span class="time-separator">to</span>
+                                <input type="time" name="saturday_closing" value="{{ working_hours.saturday.closing_time|time:'H:i' }}">
+                            </div>
+                        </div>
+                        
+                        <div class="day-row">
+                            <div class="day-checkbox">
+                                <input type="checkbox" id="sunday_open" name="sunday_open" {% if working_hours.sunday %}checked{% endif %}>
+                                <label for="sunday_open">Sunday</label>
+                            </div>
+                            <div class="time-inputs">
+                                <input type="time" name="sunday_opening" value="{{ working_hours.sunday.opening_time|time:'H:i' }}">
+                                <span class="time-separator">to</span>
+                                <input type="time" name="sunday_closing" value="{{ working_hours.sunday.closing_time|time:'H:i' }}">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Styled submit button -->
+                <button type="submit" class="submit-btn">Save Profile</button>
+            </form>
+            
+            <!-- Styled profile link section -->
+            {% if profile.slug %}
+            <div class="profile-link">
+                <p>After saving, view your profile at: <a href="{% url 'saloon:salon_profile' profile.slug %}">kasiledger.co.za/salon/{{ profile.slug }}</a></p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</body>
+</html>

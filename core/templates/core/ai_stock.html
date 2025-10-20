@@ -1,0 +1,1261 @@
+{% load humanize %}
+{% load core_filters %}
+{% load static %}
+{% load core_filters %}
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <title>AI Stock Taking</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="icon" href="{% static 'images/kasicon.png' %}">
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+
+  <style>
+    .card { 
+      border: 1px solid #ddd; 
+      border-radius: 14px; 
+      padding: 16px; 
+      margin-bottom: 20px; 
+      background: white;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    table { 
+      width: 100%; 
+      border-collapse: collapse; 
+      margin-top: 12px; 
+    }
+    th, td { 
+      border: 1px solid #eee; 
+      padding: 8px; 
+      text-align: left;
+    }
+    th { 
+      background-color: #f8f9fa;
+      font-weight: 600;
+    }
+    .actions { 
+      display: flex; 
+      gap: 10px; 
+      margin-top: 12px; 
+      flex-wrap: wrap;
+    }
+    .btn { 
+      padding: 10px 14px; 
+      border-radius: 10px; 
+      border: 1px solid #ddd; 
+      background: #f8f8f8; 
+      cursor: pointer;
+      font-size: 14px;
+      transition: all 0.2s;
+    }
+    .btn:hover {
+      background: #e9ecef;
+    }
+    .btn.primary { 
+      background: #0d6efd; 
+      color: white; 
+      border: none; 
+    }
+    .btn.primary:hover {
+      background: #0b5ed7;
+    }
+    .btn:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+    .hidden { 
+      display: none; 
+    }
+    .status {
+      margin-top: 10px;
+      padding: 8px;
+      border-radius: 6px;
+      font-size: 14px;
+    }
+    .status.loading {
+      background: #cff4fc;
+      color: #055160;
+      border: 1px solid #b6effb;
+    }
+    .status.success {
+      background: #d1e7dd;
+      color: #0f5132;
+      border: 1px solid #badbcc;
+    }
+    .status.error {
+      background: #f8d7da;
+      color: #842029;
+      border: 1px solid #f5c2c7;
+    }
+    input[type="text"], input[type="number"] {
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      padding: 4px 8px;
+      font-size: 14px;
+    }
+    input[type="text"]:focus, input[type="number"]:focus {
+      outline: none;
+      border-color: #0d6efd;
+      box-shadow: 0 0 0 2px rgba(13, 110, 253, 0.25);
+    }
+    .file-input-container {
+      margin: 10px 0;
+    }
+    #image {
+      padding: 8px;
+      border: 2px dashed #ddd;
+      border-radius: 8px;
+      width: 100%;
+      max-width: 400px;
+    }
+
+    .user-name {
+        font-size: 1.5rem;
+        font-weight: bold;
+        color: var(--text-color);
+        margin: 0 0px 8px;
+        margin-top: 2rem;     
+        text-align: center;
+    }
+    .user-info {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        position: relative;
+        margin-left: 50rem;
+    }
+
+    .user-circle {
+        width: 32px;
+        height: 32px;
+        background: #f8f9fa;
+        border: 2px solid #e1e5e9;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        margin-top: 2.2rem;
+        color: #6c757d;
+    }
+
+    .user-circle:hover {
+        background: #e9ecef;
+        border-color: #3498db;
+        color: #3498db;
+    }
+
+    .user-dropdown {
+        position: absolute;
+        top: 60px;
+        right: 20px;
+        background-color: white;
+        border-radius: 8px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        z-index: 1000;
+        width: 300px;
+        overflow: hidden;
+        transform: translateY(20px);
+        margin-right: 30rem;
+        opacity: 0;
+        animation: fadeIn 0.3s ease-out forwards;
+    }
+
+    .user-dropdown.show {
+        opacity: 1;
+        visibility: visible;
+        transform: translateY(0);
+    }
+
+    .dropdown-header {
+        padding: 16px;
+
+    }
+
+    .dropdown-email {
+        color: #6c757d;
+        font-size: 14px;
+        margin-top: 4px;
+    }
+
+    .dropdown-menu {
+        padding: 8px 0;
+    }
+
+    .dropdown-item {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 12px 16px;
+        color: #333;
+        text-decoration: none;
+        border: none;
+        background: none;
+        width: 100%;
+        cursor: pointer;
+        transition: background-color 0.2s ease;
+    }
+
+    .dropdown-item:hover {
+        background: #f8f9fa;
+    }
+
+    .dropdown-item.logout {
+        color: #dc3545;
+    }
+
+    .dropdown-item.logout:hover {
+        background: #fff5f5;
+    }
+
+    .dropdown-icon {
+        width: 16px;
+        height: 16px;
+    }
+    .logo {
+        font-size: 1.5rem;
+        font-weight: bold;
+        color: #2980b9;
+    }
+
+    .user-info {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+    }
+
+    .user-initials {
+        width: 40px;
+        height: 40px;
+        background: #3498db;
+        color: white;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: bold;
+        font-size: 1rem;
+    }
+
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: #f8f9fa;
+            color: #333;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        h1 {
+            color: #4169E1;
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 2rem;
+            text-align: center;
+            position: relative;
+        }
+
+        h1::after {
+            content: '';
+            position: absolute;
+            bottom: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 80px;
+            height: 4px;
+            background: #4169E1;
+            border-radius: 2px;
+        }
+
+        h2 {
+            color: #4169E1;
+            font-size: 1.8rem;
+            margin: 2rem 0 1rem 0;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid #e9ecef;
+        }
+
+        h3 {
+            color: #495057;
+            font-size: 1.3rem;
+            margin: 1.5rem 0 1rem 0;
+        }
+
+        .card {
+            background: white;
+            border-radius: 12px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+            border: 1px solid #e9ecef;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(65, 105, 225, 0.1);
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        /* File Input Styling */
+        .file-input-container {
+            position: relative;
+            margin-bottom: 1.5rem;
+        }
+
+        .file-input-container input[type="file"] {
+            width: 100%;
+            padding: 1rem;
+            border: 2px dashed #4169E1;
+            border-radius: 8px;
+            background: #f8f9ff;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .file-input-container input[type="file"]:hover {
+            border-color: #2c5aa0;
+            background: #f0f4ff;
+        }
+
+        /* Button Styles */
+        .btn {
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.95rem;
+        }
+
+        .btn.primary, .btn-primary {
+            background: #4169E1;
+            color: white;
+        }
+
+        .btn.primary:hover, .btn-primary:hover {
+            background: #2c5aa0;
+            transform: translateY(-1px);
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #545b62;
+        }
+
+        .btn:not(.primary):not(.btn-primary):not(.btn-secondary) {
+            background: #e9ecef;
+            color: #495057;
+        }
+
+        .btn:not(.primary):not(.btn-primary):not(.btn-secondary):hover {
+            background: #dee2e6;
+        }
+
+        .actions {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+            margin-top: 1.5rem;
+        }
+
+        /* Search Form */
+        .search-form {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 12px;
+            margin-bottom: 2rem;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        }
+
+        .search-filters {
+            display: grid;
+            grid-template-columns: 2fr 1fr 1fr auto auto;
+            gap: 1rem;
+            align-items: center;
+        }
+
+        .form-control, .search-input {
+            padding: 0.75rem;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            font-size: 0.95rem;
+            transition: border-color 0.3s ease;
+        }
+
+        .form-control:focus, .search-input:focus {
+            outline: none;
+            border-color: #4169E1;
+            box-shadow: 0 0 0 3px rgba(65, 105, 225, 0.1);
+        }
+
+        /* Table Styles */
+        .table-container {
+            overflow-x: auto;
+            margin: 1rem 0;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        }
+
+        table, .product-table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        th {
+            background: #4169E1;
+            color: white;
+            padding: 1rem 0.75rem;
+            text-align: left;
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+
+        td {
+            padding: 0.75rem;
+            border-bottom: 1px solid #e9ecef;
+            font-size: 0.9rem;
+        }
+
+        .product-row:hover {
+            background: #f8f9ff;
+        }
+
+        .total-row {
+            background: #f8f9fa;
+            font-weight: 600;
+        }
+
+        .total-row td {
+            border-top: 2px solid #4169E1;
+        }
+
+        /* Status and Color Classes */
+        .text-red {
+            color: #dc3545;
+            font-weight: 600;
+        }
+
+        .text-green {
+            color: #28a745;
+            font-weight: 600;
+        }
+
+        .product-count {
+            background: #4169E1;
+            color: white;
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+
+        .delete-btn {
+            position: absolute;
+            right: 0.5rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #dc3545;
+            text-decoration: none;
+            padding: 0.25rem;
+            border-radius: 4px;
+            transition: background 0.2s ease, opacity 0.2s ease;
+            opacity: 0;              /* hidden by default */
+            pointer-events: none;    /* not clickable when hidden */
+        }
+
+        /* Show when hovering over the row */
+        .product-row:hover .delete-btn {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .delete-btn:hover {
+            background: #fff5f5;
+        }
+        /* Status Messages */
+        #recognizeStatus, #saveStatus {
+            margin-top: 1rem;
+            padding: 0.75rem;
+            border-radius: 6px;
+            font-weight: 500;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .container {
+                padding: 1rem;
+            }
+
+            h1 {
+                font-size: 2rem;
+            }
+
+            .search-filters {
+                grid-template-columns: 1fr;
+                gap: 0.75rem;
+            }
+
+            .actions {
+                flex-direction: column;
+            }
+
+            .btn {
+                justify-content: center;
+            }
+
+            .card {
+                padding: 1.5rem;
+            }
+        }
+
+        /* Loading Animation */
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #4169E1;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+
+        @media (max-width: 768px) {
+
+            .user-name {
+                font-size: 1rem;
+                font-weight: bold;
+                color: var(--text-color);
+                margin: 0 0px 8px;
+                margin-top: 2rem;
+                text-align: center;
+            }
+            .user-info {
+                display: flex;
+                align-items: center;
+                gap: 12px;
+                position: relative;
+                margin-left: 5rem;
+            }
+              .user-circle {
+                margin-top: 2rem;
+            }
+            .user-dropdown {
+                margin-right: 0rem;
+            }
+        }
+        .premium-badge {
+            background: linear-gradient(45deg, #FFD700, #FFA500);
+            color: #000;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 10px;
+            font-weight: bold;
+            margin-left: 8px;
+        }
+
+        .usage-info {
+            margin: 1rem 0;
+            padding: 0.5rem;
+            background: #f8f9fa;
+            border-radius: 4px;
+        }
+
+        .usage-text {
+            margin: 0 0 0.5rem 0;
+            font-size: 0.9rem;
+            color: #666;
+        }
+
+        .usage-bar {
+            width: 100%;
+            height: 4px;
+            background: #e9ecef;
+            border-radius: 2px;
+            overflow: hidden;
+        }
+
+        .usage-progress {
+            height: 100%;
+            background: linear-gradient(45deg, #28a745, #20c997);
+            transition: width 0.3s ease;
+        }
+
+        .upgrade-required {
+            text-align: center;
+            padding: 2rem 1rem;
+        }
+
+        .upgrade-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+        }
+
+        .upgrade-required h4 {
+            color: #333;
+            margin-bottom: 0.5rem;
+        }
+
+        .upgrade-required p {
+            color: #666;
+            margin-bottom: 1.5rem;
+        }
+
+        .upgrade-features {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+            margin: 1.5rem 0;
+        }
+
+        .feature-item {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            color: #555;
+            font-size: 0.9rem;
+        }
+
+        .feature-item i {
+            color: #007bff;
+            width: 16px;
+        }
+
+        .upgrade-btn {
+            display: inline-block;
+            background: linear-gradient(45deg, #007bff, #0056b3);
+            color: white;
+            padding: 12px 24px;
+            border-radius: 25px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .upgrade-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 123, 255, 0.3);
+            color: white;
+            text-decoration: none;
+        }
+  </style>
+</head>
+<body>
+  
+<div class="user-info">
+    <p class="user-name"><strong>Hello, {{ user.company_name }}</strong></p>
+        <div class="user-circle" onclick="toggleUserDropdown()">
+            {{ user.company_name|slice:":1" }}
+        </div>
+    <div class="user-dropdown" id="userDropdown">
+        <div class="dropdown-header">
+            <div><strong>{{ user.company_name }}</strong></div>
+            <div class="dropdown-email">{{ user.email }}</div>
+        </div>
+        <div class="dropdown-menu">
+            <a href="{% url 'console' %}" class="dropdown-item">
+                <i class="fa-solid fa-terminal"></i>
+                Console
+            </a>
+            <a href="{% url 'profile' %}" class="dropdown-item">
+                <i class="fa-solid fa-gear"></i>
+                Settings
+            </a>
+            <a href="{% url 'logout' %}" class="dropdown-item logout">
+                <i class="fa-solid fa-right-from-bracket"></i>
+                Logout
+            </a>
+        </div>
+    </div>
+</div>
+
+    <div class="container">
+
+    <div class="card">
+        <h3>
+            1) Take or Upload a Picture
+            {% if not image_recognition_access.allowed %}
+                <span class="premium-badge">PREMIUM</span>
+            {% endif %}
+        </h3>
+        
+        {% if image_recognition_access.allowed %}
+            <!-- Show upload form for users with access -->
+            <form id="uploadForm">
+                <div class="file-input-container">
+                    <input type="file" id="image" name="image" accept="image/*" capture="environment" required />
+                </div>
+                
+                <!-- Usage info for free plan users -->
+                {% if image_recognition_access.limit %}
+                <div class="usage-info">
+                    <p class="usage-text">
+                        {{ image_recognition_access.current }}/{{ image_recognition_access.limit }} used this month
+                    </p>
+                    <div class="usage-bar">
+                        <div class="usage-progress" style="width: {{ image_recognition_access.current|divisibleby:image_recognition_access.limit|multiply:100 }}%"></div>
+                    </div>
+                </div>
+                {% endif %}
+                
+                <div class="actions">
+                    <button class="btn primary" type="submit" id="recognizeBtn">
+                        <i class="fas fa-eye"></i>
+                        Recognize Items
+                    </button>
+                </div>
+            </form>
+            <div id="recognizeStatus"></div>
+        {% else %}
+            <!-- Show upgrade message for users without access -->
+            <div class="upgrade-required">
+                <div class="upgrade-icon">📸</div>
+                <h4>Upgrade for AI Image Recognition</h4>
+                <p>{{ image_recognition_access.message }}</p>
+                
+                <div class="upgrade-features">
+                    <div class="feature-item">
+                        <i class="fas fa-camera"></i>
+                        <span>AI-Powered Image Recognition</span>
+                    </div>
+                    <div class="feature-item">
+                        <i class="fas fa-bolt"></i>
+                        <span>Instant Stock Analysis</span>
+                    </div>
+                    <div class="feature-item">
+                        <i class="fas fa-infinity"></i>
+                        <span>Unlimited Usage on Paid Plans</span>
+                    </div>
+                </div>
+                
+                <a href="{% url 'subscription_plans' %}" class="upgrade-btn">
+                    <i class="fas fa-crown"></i>
+                    View Plans
+                </a>
+            </div>
+        {% endif %}
+    </div>
+
+        <div id="resultsCard" class="card hidden">
+            <h3>2) Review & Edit</h3>
+            <p>Adjust quantity, category, price, and cost before saving to inventory.</p>
+            <div class="table-container">
+                <table id="itemsTable">
+                    <thead>
+                        <tr>
+                            <th style="width: 40px;">#</th>
+                            <th style="min-width: 150px;">Name</th>
+                            <th style="width: 80px;">Qty</th>
+                            <th style="min-width: 120px;">Category</th>
+                            <th style="width: 100px;">Price (R)</th>
+                            <th style="width: 100px;">Cost (R)</th>
+                            <th style="width: 80px;">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+            <div class="actions">
+                <button id="saveBtn" class="btn primary">
+                    <i class="fas fa-save"></i>
+                    Save to Inventory
+                </button>
+                <button id="clearBtn" class="btn">
+                    <i class="fas fa-trash"></i>
+                    Clear All
+                </button>
+                <button id="addRowBtn" class="btn">
+                    <i class="fas fa-plus"></i>
+                    Add Item
+                </button>
+            </div>
+            <div id="saveStatus"></div>
+        </div>
+
+        <h1>AI Stock Transactions</h1>
+
+        <!-- Search & Filters -->
+        <form method="GET" class="search-form">
+            <div class="search-filters">
+                <input 
+                    type="text" 
+                    name="search" 
+                    class="form-control search-input" 
+                    placeholder="Search by name or item code..."
+                    value="{{ search_query }}"
+                >
+
+                <select name="category" class="form-control">
+                    <option value="">All Categories</option>
+                    {% for category in categories %}
+                        <option value="{{ category.name }}" {% if category.name == category_filter %}selected{% endif %}>
+                            {{ category.name }}
+                        </option>
+                    {% endfor %}
+                </select>
+
+
+                
+                <select name="status" class="form-control">
+                    <option value="">All Status</option>
+                    <option value="IN" {% if status_filter == 'IN' %}selected{% endif %}>IN</option>
+                    <option value="OUT" {% if status_filter == 'OUT' %}selected{% endif %}>OUT</option>
+                </select>
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-search"></i>
+                </button>
+                <a href="?" class="btn btn-secondary">
+                    <i class="fas fa-times"></i>
+                </a>
+            </div>
+        </form>
+
+        <!-- Transactions List -->
+        <div id="ai-product-list">
+            {% if grouped_products %}
+                {% for month, month_data in grouped_products %}
+                    <h2>{{ month|date:"F Y" }}</h2>
+
+                    <p><b>Monthly Totals:</b> 
+                        Sales: <span class="text-green">R{{ month_data.monthly_total.price|floatformat:2 }}</span> | 
+                        Cost: <span class="text-red">R{{ month_data.monthly_total.cost|floatformat:2 }}</span> |
+                        Profit/Loss: 
+                        <span class="{% if month_data.monthly_total.profit_loss < 0 %}text-red{% else %}text-green{% endif %}">
+                            R{{ month_data.monthly_total.profit_loss|floatformat:2 }}
+                        </span>
+                    </p>
+
+                    {% for date, data in month_data.dates.items %}
+                        <h3>{{ date|date:"d F Y" }}</h3>
+                        <p>Number of Transactions Per Day: <span class="product-count">{{ data.total_count }}</span></p>
+
+                        <div class="table-container" data-date="{{ date|date:'Y-m-d' }}">
+                            <table class="product-table">
+                                <thead>
+                                    <tr>
+                                        <th>Product Name</th>
+                                        <th>Item Code</th>
+                                        <th>Status</th>
+                                        <th>Category</th>
+                                        <th>Quantity</th>
+                                        <th>Sales (Total)</th>
+                                        <th>Cost (Total)</th>
+                                        <th>Date Sold</th>
+                                        <th>Date Added</th>
+                                        <th>Profit/Loss</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for product in data.products %}
+                                    <tr class="product-row" id="product-{{ product.id }}">
+                                        <td style="position: relative;">
+                                            {{ product.name }}
+                                            <a href="{% url 'delete_product' product.id %}" 
+                                               class="delete-btn" 
+                                               onclick="return confirm('Are you sure you want to delete this product?');">
+                                                <i class="fas fa-trash"></i>
+                                            </a>
+                                        </td>
+                                        <td>{{ product.item_code|default:"-" }}</td>
+                                        <td>{{ product.status|default:"-" }}</td>
+                                        <td>{{ product.category|default:"-" }}</td>
+                                        <td>{{ product.quantity }}</td>
+                                        <td class="text-green">R{{ product.price|floatformat:2 }}</td>
+                                        <td class="text-red">R{{ product.cost|floatformat:2 }}</td>
+                                        <td>
+                                            {% if product.status == 'IN' %}
+                                                -
+                                            {% else %}
+                                                {{ product.last_modified|date:"d M Y H:i"|default:"-" }}
+                                            {% endif %}
+                                        </td>
+                                        <td>{{ product.date_added|date:"d M Y H:i" }}</td>
+                                        <td class="{% if product.total_price|profit_loss:product.total_cost < 0 %}text-red{% else %}text-green{% endif %}">
+                                            R{{ product.total_price|profit_loss:product.total_cost|floatformat:2 }}
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+
+                                    <!-- Daily Totals -->
+                                    <tr class="total-row">
+                                        <td colspan="5"><strong>Daily Total</strong></td>
+                                        <td class="text-green"><strong>R{{ data.daily_total.price|floatformat:2 }}</strong></td>
+                                        <td class="text-red"><strong>R{{ data.daily_total.cost|floatformat:2 }}</strong></td>
+                                        <td colspan="2"></td>
+                                        <td class="{% if data.daily_total.profit_loss < 0 %}text-red{% else %}text-green{% endif %}">
+                                            <strong>R{{ data.daily_total.profit_loss|floatformat:2 }}</strong>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    {% endfor %}
+                {% endfor %}
+            {% else %}
+                <div class="card">
+                    <p style="text-align: center; color: #6c757d; font-size: 1.1rem;">
+                        <i class="fas fa-inbox" style="font-size: 2rem; display: block; margin-bottom: 1rem;"></i>
+                        No products uploaded yet.
+                    </p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+
+
+<script>
+  // CSRF token handling
+  function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== "") {
+      const cookies = document.cookie.split(";");
+      for (let i = 0; i < cookies.length; i++) {
+        const cookie = cookies[i].trim();
+        if (cookie.substring(0, name.length + 1) === (name + "=")) {
+          cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+          break;
+        }
+      }
+    }
+    return cookieValue;
+  }
+  const csrftoken = getCookie('csrftoken');
+
+  // DOM elements
+  const uploadForm = document.getElementById("uploadForm");
+  const recognizeBtn = document.getElementById("recognizeBtn");
+  const recognizeStatus = document.getElementById("recognizeStatus");
+  const resultsCard = document.getElementById("resultsCard");
+  const itemsTableBody = document.querySelector("#itemsTable tbody");
+  const saveBtn = document.getElementById("saveBtn");
+  const clearBtn = document.getElementById("clearBtn");
+  const addRowBtn = document.getElementById("addRowBtn");
+  const saveStatus = document.getElementById("saveStatus");
+
+  let recognizedItems = [];
+
+  // Utility functions
+  function showStatus(element, message, type = 'loading') {
+    element.innerHTML = `<div class="status ${type}">${message}</div>`;
+  }
+
+  function clearStatus(element) {
+    element.innerHTML = "";
+  }
+
+  function escapeHtml(text) {
+    const map = {'&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#039;'};
+    return String(text || '').replace(/[&<>"']/g, m => map[m]);
+  }
+
+  // Form submission handler
+  uploadForm.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    
+    const imageFile = document.getElementById("image").files[0];
+    if (!imageFile) {
+      showStatus(recognizeStatus, "Please select an image file first.", 'error');
+      return;
+    }
+
+    // Validate file size (20MB max)
+    const maxSize = 20 * 1024 * 1024; // 20MB
+    if (imageFile.size > maxSize) {
+      showStatus(recognizeStatus, "Image file is too large. Maximum size is 20MB.", 'error');
+      return;
+    }
+
+    // Validate file type
+    const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
+    if (!allowedTypes.includes(imageFile.type.toLowerCase())) {
+      showStatus(recognizeStatus, "Invalid file type. Please select a JPEG, PNG, or WebP image.", 'error');
+      return;
+    }
+
+    recognizeBtn.disabled = true;
+    recognizeBtn.textContent = "Processing...";
+    showStatus(recognizeStatus, "AI is analyzing the image and recognizing items...", 'loading');
+    clearStatus(saveStatus);
+
+    const formData = new FormData();
+    formData.append('image', imageFile);
+
+    try {
+      console.log('Sending request to /api/ai-stock/recognize/', {
+        fileName: imageFile.name,
+        fileSize: imageFile.size,
+        fileType: imageFile.type
+      });
+      
+      const response = await fetch("/api/ai-stock/recognize/", {
+        method: "POST",
+        body: formData,
+        headers: {
+          "X-CSRFToken": csrftoken
+        }
+      });
+
+      console.log('Response status:', response.status);
+      
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('Error response:', errorText);
+        throw new Error(`Recognition failed: ${response.status} ${response.statusText}`);
+      }
+
+      const data = await response.json();
+      console.log('Recognition result:', data);
+
+      if (!data.items || !Array.isArray(data.items)) {
+        throw new Error("Invalid response format from AI recognition");
+      }
+
+      recognizedItems = data.items.filter(item => item.name && item.name.trim());
+      
+      if (recognizedItems.length === 0) {
+        showStatus(recognizeStatus, "No items were recognized in the image. Try a clearer photo or add items manually.", 'error');
+        resultsCard.classList.remove("hidden");
+        renderTable([]);
+      } else {
+        showStatus(recognizeStatus, `Successfully recognized ${recognizedItems.length} item(s)!`, 'success');
+        renderTable(recognizedItems);
+        resultsCard.classList.remove("hidden");
+      }
+
+    } catch (error) {
+      console.error('Recognition error:', error);
+      showStatus(recognizeStatus, `Error: ${error.message}`, 'error');
+    } finally {
+      recognizeBtn.disabled = false;
+      recognizeBtn.textContent = "Recognize Items";
+    }
+  });
+
+  // Render table with items
+  function renderTable(items) {
+    console.log('Rendering table with items:', items);
+    itemsTableBody.innerHTML = "";
+
+    if (items.length === 0) {
+      const tr = document.createElement("tr");
+      tr.innerHTML = `<td colspan="7" style="text-align: center; padding: 20px; color: #666;">No items to display. Use "Add Item" button to add manually.</td>`;
+      itemsTableBody.appendChild(tr);
+      return;
+    }
+
+    items.forEach((item, index) => {
+      addTableRow(item, index);
+    });
+  }
+
+  function addTableRow(item = {}, index = null) {
+    const tr = document.createElement("tr");
+    const rowIndex = index !== null ? index + 1 : itemsTableBody.children.length + 1;
+    
+    tr.innerHTML = `
+      <td>${rowIndex}</td>
+      <td><input type="text" value="${escapeHtml(item.name || '')}" data-field="name" style="width:100%; min-width: 120px;" placeholder="Item name"></td>
+      <td><input type="number" min="0" value="${Number(item.quantity) || 1}" data-field="quantity" style="width:70px;" step="1"></td>
+      <td><input type="text" value="${escapeHtml(item.category || '')}" data-field="category" style="width:100%; min-width: 100px;" placeholder="Category"></td>
+      <td><input type="number" step="0.01" min="0" value="${item.price || ''}" placeholder="0.00" data-field="price" style="width:90px;"></td>
+      <td><input type="number" step="0.01" min="0" value="${item.cost || ''}" placeholder="0.00" data-field="cost" style="width:90px;"></td>
+      <td><button type="button" class="btn" onclick="removeRow(this)" style="padding: 4px 8px; font-size: 12px;">Remove</button></td>
+    `;
+    
+    itemsTableBody.appendChild(tr);
+  }
+
+  // Remove row function
+  window.removeRow = function(button) {
+    const row = button.closest('tr');
+    row.remove();
+    updateRowNumbers();
+  };
+
+  function updateRowNumbers() {
+    const rows = itemsTableBody.querySelectorAll('tr');
+    rows.forEach((row, index) => {
+      const firstCell = row.querySelector('td:first-child');
+      if (firstCell && !firstCell.getAttribute('colspan')) {
+        firstCell.textContent = index + 1;
+      }
+    });
+  }
+
+  // Add row button handler
+  addRowBtn.addEventListener("click", () => {
+    addTableRow();
+  });
+
+  // Collect items from table
+  function collectItems() {
+    const rows = Array.from(itemsTableBody.querySelectorAll("tr"));
+    const items = [];
+    
+    rows.forEach(row => {
+      const nameInput = row.querySelector(`[data-field="name"]`);
+      if (!nameInput) return; // Skip rows without inputs (like "no items" row)
+      
+      const getVal = field => row.querySelector(`[data-field="${field}"]`)?.value?.trim() ?? "";
+      const name = getVal("name");
+      
+      if (!name) return; // Skip empty names
+      
+      const quantity = parseInt(getVal("quantity") || "1", 10);
+      const category = getVal("category");
+      const priceStr = getVal("price");
+      const costStr = getVal("cost");
+      
+      const item = {
+        name: name,
+        quantity: Math.max(quantity, 1),
+        category: category
+      };
+      
+      if (priceStr && !isNaN(parseFloat(priceStr))) {
+        item.price = parseFloat(priceStr);
+      }
+      
+      if (costStr && !isNaN(parseFloat(costStr))) {
+        item.cost = parseFloat(costStr);
+      }
+      
+      items.push(item);
+    });
+    
+    return items;
+  }
+
+  // Save button handler
+  saveBtn.addEventListener("click", async () => {
+    const items = collectItems();
+    
+    if (items.length === 0) {
+      showStatus(saveStatus, "No items to save. Please add some items first.", 'error');
+      return;
+    }
+
+    console.log('Saving items:', items);
+    
+    saveBtn.disabled = true;
+    saveBtn.textContent = "Saving...";
+    showStatus(saveStatus, "Saving items to inventory...", 'loading');
+
+    const payload = { items };
+
+    try {
+      const response = await fetch("/api/ai-stock/commit/", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "X-CSRFToken": csrftoken
+        },
+        body: JSON.stringify(payload)
+      });
+
+      console.log('Save response status:', response.status);
+      
+      const data = await response.json();
+      console.log('Save response data:', data);
+      
+      if (!response.ok) {
+        throw new Error(data.detail || `Save failed: ${response.status} ${response.statusText}`);
+      }
+
+      showStatus(saveStatus, `Successfully saved! Created: ${data.created} items, Updated: ${data.updated} items.`, 'success');
+      
+      // Optionally clear the form after successful save
+      setTimeout(() => {
+        if (confirm('Items saved successfully! Would you like to clear the form for new items?')) {
+          clearForm();
+        }
+      }, 1500);
+
+    } catch (error) {
+      console.error('Save error:', error);
+      showStatus(saveStatus, `Error: ${error.message}`, 'error');
+    } finally {
+      saveBtn.disabled = false;
+      saveBtn.textContent = "Save to Inventory";
+    }
+  });
+
+  // Clear button handler
+  clearBtn.addEventListener("click", () => {
+    if (confirm('Are you sure you want to clear all items?')) {
+      clearForm();
+    }
+  });
+
+  function clearForm() {
+    recognizedItems = [];
+    itemsTableBody.innerHTML = "";
+    resultsCard.classList.add("hidden");
+    clearStatus(recognizeStatus);
+    clearStatus(saveStatus);
+    document.getElementById("image").value = "";
+  }
+
+  // Initial setup
+  console.log('AI Stock Taking page loaded');
+
+
+    function toggleUserDropdown() {
+        const dropdown = document.getElementById('userDropdown');
+        dropdown.classList.toggle('show');
+    }
+
+    function logout() {
+        if (confirm('Are you sure you want to logout?')) {
+            // Add logout logic here
+            window.location.href = 'login.html';
+        }
+    }
+
+    // Close dropdown when clicking outside
+    document.addEventListener('click', function(event) {
+        const dropdown = document.getElementById('userDropdown');
+        const circle = document.querySelector('.user-circle');
+        
+        if (!dropdown.contains(event.target) && !circle.contains(event.target)) {
+            dropdown.classList.remove('show');
+        }
+    });
+</script>
+</body>
+</html>

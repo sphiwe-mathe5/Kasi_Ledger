@@ -1,0 +1,2468 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link rel="icon" href="{% static 'images/kasicon.png' %}">
+    <title>{{ user.company_name }}</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: #f8fafc;
+            color: #334155;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: #1e293b;
+            margin-bottom: 2rem;
+            text-align: center;
+        }
+
+        h2 {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: #1e293b;
+            margin-bottom: 1rem;
+        }
+
+        /* Navigation as card-based buttons instead of navbar */
+        .quick-links {
+            background: white;
+            border-radius: 12px;
+            padding: 2rem;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            margin-bottom: 2rem;
+        }
+
+        .nav-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            list-style: none;
+        }
+
+        .nav-card {
+            background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+            border-radius: 8px;
+            padding: 1.5rem;
+            text-align: center;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 4px rgba(59, 130, 246, 0.2);
+        }
+
+        .nav-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(59, 130, 246, 0.3);
+        }
+
+        .nav-card a {
+            color: white;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 1rem;
+        }
+
+        /* Statistics cards layout */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .stats-card {
+            background: white;
+            border-radius: 12px;
+            padding: 2rem;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            border-left: 4px solid #3b82f6;
+        }
+
+        .stats-card h2 {
+            color: #3b82f6;
+            margin-bottom: 1.5rem;
+        }
+
+        .stat-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.75rem 0;
+            border-bottom: 1px solid #f1f5f9;
+        }
+
+        .stat-item:last-child {
+            border-bottom: none;
+        }
+
+        .stat-label {
+            font-weight: 500;
+            color: #64748b;
+        }
+
+        .stat-value {
+            font-weight: 700;
+            font-size: 1.25rem;
+            color: #1e293b;
+        }
+
+        /* Modern table styling */
+        .table-section {
+            background: white;
+            border-radius: 12px;
+            padding: 2rem;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            margin-bottom: 2rem;
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            border: none;
+        }
+
+        th {
+            background: #f8fafc;
+            color: #475569;
+            font-weight: 600;
+            padding: 1rem;
+            text-align: left;
+            border-bottom: 2px solid #e2e8f0;
+        }
+
+        td {
+            padding: 1rem;
+            border-bottom: 1px solid #f1f5f9;
+        }
+
+        tr:hover {
+            background: #f8fafc;
+        }
+
+        .status-badge {
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+            font-size: 0.875rem;
+            font-weight: 500;
+        }
+
+        .status-pending {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .status-completed {
+            background: #d1fae5;
+            color: #065f46;
+        }
+
+        .status-in-progress {
+            background: #dbeafe;
+            color: #1e40af;
+        }
+
+        /* Responsive design */
+        @media (max-width: 768px) {
+            .container {
+                padding: 1rem;
+            }
+
+            h1 {
+                font-size: 2rem;
+            }
+
+            .nav-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .table-section {
+                padding: 1rem;
+            }
+
+            table {
+                font-size: 0.875rem;
+            }
+
+            th, td {
+                padding: 0.75rem 0.5rem;
+            }
+        }
+
+        .modal-overlays {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(4px);
+            z-index: 1000;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .modal-overlays.show {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-contents {
+            background: white;
+            border-radius: 16px;
+            padding: 2rem;
+            width: 90%;
+            max-width: 500px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
+            transform: scale(0.9);
+            animation: modalSlideIn 0.3s ease forwards;
+            position: relative;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            padding-bottom: 1rem;
+            border-bottom: 2px solid #f1f3f4;
+        }
+
+        .modal-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #4169E1;
+            margin: 0;
+        }
+
+        .close-btn {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            color: #6c757d;
+            cursor: pointer;
+            padding: 0.5rem;
+            border-radius: 50%;
+            transition: all 0.2s ease;
+        }
+
+        .close-btn:hover {
+            background: #f8f9fa;
+            color: #dc3545;
+        }
+
+        /* Form Styles */
+        .form-groups {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-labels {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+            color: #495057;
+            font-size: 0.9rem;
+        }
+
+        .form-inputs {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            background: #fff;
+        }
+
+        .form-inputs:focus {
+            outline: none;
+            border-color: #4169E1;
+            box-shadow: 0 0 0 3px rgba(65, 105, 225, 0.1);
+        }
+
+        .form-inputs:hover {
+            border-color: #ced4da;
+        }
+
+        .error-message {
+            color: #dc3545;
+            font-size: 0.875rem;
+            margin-top: 0.25rem;
+            display: block;
+        }
+
+        /* Button Styles */
+        .button-groups {
+            display: flex;
+            gap: 1rem;
+            margin-top: 2rem;
+            justify-content: flex-end;
+        }
+
+        .btn {
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+            text-align: center;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #4169E1, #6495ED);
+            color: white;
+            box-shadow: 0 4px 15px rgba(65, 105, 225, 0.2);
+        }
+
+        .btn-primary:hover {
+            background: linear-gradient(135deg, #3557C7, #5A7FE8);
+            transform: translateY(-1px);
+            box-shadow: 0 6px 20px rgba(65, 105, 225, 0.3);
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #5a6268;
+            transform: translateY(-1px);
+        }
+
+        /* Animations */
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes modalSlideIn {
+            from {
+                transform: scale(0.9) translateY(-20px);
+                opacity: 0;
+            }
+            to {
+                transform: scale(1) translateY(0);
+                opacity: 1;
+            }
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .modal-content {
+                margin: 1rem;
+                padding: 1.5rem;
+            }
+            
+            .button-group {
+                flex-direction: column;
+            }
+            
+            .btn {
+                width: 100%;
+            }
+        }
+
+
+        
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(4px);
+            z-index: 1000;
+        }
+
+        .modal-content {
+            background: white;
+            margin: 3% auto;
+            padding: 0;
+            width: 90%;
+            max-width: 700px;
+            max-height: 90vh;
+            overflow-y: auto;
+            border-radius: 12px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+        }
+
+        .modal-header {
+            padding: 24px;
+            border-bottom: 1px solid #e5e7eb;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-header h2 {
+            margin: 0;
+            color: #1f2937;
+            font-size: 24px;
+            font-weight: 600;
+        }
+
+        .close-btn {
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: #6b7280;
+            padding: 8px;
+            border-radius: 6px;
+            transition: all 0.2s ease;
+        }
+
+        .close-btn:hover {
+            background: #f3f4f6;
+            color: #374151;
+        }
+
+        .modal-body {
+            padding: 24px;
+        }
+
+        .search-form {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 24px;
+        }
+
+        .search-input {
+            flex: 1;
+            padding: 12px 16px;
+            border: 1px solid #d1d5db;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: border-color 0.2s ease;
+        }
+
+        .search-input:focus {
+            outline: none;
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+
+        .search-btn {
+            padding: 12px 24px;
+            background: #3b82f6;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+        }
+
+        .search-btn:hover {
+            background: #2563eb;
+        }
+
+        .services-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 24px;
+            background: white;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+
+        .services-table th {
+            background: #f8fafc;
+            padding: 16px;
+            text-align: left;
+            font-weight: 600;
+            color: #374151;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        .services-table td {
+            padding: 16px;
+            border-bottom: 1px solid #f3f4f6;
+            color: #6b7280;
+        }
+
+        .services-table tr:hover {
+            background: #f9fafb;
+        }
+
+        .pagination {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 12px;
+            margin: 24px 0;
+        }
+
+        .pagination a {
+            padding: 8px 16px;
+            background: #f3f4f6;
+            color: #374151;
+            text-decoration: none;
+            border-radius: 6px;
+            font-size: 14px;
+            transition: all 0.2s ease;
+        }
+
+        .pagination a:hover {
+            background: #3b82f6;
+            color: white;
+        }
+
+        .pagination span {
+            color: #6b7280;
+            font-size: 14px;
+        }
+
+        .form-section {
+            border-top: 1px solid #e5e7eb;
+            padding-top: 24px;
+        }
+
+        .form-section h3 {
+            margin: 0 0 20px 0;
+            color: #1f2937;
+            font-size: 18px;
+            font-weight: 600;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #374151;
+            font-weight: 500;
+            font-size: 14px;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 12px 16px;
+            border: 1px solid #d1d5db;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: border-color 0.2s ease;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+
+        .save-btn {
+            padding: 12px 32px;
+            background: #10b981;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+        }
+
+        .save-btn:hover {
+            background: #059669;
+        }
+
+
+
+        
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(5px);
+            z-index: 1000;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .modal-overlay.show {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* Modern modal container with clean styling */
+        .modal-container {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+            width: 90%;
+            max-width: 500px;
+            max-height: 90vh;
+            overflow-y: auto;
+            margin-left: 45rem;
+            margin-top: 10rem;
+            transform: scale(0.9);
+            animation: modalSlideIn 0.3s ease forwards;
+        }
+
+        .modal-header {
+            padding: 24px 24px 0;
+            border-bottom: 1px solid #e9ecef;
+            margin-bottom: 24px;
+        }
+
+        .modal-header h2 {
+            color: #2c3e50;
+            font-size: 24px;
+            font-weight: 600;
+            margin-bottom: 16px;
+        }
+
+        .modal-body {
+            padding: 0 24px 24px;
+        }
+
+        /* Clean form styling */
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #374151;
+            font-weight: 500;
+            font-size: 14px;
+        }
+
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: all 0.2s ease;
+            background: white;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: #4169E1;
+            box-shadow: 0 0 0 3px rgba(65, 105, 225, 0.1);
+        }
+
+        /* Modern button styling */
+        .button-group {
+            display: flex;
+            gap: 12px;
+            margin-top: 32px;
+            padding-top: 20px;
+            border-top: 1px solid #e9ecef;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            flex: 1;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #4169E1, #5a7bff);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: linear-gradient(135deg, #3557d1, #4a6bef);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(65, 105, 225, 0.3);
+        }
+
+        .btn-secondary {
+            background: #f8f9fa;
+            color: #6c757d;
+            border: 1px solid #dee2e6;
+        }
+
+        .btn-secondary:hover {
+            background: #e9ecef;
+            color: #495057;
+        }
+
+        /* Animations */
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes modalSlideIn {
+            from {
+                opacity: 0;
+                transform: scale(0.9) translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1) translateY(0);
+            }
+        }
+
+        /* Responsive design */
+        @media (max-width: 768px) {
+            .modal-container {
+                width: 95%;
+                margin: 20px;
+            }
+            
+            .modal-header,
+            .modal-body {
+                padding-left: 16px;
+                padding-right: 16px;
+            }
+            
+            .button-group {
+                flex-direction: column;
+            }
+        }
+
+        
+        .user-name {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: var(--text-color);
+            margin: 0 0px 8px;
+            margin-top: 4rem;
+            text-align: center;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            position: relative;
+            margin-left: 25rem;
+        }
+
+        .user-circle {
+            width: 32px;
+            height: 32px;
+            background: #f8f9fa;
+            border: 2px solid #e1e5e9;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            margin-top: 3.3rem;
+            color: #6c757d;
+        }
+
+        .user-circle:hover {
+            background: #e9ecef;
+            border-color: #3498db;
+            color: #3498db;
+        }
+
+        .user-dropdown {
+            position: absolute;
+            top: 60px;
+            right: 20px;
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            z-index: 1000;
+            width: 300px;
+            overflow: hidden;
+
+            /* Hidden by default */
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(20px);
+            transition: all 0.3s ease;
+        }
+
+        .user-dropdown.show {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+        }
+
+        .dropdown-header {
+            padding: 16px;
+        }
+
+        .dropdown-email {
+            color: #6c757d;
+            font-size: 14px;
+            margin-top: 4px;
+        }
+
+        .dropdown-menu {
+            padding: 8px 0;
+        }
+
+        .dropdown-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 16px;
+            color: #333;
+            text-decoration: none;
+            background: none;
+            width: 100%;
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+        }
+
+        .dropdown-item:hover {
+            background: #f8f9fa;
+        }
+
+        .dropdown-item.logout {
+            color: #dc3545;
+        }
+
+        .dropdown-item.logout:hover {
+            background: #fff5f5;
+        }
+
+
+        .dropdown-icon {
+            width: 16px;
+            height: 16px;
+        }
+        .logo {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #2980b9;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .user-initials {
+            width: 40px;
+            height: 40px;
+            background: #3498db;
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 1rem;
+        }
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .section-header h2 {
+            margin: 0;
+            color: #2c3e50;
+        }
+
+        .section-header .menu-card {
+            background: linear-gradient(135deg, #3498db, #2980b9);
+            color: white;
+            padding: 8px 16px;
+            border-radius: 6px;
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+
+        .section-header .menu-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(52, 152, 219, 0.3);
+        }
+        @media (max-width: 768px) {
+
+            .user-name {
+                font-size: 1rem;
+                font-weight: bold;
+                color: var(--text-color);
+                margin: 0 0px 8px;
+                margin-top: 4rem;
+                text-align: center;
+            }
+            .user-info {
+                display: flex;
+                align-items: center;
+                gap: 12px;
+                position: relative;
+                margin-left: 5rem;
+            }
+        }
+        .suggestions-container {
+            position: absolute;
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            max-height: 200px;
+            overflow-y: auto;
+            z-index: 1000;
+            width: 100%;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .suggestion-item {
+            padding: 10px;
+            cursor: pointer;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        .suggestion-item:hover {
+            background: #f5f5f5;
+        }
+
+        .suggestion-item:last-child {
+            border-bottom: none;
+        }
+
+        .suggestion-email {
+            font-weight: bold;
+            color: #333;
+        }
+
+        .suggestion-name {
+            font-size: 12px;
+            color: #666;
+            margin-left: 10px;
+        }
+
+        .suggestion-plate {
+            font-size: 11px;
+            color: #888;
+            background: #f0f0f0;
+            padding: 2px 6px;
+            border-radius: 3px;
+            margin-left: 8px;
+        }
+
+        .form-group {
+            position: relative;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="user-info">
+            <p class="user-name"><strong>Hello, {{ user.company_name }}</strong></p>
+            <div class="user-circle" onclick="toggleUserDropdown()">
+                {{ user.company_name|slice:":1" }}
+            </div>
+
+            <div class="user-dropdown" id="userDropdown">
+                <div class="dropdown-header">
+                    <div><strong>{{ user.company_name }}</strong></div>
+                    <div class="dropdown-email">{{ user.email }}</div>
+                </div>
+                <div class="dropdown-menu">
+                    <a href="{% url 'email_campaigns:emails' %}" class="dropdown-item">
+                        <i class="fa-solid fa-square-envelope"></i>
+                        Marketing Console
+                    </a>
+                    <a href="{% url 'console' %}" class="dropdown-item">
+                        <i class="fa-solid fa-terminal"></i>
+                        Console
+                    </a>
+                    <a href="{% url 'profile' %}" class="dropdown-item">
+                        <i class="fa-solid fa-gear"></i>
+                        Settings
+                    </a>
+                    <a href="{% url 'logout' %}" class="dropdown-item logout">
+                        <i class="fa-solid fa-right-from-bracket"></i>
+                        Logout
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <div id="employeeFormModal" class="modal-overlays">
+            <div class="modal-contents">
+                <div class="modal-header">
+                    <h2 class="modal-title">Add New Employee</h2>
+                    <button type="button" class="close-btn" id="closeEmployeeForm">&times;</button>
+                </div>
+                
+                <form method="POST" action="{% url 'employee_list_create' %}">
+                    {% csrf_token %}
+                    <div class="form-groups">
+                        <label for="id_name" class="form-labels">First Name:</label>
+                        <input type="text" id="id_name" name="name" class="form-inputs" required>
+                        <span class="error-message" style="display: none;">This field is required.</span>
+                    </div>
+
+                    <div class="form-groups">
+                        <label for="id_surname" class="form-labels">Surname:</label>
+                        <input type="text" id="id_surname" name="surname" class="form-inputs" required>
+                        <span class="error-message" style="display: none;">This field is required.</span>
+                    </div>
+
+                    <div class="form-groups">
+                        <label for="id_phone" class="form-labels">Phone:</label>
+                        <input type="tel" id="id_phone" name="phone" class="form-inputs" required>
+                        <span class="error-message" style="display: none;">Please enter a valid phone number.</span>
+                    </div>
+
+                    <div class="form-groups">
+                        <label for="id_email" class="form-labels">Email:</label>
+                        <input type="email" id="id_email" name="email" class="form-inputs" required>
+                        <span class="error-message" style="display: none;">Please enter a valid email address.</span>
+                    </div>
+
+                    <div class="button-groups">
+                        <button type="button" class="btn btn-secondary" id="cancelBtn">Cancel</button>
+                        <button type="submit" class="btn btn-primary">Save Employee</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+    <div id="serviceModal" class="modal-overlay">
+            <div class="modal-content">
+                <!-- Close Button -->
+                <div class="modal-header">
+                    <h2>Manage Services</h2>
+                    <button id="closeServiceModal" class="close-btn">×</button>
+                </div>
+
+                <!-- Search -->
+                <div class="modal-body">
+                    <form method="GET" action="{% url 'service_list_create' %}" class="search-form">
+                        <input type="text" name="search" placeholder="Search services..." value="{{ search_query }}" class="search-input">
+                        <button type="submit" class="search-btn">Search</button>
+                    </form>
+
+                    <!-- Service List -->
+                    <h3>Available Services</h3>
+                    <table class="services-table">
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Price</th>
+                                <th>Usage Count</th>
+                                <th>Revenue Generated</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for service in page_obj %}
+                                <tr>
+                                    <td>{{ service.name }}</td>
+                                    <td>R{{ service.price }}</td>
+                                    <td>{{ service.usage_count }}</td>
+                                    <td>{{ service.revenue_generated }}</td>
+                                </tr>
+                            {% empty %}
+                                <tr>
+                                    <td colspan="4">No services found.</td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+
+                    <!-- Pagination -->
+                    <div class="pagination">
+                        {% if page_obj.has_previous %}
+                            <a href="?page=1{% if search_query %}&search={{ search_query }}{% endif %}">First</a>
+                            <a href="?page={{ page_obj.previous_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}">Previous</a>
+                        {% endif %}
+
+                        <span>Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+
+                        {% if page_obj.has_next %}
+                            <a href="?page={{ page_obj.next_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}">Next</a>
+                            <a href="?page={{ page_obj.paginator.num_pages }}{% if search_query %}&search={{ search_query }}{% endif %}">Last</a>
+                        {% endif %}
+                    </div>
+
+                    <hr>
+
+                    <!-- Add Service Form -->
+                    <div class="form-section">
+                        <h3>Add New Service</h3>
+                        <form method="POST" action="{% url 'service_list_create' %}">
+                            {% csrf_token %}
+                            <div class="form-group">
+                                <label for="id_name">Service Name:</label>
+                                <input type="text" id="id_name" name="name" class="form-input" required>
+                                <span class="error-message" style="display: none;">This field is required.</span>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="id_price">Price:</label>
+                                <input type="number" step="0.01" id="id_price" name="price" class="form-input" required>
+                                <span class="error-message" style="display: none;">This field is required.</span>
+                                {{ form.price }}
+                            </div>
+                            <button type="submit" class="save-btn">Save Service</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+<div id="ticketFormModal" class="modal-overlay">
+    <div class="modal-container">
+        <div class="modal-header">
+            <h2>Create Service Ticket</h2>
+            <button type="button" class="close-btn" id="closeTicketForm">&times;</button>
+        </div>
+        
+        <div class="modal-body">
+            {% if not can_create_ticket %}
+                <!-- Subscription Gate -->
+                <div class="subscription-gate" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 30px; border-radius: 8px; text-align: center;">
+                    <h3 style="margin: 0 0 15px 0; font-size: 22px;">🎫 Unlock Ticket Creation</h3>
+                    <p style="margin: 0 0 10px 0; font-size: 16px;">{{ ticket_access.message }}</p>
+                    
+                    {% if ticket_access.limit %}
+                        <div style="background: rgba(255,255,255,0.2); padding: 15px; border-radius: 6px; margin: 15px 0;">
+                            <p style="margin: 0; font-size: 18px; font-weight: bold;">
+                                {{ ticket_access.current }} / {{ ticket_access.limit }}
+                            </p>
+                            <p style="margin: 5px 0 0 0; font-size: 13px; opacity: 0.9;">
+                                Tickets used this month
+                            </p>
+                        </div>
+                    {% endif %}
+                    
+                    <a href="{% url 'subscription_plans' %}" 
+                       style="display: inline-block; background: white; color: #667eea; padding: 12px 35px; 
+                              border-radius: 6px; text-decoration: none; font-weight: bold; margin-top: 10px;
+                              transition: transform 0.2s;">
+                        ⭐ Upgrade Your Plan
+                    </a>
+                    
+                    <p style="margin: 20px 0 0 0; font-size: 13px; opacity: 0.85;">
+                        Get unlimited tickets with our Growth Plan
+                    </p>
+                </div>
+                
+                <!-- Locked Form Preview -->
+                <div style="margin-top: 20px; opacity: 0.4; pointer-events: none; position: relative;">
+                    <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); 
+                                font-size: 64px; z-index: 10;">🔒</div>
+                    
+                    <div class="form-group">
+                        <label>Car Number Plate:</label>
+                        <input type="text" disabled class="form-control" placeholder="ABC 123 GP">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Customer Email:</label>
+                        <input type="email" disabled class="form-control" placeholder="customer@example.com">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="id_service">Service:</label>
+                        {{ ticket_form.service }}
+                        {% if not ticket_form.service.field.queryset %}
+                            <small style="color: #dc3545;">No services available. Please add services first.</small>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="id_employee">Employee:</label>
+                        {{ ticket_form.employee }}
+                        {% if not ticket_form.employee.field.queryset %}
+                            <small style="color: #dc3545;">No employees available. Please add employees first.</small>
+                        {% endif %}
+                    </div>
+
+                    <div class="button-group">
+                        <button type="button" disabled class="btn btn-primary">Create Ticket</button>
+                        <button type="button" disabled class="btn btn-secondary">Cancel</button>
+                    </div>
+                </div>
+                
+            {% else %}
+                <!-- Active Form -->
+                <form method="POST" action="{% url 'ticket_list_create' %}">
+                    {% csrf_token %}
+                    
+                    <div class="form-group">
+                        <label for="id_car_number_plate">Car Number Plate:</label>
+                        {{ ticket_form.car_number_plate }}
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="id_customer_email">Customer Email:</label>
+                        <input type="email" id="id_customer_email" name="customer_email" class="form-input" 
+                            autocomplete="off" list="email-suggestions" placeholder="Start typing to see existing emails...">
+                        <datalist id="email-suggestions">
+                            <!-- Email suggestions will be populated by JavaScript -->
+                        </datalist>
+                        <div id="email-suggestions-container" class="suggestions-container" style="display: none;"></div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="id_service">Service:</label>
+                        {{ ticket_form.service }}
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="id_employee">Employee:</label>
+                        {{ ticket_form.employee }}
+                    </div>
+
+                    <div class="button-group">
+                        <button type="submit" class="btn btn-primary">Create Ticket</button>
+                        <button type="button" class="btn btn-secondary" id="closeTicketFormBtn">Cancel</button>
+                    </div>
+                </form>
+                
+                <!-- Usage Indicator for Limited Plans -->
+                {% if ticket_access.limit %}
+                    <div style="margin-top: 15px; padding: 10px; background: #f0f7ff; border-left: 3px solid #667eea; border-radius: 4px;">
+                        <p style="margin: 0; font-size: 13px; color: #555;">
+                            📊 <strong>{{ ticket_access.message }}</strong>
+                        </p>
+                        {% if ticket_access.current >= ticket_access.limit|add:"-5" %}
+                            <p style="margin: 5px 0 0 0; font-size: 12px; color: #e67e22;">
+                                ⚠️ Running low on tickets. Consider upgrading for unlimited access.
+                            </p>
+                        {% endif %}
+                    </div>
+                {% endif %}
+            {% endif %}
+        </div>
+    </div>
+</div>
+        <!-- Navigation as card-based buttons -->
+        <section class="quick-links">
+            <ul class="nav-grid">
+                <li class="nav-card"><a href="#" id="openTicketForm">Create Tickets</a></li>
+                <li class="nav-card"><a href="#" id="employeesLink" >Add Employee</a></li>
+                <li class="nav-card"><a href="#" id="openServiceModal">Add Services</a></li>
+                <li class="nav-card"><a href="{% url 'revenue_report' %}">View Reports</a></li>
+            </ul>
+        </section>
+
+        <!-- Statistics in card grid layout -->
+        <div class="stats-grid">
+            <section class="stats-card">
+                <h2>Overview</h2>
+                <div class="stat-item">
+                    <span class="stat-label">Total Employees:</span>
+                    <span class="stat-value">{{ total_employees }}</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">Total Services:</span>
+                    <span class="stat-value">{{ total_services }}</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">Total Tickets:</span>
+                    <span class="stat-value">{{ total_tickets }}</span>
+                </div>
+            </section>
+
+            <section class="stats-card">
+                <h2>Today's Statistics</h2>
+                <div class="stat-item">
+                    <span class="stat-label">Tickets Created Today:</span>
+                    <span class="stat-value">{{ today_tickets_count }}</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">Revenue Today:</span>
+                    <span class="stat-value">R{{ today_revenue }}</span>
+                </div>
+            </section>
+
+            <section class="stats-card">
+                <h2>This Month's Statistics</h2>
+                <div class="stat-item">
+                    <span class="stat-label">Tickets This Month:</span>
+                    <span class="stat-value">{{ month_tickets_count }}</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">Revenue This Month:</span>
+                    <span class="stat-value">R{{ month_revenue }}</span>
+                </div>
+            </section>
+        </div>
+
+        <!-- Modern table styling -->
+        <section class="table-section">
+            <div class="section-header">
+                <h2>Recent Tickets</h2>
+                <a href="{% url 'ticket_list_create' %}" class="menu-card">View Ticket History</a>
+            </div>
+            <table>
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Service</th>
+                        <th>Employee</th>
+                        <!-- <th>Status</th> -->
+                        <th>Total Amount</th>
+                        <th>Created At</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for ticket in recent_tickets %}
+                    <tr>
+                        <td>{{ ticket.id }}</td>
+                        <td>{{ ticket.service.name }}</td>
+                        <td>{{ ticket.employee.name }} {{ ticket.employee.surname }}</td>
+                        <!-- <td><span class="status-badge status-{{ ticket.status|lower }}">{{ ticket.status }}</span></td> -->
+                        <td>R{{ ticket.total_amount }}</td>
+                        <td>{{ ticket.created_at|date:"d F Y H:i" }}</td>
+                    </tr>
+                    {% empty %}
+                    <tr><td colspan="6">No recent tickets</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </section>
+
+    <section class="table-section">
+        <!-- Added flexbox container to align h2 and link on same line -->
+        <div class="section-header">
+            <h2>Top Employees (This Month)</h2>
+            <a href="{% url 'employee_list_create' %}" class="menu-card">View All Employees</a>
+        </div>
+
+            <table>
+                <thead>
+                    <tr>
+                        <th>Employee</th>
+                        <th>Cars Washed</th>
+                        <th>Revenue Generated</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for emp in employee_stats %}
+                    <tr>
+                        <td>{{ emp.name }} {{ emp.surname }}</td>
+                        <td>{{ emp.cars_washed }}</td>
+                        <td>R{{ emp.revenue_generated }}</td>
+                    </tr>
+                    {% empty %}
+                    <tr><td colspan="3">No employee stats available</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </section>
+    </div>
+
+
+{% if show_ai_chatbot %}
+<!-- AI Chatbot Modal -->
+<div id="carwashAiChatModal" class="ai-chat-modal">
+    <div class="ai-chat-container">
+        <!-- Chat Header -->
+        <div class="ai-chat-header">
+            <div class="ai-chat-title">
+                <span class="ai-avatar">🚗</span>
+                <div class="ai-title-text">
+                    <strong>Carwash Assistant</strong>
+                    <small>Online</small>
+                </div>
+            </div>
+            <div class="ai-chat-actions">
+                <button class="ai-btn ai-btn-minimize" onclick="minimizeCarwashChat()">
+                    <i class="fas fa-minus"></i>
+                </button>
+                <button class="ai-btn ai-btn-close" onclick="closeCarwashChat()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+        </div>
+        
+        <!-- Chat Messages -->
+        <div class="ai-chat-messages" id="carwashAiMessages">
+            <div class="ai-message ai-bot-message">
+                <div class="ai-message-avatar">🚗</div>
+                <div class="ai-message-content">
+                    <div class="ai-message-text">
+                        Hello! I'm your Carwash Assistant 🤖
+                        <br><br>
+                        Today's Summary:
+                        • {{ today_tickets_count }} washes
+                        • R{{ today_revenue }} revenue
+                        • {{ pending_tickets }} pending washes
+                        <br>
+                        Ask me about washes, revenue, or employee performance!
+                    </div>
+                    <div class="ai-message-time">{{ current_time|time:"H:i" }}</div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Chat Input -->
+        <div class="ai-chat-input-container">
+            <div class="ai-chat-input-wrapper">
+                <input type="text" 
+                       class="ai-chat-input" 
+                       id="carwashAiInput"
+                       placeholder="Ask about washes, revenue, employees..."
+                       onkeypress="handleCarwashAIKeyPress(event)">
+                <button class="ai-send-btn" onclick="sendCarwashAIMessage()">
+                    <i class="fas fa-paper-plane"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Floating Chat Button -->
+<div class="ai-chat-button" id="carwashAiChatButton" onclick="openCarwashChat()">
+    <div class="ai-chat-button-icon">
+        <i class="fas fa-robot"></i>
+    </div>
+    <div class="ai-chat-button-pulse"></div>
+</div>
+
+<style>
+.ai-chat-container {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    overflow: hidden; /* Add this */
+}
+/* Floating Chat Button */
+.ai-chat-button {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    width: 60px;
+    height: 60px;
+    background: linear-gradient(135deg, #007bff, #0056b3);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    box-shadow: 0 4px 20px rgba(0, 123, 255, 0.3);
+    z-index: 1000;
+    transition: all 0.3s ease;
+}
+
+.ai-chat-button:hover {
+    transform: scale(1.1);
+    box-shadow: 0 6px 25px rgba(0, 123, 255, 0.4);
+}
+
+.ai-chat-button-icon {
+    color: white;
+    font-size: 24px;
+}
+
+.ai-chat-button-pulse {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    background: rgba(0, 123, 255, 0.6);
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0% {
+        transform: scale(1);
+        opacity: 1;
+    }
+    100% {
+        transform: scale(1.5);
+        opacity: 0;
+    }
+}
+
+/* Chat Modal - LARGER SIZE */
+.ai-chat-modal {
+    position: fixed;
+    bottom: 90px;
+    right: 20px;
+    width: 450px;
+    height: 600px;
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+    z-index: 1001;
+    display: none;
+    flex-direction: column;
+    overflow: hidden;
+    border: 1px solid #e9ecef;
+}
+
+.ai-chat-modal.open {
+    display: flex;
+    animation: slideUp 0.3s ease;
+}
+
+@keyframes slideUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Chat Header */
+.ai-chat-header {
+    background: linear-gradient(135deg, #007bff, #0056b3);
+    color: white;
+    padding: 15px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-shrink: 0;
+}
+
+.ai-chat-title {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.ai-avatar {
+    font-size: 20px;
+}
+
+.ai-title-text strong {
+    font-size: 16px;
+    display: block;
+}
+
+.ai-title-text small {
+    opacity: 0.8;
+    font-size: 12px;
+    display: block;
+}
+
+.ai-chat-actions {
+    display: flex;
+    gap: 5px;
+}
+
+.ai-btn {
+    background: rgba(255, 255, 255, 0.2);
+    border: none;
+    color: white;
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.3s ease;
+    font-size: 12px;
+}
+
+.ai-btn:hover {
+    background: rgba(255, 255, 255, 0.3);
+}
+
+/* Chat Messages - IMPROVED SCROLLING */
+.ai-chat-messages {
+    flex: 1;
+    overflow-y: auto;
+    padding: 20px;
+    background: #f8f9fa;
+    display: flex;
+    flex-direction: column;
+    height: calc(100% - 140px); /* Add fixed height calculation */
+}
+
+/* Custom scrollbar for better appearance */
+.ai-chat-messages::-webkit-scrollbar {
+    width: 6px;
+}
+
+.ai-chat-messages::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 3px;
+}
+
+.ai-chat-messages::-webkit-scrollbar-thumb {
+    background: #c1c1c1;
+    border-radius: 3px;
+}
+
+.ai-chat-messages::-webkit-scrollbar-thumb:hover {
+    background: #a8a8a8;
+}
+
+/* Firefox scrollbar */
+.ai-chat-messages {
+    scrollbar-width: thin;
+    scrollbar-color: #c1c1c1 #f1f1f1;
+}
+
+.ai-message {
+    display: flex;
+    margin-bottom: 15px;
+    gap: 10px;
+    flex-shrink: 0;
+}
+
+.ai-bot-message {
+    align-items: flex-start;
+}
+
+.ai-user-message {
+    align-items: flex-end;
+    flex-direction: row-reverse;
+}
+
+.ai-message-avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    flex-shrink: 0;
+    font-weight: bold;
+}
+
+.ai-bot-message .ai-message-avatar {
+    background: #007bff;
+    color: white;
+}
+
+.ai-user-message .ai-message-avatar {
+    background: #28a745;
+    color: white;
+}
+
+.ai-message-content {
+    max-width: 85%;
+    flex: 1;
+}
+
+.ai-message-text {
+    padding: 12px 16px;
+    border-radius: 18px;
+    line-height: 1.5;
+    font-size: 14px;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    white-space: pre-line;
+}
+
+.ai-bot-message .ai-message-text {
+    background: white;
+    border: 1px solid #e9ecef;
+    border-radius: 18px 18px 18px 4px;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+    color: #333;
+}
+
+.ai-user-message .ai-message-text {
+    background: #28a745;
+    color: white;
+    border-radius: 18px 18px 4px 18px;
+    box-shadow: 0 1px 2px rgba(40, 167, 69, 0.2);
+}
+
+.ai-message-time {
+    font-size: 11px;
+    color: #6c757d;
+    margin-top: 5px;
+    text-align: right;
+}
+
+/* Chat Input */
+.ai-chat-input-container {
+    padding: 15px;
+    background: white;
+    border-top: 1px solid #e9ecef;
+    position: sticky; /* Add this */
+    bottom: 0; /* Add this */
+    width: 100%; /* Add this */
+}
+
+.ai-chat-input-wrapper {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
+
+.ai-chat-input {
+    flex: 1;
+    padding: 12px 16px;
+    border: 1px solid #ddd;
+    border-radius: 25px;
+    outline: none;
+    font-size: 14px;
+    transition: all 0.3s ease;
+    background: #f8f9fa;
+}
+
+.ai-chat-input:focus {
+    border-color: #007bff;
+    box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.1);
+    background: white;
+}
+
+.ai-send-btn {
+    background: #007bff;
+    color: white;
+    border: none;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+    font-size: 14px;
+}
+
+.ai-send-btn:hover {
+    background: #0056b3;
+    transform: scale(1.05);
+}
+
+.ai-send-btn:active {
+    transform: scale(0.95);
+}
+
+/* Typing Indicator */
+.ai-typing-indicator {
+    display: flex;
+    align-items: center;
+    color: #6c757d;
+    font-style: italic;
+    padding: 12px 16px;
+    font-size: 14px;
+}
+
+.typing-dots {
+    display: flex;
+    margin-left: 5px;
+}
+
+.typing-dots span {
+    animation: typing 1.4s infinite;
+    margin: 0 1px;
+    font-weight: bold;
+}
+
+.typing-dots span:nth-child(2) { animation-delay: 0.2s; }
+.typing-dots span:nth-child(3) { animation-delay: 0.4s; }
+
+@keyframes typing {
+    0%, 60%, 100% { opacity: 0.3; }
+    30% { opacity: 1; }
+}
+
+/* Minimized State */
+.ai-chat-modal.minimized {
+    height: 60px;
+    overflow: hidden;
+}
+
+.ai-chat-modal.minimized .ai-chat-messages,
+.ai-chat-modal.minimized .ai-chat-input-container {
+    display: none;
+}
+
+/* Responsive design for smaller screens */
+@media (max-width: 768px) {
+    .ai-chat-modal {
+        width: calc(100vw - 40px);
+        right: 20px;
+        left: 20px;
+        height: 70vh;
+        bottom: 80px;
+    }
+    
+    .ai-chat-button {
+        bottom: 20px;
+        right: 20px;
+    }
+    
+    .ai-message-content {
+        max-width: 75%;
+    }
+}
+
+@media (max-width: 480px) {
+    .ai-chat-modal {
+        width: calc(100vw - 30px);
+        right: 15px;
+        left: 15px;
+        height: 65vh;
+    }
+    
+    .ai-chat-messages {
+        padding: 15px;
+    }
+    
+    .ai-message-content {
+        max-width: 70%;
+    }
+    
+    .ai-message-text {
+        padding: 10px 14px;
+        font-size: 13px;
+    }
+}
+
+/* Auto-scroll to bottom when new messages arrive */
+.ai-chat-messages {
+    scroll-behavior: smooth;
+}
+
+/* Ensure long words break properly */
+.ai-message-text {
+    word-break: break-word;
+}
+
+/* Style for code or formatted text in responses */
+.ai-message-text pre {
+    background: #f8f9fa;
+    border: 1px solid #e9ecef;
+    border-radius: 4px;
+    padding: 8px;
+    margin: 5px 0;
+    overflow-x: auto;
+    font-size: 12px;
+    font-family: 'Courier New', monospace;
+}
+
+.ai-message-text code {
+    background: #f8f9fa;
+    padding: 2px 4px;
+    border-radius: 3px;
+    font-size: 12px;
+    font-family: 'Courier New', monospace;
+    color: #e83e8c;
+}
+
+/* Make lists in responses look better */
+.ai-message-text ul,
+.ai-message-text ol {
+    margin: 8px 0;
+    padding-left: 20px;
+}
+
+.ai-message-text li {
+    margin: 4px 0;
+}
+
+/* Style for numbers and statistics in responses */
+.ai-message-text strong {
+    color: #007bff;
+}
+
+/* Highlight important information */
+.ai-message-text .highlight {
+    background: linear-gradient(120deg, #a8e6cf 0%, #a8e6cf 100%);
+    background-repeat: no-repeat;
+    background-size: 100% 0.4em;
+    background-position: 0 88%;
+    transition: background-size 0.25s ease-in;
+}
+
+/* Loading animation for better UX */
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.ai-message {
+    animation: fadeIn 0.3s ease;
+}
+
+/* Status indicators */
+.status-online {
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    background: #28a745;
+    border-radius: 50%;
+    margin-right: 5px;
+}
+
+.status-typing {
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    background: #ffc107;
+    border-radius: 50%;
+    margin-right: 5px;
+    animation: pulse-typing 1.5s infinite;
+}
+
+@keyframes pulse-typing {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.5; }
+}
+
+/* Message status indicators */
+.message-status {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 10px;
+    color: #6c757d;
+    margin-top: 2px;
+}
+
+/* Quick reply buttons */
+.quick-replies {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 10px;
+}
+
+.quick-reply-btn {
+    background: #e9ecef;
+    border: 1px solid #dee2e6;
+    border-radius: 15px;
+    padding: 6px 12px;
+    font-size: 12px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    color: #495057;
+}
+
+.quick-reply-btn:hover {
+    background: #007bff;
+    color: white;
+    border-color: #007bff;
+}
+
+/* Notification badge */
+.notification-badge {
+    position: absolute;
+    top: -5px;
+    right: -5px;
+    background: #dc3545;
+    color: white;
+    border-radius: 50%;
+    width: 20px;
+    height: 20px;
+    font-size: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    animation: bounce 2s infinite;
+}
+
+@keyframes bounce {
+    0%, 20%, 50%, 80%, 100% {transform: translateY(0);}
+    40% {transform: translateY(-5px);}
+    60% {transform: translateY(-3px);}
+}
+
+/* Dark mode support */
+@media (prefers-color-scheme: dark) {
+    .ai-chat-modal {
+        background: #2d3748;
+        border-color: #4a5568;
+    }
+    
+    .ai-chat-messages {
+        background: #1a202c;
+    }
+    
+    .ai-bot-message .ai-message-text {
+        background: #2d3748;
+        border-color: #4a5568;
+        color: #e2e8f0;
+    }
+    
+    .ai-chat-input {
+        background: #2d3748;
+        border-color: #4a5568;
+        color: #e2e8f0;
+    }
+    
+    .ai-chat-input:focus {
+        background: #2d3748;
+        color: #e2e8f0;
+    }
+    
+    .ai-chat-input-container {
+        background: #2d3748;
+        border-color: #4a5568;
+    }
+}
+
+/* Print styles */
+@media print {
+    .ai-chat-button,
+    .ai-chat-modal {
+        display: none !important;
+    }
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+    .ai-chat-modal {
+        border: 2px solid #000;
+    }
+    
+    .ai-bot-message .ai-message-text {
+        border: 1px solid #000;
+    }
+    
+    .ai-user-message .ai-message-text {
+        border: 1px solid #000;
+    }
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+    .ai-chat-modal.open {
+        animation: none;
+    }
+    
+    .ai-chat-button-pulse {
+        animation: none;
+    }
+    
+    .typing-dots span {
+        animation: none;
+        opacity: 1;
+    }
+    
+    .ai-message {
+        animation: none;
+    }
+    
+    .ai-chat-messages {
+        scroll-behavior: auto;
+    }
+}
+
+/* Focus styles for accessibility */
+.ai-btn:focus,
+.ai-send-btn:focus,
+.ai-chat-input:focus {
+    outline: 2px solid #007bff;
+    outline-offset: 2px;
+}
+
+/* Error state */
+.ai-message.error .ai-message-text {
+    background: #f8d7da;
+    border-color: #f5c6cb;
+    color: #721c24;
+}
+
+/* Success state */
+.ai-message.success .ai-message-text {
+    background: #d1edff;
+    border-color: #b3d9ff;
+    color: #004085;
+}
+
+/* Warning state */
+.ai-message.warning .ai-message-text {
+    background: #fff3cd;
+    border-color: #ffeaa7;
+    color: #856404;
+}
+
+/* Info state */
+.ai-message.info .ai-message-text {
+    background: #d1ecf1;
+    border-color: #bee5eb;
+    color: #0c5460;
+}
+</style>
+<script>
+const CARWASH_CSRF_TOKEN = "{{ csrf_token }}";
+let isCarwashChatOpen = false;
+let isCarwashChatMinimized = false;
+
+function openCarwashChat() {
+    const modal = document.getElementById('carwashAiChatModal');
+    const button = document.getElementById('carwashAiChatButton');
+    
+    modal.classList.add('open');
+    button.style.display = 'none';
+    isCarwashChatOpen = true;
+    isCarwashChatMinimized = false;
+    
+    setTimeout(() => {
+        document.getElementById('carwashAiInput').focus();
+    }, 300);
+}
+
+function closeCarwashChat() {
+    const modal = document.getElementById('carwashAiChatModal');
+    const button = document.getElementById('carwashAiChatButton');
+    
+    modal.classList.remove('open');
+    button.style.display = 'flex';
+    isCarwashChatOpen = false;
+}
+
+function minimizeCarwashChat() {
+    const modal = document.getElementById('carwashAiChatModal');
+    
+    if (isCarwashChatMinimized) {
+        modal.classList.remove('minimized');
+        isCarwashChatMinimized = false;
+    } else {
+        modal.classList.add('minimized');
+        isCarwashChatMinimized = true;
+    }
+}
+
+function handleCarwashAIKeyPress(event) {
+    if (event.key === 'Enter') {
+        sendCarwashAIMessage();
+    }
+}
+
+async function sendCarwashAIMessage() {
+    const input = document.getElementById('carwashAiInput');
+    const message = input.value.trim();
+    
+    if (!message) return;
+    
+    addCarwashMessage(message, 'user');
+    input.value = '';
+    
+    showCarwashTypingIndicator();
+    
+    try {
+        const response = await fetch('/carwash-ai-chat/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': CARWASH_CSRF_TOKEN
+            },
+            body: JSON.stringify({ message: message })
+        });
+        
+        const data = await response.json();
+        
+        removeCarwashTypingIndicator();
+        
+        if (data.success) {
+            addCarwashMessage(data.response, 'bot');
+        } else {
+            addCarwashMessage('Sorry, I encountered an error. Please try again.', 'bot');
+        }
+        
+    } catch (error) {
+        removeCarwashTypingIndicator();
+        addCarwashMessage('Connection error. Please check your internet and try again.', 'bot');
+    }
+}
+
+function addCarwashMessage(content, sender) {
+    const messagesContainer = document.getElementById('carwashAiMessages');
+    const messageDiv = document.createElement('div');
+    messageDiv.className = `ai-message ai-${sender}-message`;
+    
+    const time = new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+    
+    messageDiv.innerHTML = `
+        <div class="ai-message-avatar">${sender === 'bot' ? '🚗' : '👤'}</div>
+        <div class="ai-message-content">
+            <div class="ai-message-text">${content.replace(/\n/g, '<br>')}</div>
+            <div class="ai-message-time">${time}</div>
+        </div>
+    `;
+    
+    messagesContainer.appendChild(messageDiv);
+    messagesContainer.scrollTo({
+        top: messagesContainer.scrollHeight,
+        behavior: 'smooth'
+    });
+}
+
+function showCarwashTypingIndicator() {
+    const messagesContainer = document.getElementById('carwashAiMessages');
+    const typingDiv = document.createElement('div');
+    typingDiv.className = 'ai-message ai-bot-message';
+    typingDiv.id = 'carwashTypingIndicator';
+    
+    typingDiv.innerHTML = `
+        <div class="ai-message-avatar">🚗</div>
+        <div class="ai-message-content">
+            <div class="ai-typing-indicator">
+                Analyzing carwash data
+                <div class="typing-dots">
+                    <span>.</span><span>.</span><span>.</span>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    messagesContainer.appendChild(typingDiv);
+    messagesContainer.scrollTo({
+        top: messagesContainer.scrollHeight,
+        behavior: 'smooth'
+    });
+}
+
+function removeCarwashTypingIndicator() {
+    const typingIndicator = document.getElementById('carwashTypingIndicator');
+    if (typingIndicator) {
+        typingIndicator.remove();
+    }
+}
+
+// Close chat when clicking outside
+document.addEventListener('click', function(event) {
+    const modal = document.getElementById('carwashAiChatModal');
+    const button = document.getElementById('carwashAiChatButton');
+    
+    if (isCarwashChatOpen && !modal.contains(event.target) && !button.contains(event.target)) {
+        closeCarwashChat();
+    }
+});
+</script>
+{% endif %}
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    const modal = document.getElementById('employeeFormModal');
+    const employeesLink = document.getElementById('employeesLink');
+    const closeBtn = document.getElementById('closeEmployeeForm');
+    const cancelBtn = document.getElementById('cancelBtn');
+
+    if (!modal || !employeesLink) return; // prevent clashes if elements missing
+
+    employeesLink.addEventListener('click', function(e) {
+        e.preventDefault();
+        modal.classList.add('show');
+        document.body.style.overflow = 'hidden';
+    });
+
+    function closeModal() {
+        modal.classList.remove('show');
+        document.body.style.overflow = 'auto';
+        document.querySelector('form')?.reset();
+        document.querySelectorAll('.error-message').forEach(error => {
+            error.style.display = 'none';
+        });
+    }
+
+    closeBtn?.addEventListener('click', closeModal);
+    cancelBtn?.addEventListener('click', closeModal);
+
+    modal.addEventListener('click', function(e) {
+        if (e.target === modal) {
+            closeModal();
+        }
+    });
+
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape' && modal.classList.contains('show')) {
+            closeModal();
+        }
+    });
+
+});
+</script>
+
+<script>
+    const openBtn = document.getElementById("openServiceModal");
+    const closeBtn = document.getElementById("closeServiceModal");
+    const modal = document.getElementById("serviceModal");
+
+    openBtn.onclick = function() {
+        modal.style.display = "block";
+    };
+    closeBtn.onclick = function() {
+        modal.style.display = "none";
+    };
+    window.onclick = function(event) {
+        if (event.target == modal) {
+            modal.style.display = "none";
+        }
+    };
+</script>
+
+<script>
+    document.getElementById("openTicketForm").onclick = function() {
+        document.getElementById("ticketFormModal").style.display = "block";
+    }
+    document.getElementById("closeTicketForm").onclick = function() {
+        document.getElementById("ticketFormModal").style.display = "none";
+    }
+    
+</script>
+
+<script>
+function toggleUserDropdown() {
+    const dropdown = document.getElementById("userDropdown");
+    dropdown.classList.toggle("show");
+}
+
+// Close dropdown if clicking outside
+window.addEventListener("click", function(event) {
+    const dropdown = document.getElementById("userDropdown");
+    const userInfo = document.querySelector(".user-info");
+
+    if (!userInfo.contains(event.target)) {
+        dropdown.classList.remove("show");
+    }
+});
+</script>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const emailInput = document.getElementById('id_customer_email');
+    const suggestionsContainer = document.getElementById('email-suggestions-container');
+    const carPlateInput = document.getElementById('id_car_number_plate');
+    
+    let currentSuggestions = [];
+    
+    // Fetch existing emails when input is focused
+    function fetchExistingEmails() {
+        fetch('{% url "get_customer_email" %}')
+            .then(response => response.json())
+            .then(data => {
+                currentSuggestions = data.emails || [];
+                updateDatalist(currentSuggestions);
+            })
+            .catch(error => console.error('Error fetching emails:', error));
+    }
+    
+    // Update datalist with suggestions
+    function updateDatalist(emails) {
+        const datalist = document.getElementById('email-suggestions');
+        datalist.innerHTML = '';
+        
+        emails.forEach(email => {
+            const option = document.createElement('option');
+            option.value = email.email;
+            let label = email.email;
+            if (email.name) label += ` (${email.name})`;
+            if (email.car_plate) label += ` - ${email.car_plate}`;
+            option.label = label;
+            datalist.appendChild(option);
+        });
+    }
+    
+    // Show custom suggestions dropdown
+    function showSuggestions(emails) {
+        if (emails.length === 0) {
+            suggestionsContainer.style.display = 'none';
+            return;
+        }
+        
+        suggestionsContainer.innerHTML = '';
+        emails.forEach((email, index) => {
+            const div = document.createElement('div');
+            div.className = 'suggestion-item';
+            div.innerHTML = `
+                <span class="suggestion-email">${email.email}</span>
+                ${email.name ? `<span class="suggestion-name">${email.name}</span>` : ''}
+                ${email.car_plate ? `<span class="suggestion-plate">${email.car_plate}</span>` : ''}
+            `;
+            
+            div.addEventListener('click', function() {
+                emailInput.value = email.email;
+                if (email.car_plate && !carPlateInput.value) {
+                    carPlateInput.value = email.car_plate;
+                }
+                suggestionsContainer.style.display = 'none';
+            });
+            
+            suggestionsContainer.appendChild(div);
+        });
+        
+        suggestionsContainer.style.display = 'block';
+    }
+    
+    // Filter suggestions based on input
+    function filterSuggestions(searchTerm) {
+        if (!searchTerm || searchTerm.length < 2) {
+            suggestionsContainer.style.display = 'none';
+            return;
+        }
+        
+        const filtered = currentSuggestions.filter(email => 
+            email.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            (email.name && email.name.toLowerCase().includes(searchTerm.toLowerCase())) ||
+            (email.car_plate && email.car_plate.toLowerCase().includes(searchTerm.toLowerCase()))
+        );
+        
+        showSuggestions(filtered);
+    }
+    
+    // Event listeners
+    emailInput.addEventListener('input', function() {
+        filterSuggestions(this.value);
+    });
+    
+    emailInput.addEventListener('focus', function() {
+        fetchExistingEmails();
+        if (this.value.length >= 2) {
+            filterSuggestions(this.value);
+        }
+    });
+    
+    // Close suggestions when clicking outside
+    document.addEventListener('click', function(e) {
+        if (!emailInput.contains(e.target) && !suggestionsContainer.contains(e.target)) {
+            suggestionsContainer.style.display = 'none';
+        }
+    });
+    
+    // Handle keyboard navigation
+    emailInput.addEventListener('keydown', function(e) {
+        if (e.key === 'ArrowDown' && suggestionsContainer.style.display === 'block') {
+            e.preventDefault();
+            const firstSuggestion = suggestionsContainer.querySelector('.suggestion-item');
+            if (firstSuggestion) firstSuggestion.focus();
+        }
+    });
+});
+</script>
+</body>
+</html>

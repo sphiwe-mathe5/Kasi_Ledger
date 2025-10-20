@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Service Ticket Receipt</title>
+</head>
+<body style="margin: 0; padding: 0; font-family: Arial, sans-serif; background-color: #f4f4f4;">
+    <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color: #f4f4f4; padding: 20px 0;">
+        <tr>
+            <td align="center">
+                <table width="600" cellpadding="0" cellspacing="0" border="0" style="background-color: #ffffff; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+                    
+                    <!-- Header -->
+                    <tr>
+                        <td style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 40px 30px; text-align: center;">
+                            <h1 style="margin: 0; color: #ffffff; font-size: 28px; font-weight: bold;">{{ company_name }}</h1>
+                            <p style="margin: 10px 0 0 0; color: #ffffff; font-size: 16px; opacity: 0.9;">Car Wash Service</p>
+                        </td>
+                    </tr>
+                    
+                    <!-- Content -->
+                    <tr>
+                        <td style="padding: 40px 30px;">
+                            <h2 style="margin: 0 0 20px 0; color: #333333; font-size: 22px; font-weight: 600;">Thank you for choosing us!</h2>
+                            <p style="margin: 0 0 30px 0; color: #666666; font-size: 16px; line-height: 1.6;">Here are the details of your service ticket:</p>
+                            
+                            <!-- Ticket Details Box -->
+                            <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color: #f8f9fa; border-radius: 8px; border-left: 4px solid #667eea;">
+                                <tr>
+                                    <td style="padding: 25px;">
+                                        <table width="100%" cellpadding="8" cellspacing="0" border="0">
+                                            <tr>
+                                                <td style="color: #666666; font-size: 14px; padding: 8px 0;"><strong style="color: #333333;">Ticket Number:</strong></td>
+                                                <td style="color: #333333; font-size: 14px; text-align: right; padding: 8px 0;">{{ ticket.ticket_number }}</td>
+                                            </tr>
+                                            <tr>
+                                                <td style="color: #666666; font-size: 14px; padding: 8px 0; border-top: 1px solid #e0e0e0;"><strong style="color: #333333;">Car Number Plate:</strong></td>
+                                                <td style="color: #333333; font-size: 14px; text-align: right; padding: 8px 0; border-top: 1px solid #e0e0e0;">{{ ticket.car_number_plate }}</td>
+                                            </tr>
+                                            <tr>
+                                                <td style="color: #666666; font-size: 14px; padding: 8px 0; border-top: 1px solid #e0e0e0;"><strong style="color: #333333;">Service:</strong></td>
+                                                <td style="color: #333333; font-size: 14px; text-align: right; padding: 8px 0; border-top: 1px solid #e0e0e0;">{{ ticket.service.name }}</td>
+                                            </tr>
+                                            <tr>
+                                                <td style="color: #666666; font-size: 14px; padding: 12px 0; border-top: 2px solid #667eea;"><strong style="color: #333333; font-size: 16px;">Total Amount:</strong></td>
+                                                <td style="color: #667eea; font-size: 18px; font-weight: bold; text-align: right; padding: 12px 0; border-top: 2px solid #667eea;">R{{ ticket.total_amount }}</td>
+                                            </tr>
+                                        </table>
+                                    </td>
+                                </tr>
+                            </table>
+                            
+                            <p style="margin: 30px 0 0 0; color: #666666; font-size: 16px; line-height: 1.6;">
+                                Best regards,<br>
+                                <strong style="color: #333333;">{{ company_name }} Team</strong>
+                            </p>
+                        </td>
+                    </tr>
+                    
+                    <!-- Social Media -->
+                    <tr>
+                        <td style="padding: 30px; background-color: #f8f9fa; border-top: 1px solid #e0e0e0;">
+                            <table width="100%" cellpadding="0" cellspacing="0" border="0">
+                                <tr>
+                                    <td align="center">
+                                        <p style="margin: 0 0 15px 0; color: #666666; font-size: 14px;">Follow us on social media</p>
+                                        <table cellpadding="0" cellspacing="0" border="0" style="margin: 0 auto;">
+                                            <tr>
+                                                <td style="padding: 0 8px;">
+                                                    <a href="#" style="display: inline-block; width: 36px; height: 36px; background-color: #667eea; border-radius: 50%; text-align: center; line-height: 36px; text-decoration: none;">
+                                                        <span style="color: #ffffff; font-size: 18px;">f</span>
+                                                    </a>
+                                                </td>
+                                                <td style="padding: 0 8px;">
+                                                    <a href="#" style="display: inline-block; width: 36px; height: 36px; background-color: #667eea; border-radius: 50%; text-align: center; line-height: 36px; text-decoration: none;">
+                                                        <span style="color: #ffffff; font-size: 18px;">📷</span>
+                                                    </a>
+                                                </td>
+                                                <td style="padding: 0 8px;">
+                                                    <a href="#" style="display: inline-block; width: 36px; height: 36px; background-color: #667eea; border-radius: 50%; text-align: center; line-height: 36px; text-decoration: none;">
+                                                        <span style="color: #ffffff; font-size: 18px;">🐦</span>
+                                                    </a>
+                                                </td>
+                                                <td style="padding: 0 8px;">
+                                                    <a href="#" style="display: inline-block; width: 36px; height: 36px; background-color: #667eea; border-radius: 50%; text-align: center; line-height: 36px; text-decoration: none;">
+                                                        <span style="color: #ffffff; font-size: 18px;">💬</span>
+                                                    </a>
+                                                </td>
+                                            </tr>
+                                        </table>
+                                    </td>
+                                </tr>
+                            </table>
+                        </td>
+                    </tr>
+                    
+                    <!-- Footer -->
+                    <tr>
+                        <td style="padding: 20px 30px; background-color: #333333; text-align: center;">
+                            <p style="margin: 0 0 10px 0; color: #999999; font-size: 12px; line-height: 1.6;">
+                                You are receiving this email because you used {{ company_name }} which uses our car wash management system.
+                                <a href="#" style="color: #667eea; text-decoration: none;">Learn more about us</a>
+                            </p>
+                            <p style="margin: 0; color: #666666; font-size: 12px;">
+                                &copy; 2025 Kasi Ledger. All rights reserved.
+                            </p>
+                        </td>
+                    </tr>
+                    
+                </table>
+            </td>
+        </tr>
+    </table>
+</body>
+</html>

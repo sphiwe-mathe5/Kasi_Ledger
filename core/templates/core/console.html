@@ -1,0 +1,1360 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kasi Ledger - Dashboard</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: #f9fafa;
+            min-height: 100vh;
+            color: #2c3e50;
+        }
+
+        .user-name {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: var(--text-color);
+            margin: 0 0px 8px;
+            margin-top: 4rem;
+            text-align: center;
+        }
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            position: relative;
+            margin-left: 25rem;
+        }
+
+        .user-circle {
+            width: 32px;
+            height: 32px;
+            background: #f8f9fa;
+            border: 2px solid #e1e5e9;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            margin-top: 3.3rem;
+            color: #6c757d;
+        }
+
+        .user-circle:hover {
+            background: #e9ecef;
+            border-color: #3498db;
+            color: #3498db;
+        }
+
+        .user-dropdown {
+            position: absolute;
+            top: 60px;
+            left: 10px;
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            z-index: 1000;
+            width: 300px;
+            overflow: hidden;
+            transform: translateY(20px);
+            opacity: 0;
+            animation: fadeIn 0.3s ease-out forwards;
+        }
+
+        .user-dropdown.show {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+        }
+
+        .dropdown-header {
+            padding: 16px;
+
+        }
+
+        .dropdown-email {
+            color: #6c757d;
+            font-size: 14px;
+            margin-top: 4px;
+        }
+
+        .dropdown-menu {
+            padding: 8px 0;
+        }
+
+        .dropdown-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 16px;
+            color: #333;
+            text-decoration: none;
+            border: none;
+            background: none;
+            width: 100%;
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+        }
+
+        .dropdown-item:hover {
+            background: #f8f9fa;
+        }
+
+        .dropdown-item.logout {
+            color: #dc3545;
+        }
+
+        .dropdown-item.logout:hover {
+            background: #fff5f5;
+        }
+
+        .dropdown-icon {
+            width: 16px;
+            height: 16px;
+        }
+        .logo {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #2980b9;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .user-initials {
+            width: 40px;
+            height: 40px;
+            background: #3498db;
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 1rem;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 2rem;
+        }
+
+        .ai-section {
+            border-radius: 12px;
+            padding: 1rem;
+            margin-bottom: 3rem;
+        }
+
+        .ai-input-container {
+            position: relative;
+            display: flex;
+            align-items: center;
+            background: #f8f9fa;
+            border: 1px solid #e1e5e9;
+            border-radius: 24px;
+            padding: 4px;
+            transition: all 0.2s ease;
+        }
+        .ai-title {
+            font-size: 1rem;
+            margin-left: 1rem;
+            margin-bottom: 0.7rem;
+            color: #2c3e50;
+        }
+        .ai-input-container:focus-within {
+            border-color: #3498db;
+            box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+        }
+
+        .ai-input {
+            flex: 1;
+            padding: 12px 16px;
+            border: none;
+            background: transparent;
+            font-size: 14px;
+            outline: none;
+            border-radius: 20px;
+        }
+
+        .ai-input::placeholder {
+            color: #6c757d;
+        }
+
+        .ai-buttons {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            margin-right: 4px;
+        }
+
+        .mic-button, .send-button {
+            width: 36px;
+            height: 36px;
+            border: none;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            transition: all 0.2s ease;
+            background: transparent;
+        }
+
+        .mic-button {
+            color: #6c757d;
+            
+        }
+
+        .mic-button:hover {
+            background: #e9ecef;
+            color: #e74c3c;
+        }
+
+        .mic-button.recording {
+            background: #e74c3c;
+            color: white;
+        }
+
+        .send-button {
+            background: #3498db;
+            color: white;
+        }
+
+        .send-button:hover {
+            background: #2980b9;
+        }
+
+        .send-button:disabled {
+            background: #e9ecef;
+            color: #6c757d;
+            cursor: not-allowed;
+        }
+
+        .console-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin-top: 2rem;
+        }
+
+        .console-box {
+            background: white;
+            border-radius: 15px;
+            padding: 2rem;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 1px solid #e1e5e9;
+            position: relative;
+            overflow: hidden;
+        }
+        .console-link {
+            text-decoration: none;
+            color: inherit;
+            display: block;
+        }
+
+        .console-box:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+            border-color: #3498db;
+        }
+
+        .console-box::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #3498db, #2ecc71);
+            transform: scaleX(0);
+            transition: transform 0.3s ease;
+        }
+
+        .console-box:hover::before {
+            transform: scaleX(1);
+        }
+
+        .box-icon {
+            width: 60px;
+            height: 60px;
+            margin: 0 auto 1rem;
+            border-radius: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.8rem;
+            color: white;
+            font-weight: bold;
+        }
+
+        .stock-box .box-icon { background: #27ae60; }
+        .pos-box .box-icon { background: #f39c12; }
+        .statements-box .box-icon { background: #8e44ad; }
+        .subscription-box .box-icon { background: #e74c3c; }
+        .settings-box .box-icon { background: #34495e; }
+
+        .booking-box .box-icon { background: #3498db; }       
+        .services-box .box-icon { background: #1abc9c; }      
+        .staff-box .box-icon { background: #7f8c8d; }       
+
+        .appointments-box .box-icon { background: #9b59b6; }  /* Purple */
+        .services-box .box-icon { background: #e67e22; }      /* Orange */
+        .staff-box .box-icon { background: #2ecc71; }         /* Green */
+
+        .menu-box .box-icon { background: #d35400; }      /* Deep orange */
+        .orders-box .box-icon { background: #16a085; }    /* Teal/green */
+        .tables-box .box-icon { background: #c0392b; }    /* Red */
+
+        .customers-box .box-icon { background: #2980b9; }  /* Blue */
+
+        .box-title {
+            font-size: 1.3rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: #2c3e50;
+        }
+
+        .box-description {
+            color: #7f8c8d;
+            line-height: 1.5;
+            font-size: 0.95rem;
+        }
+
+        .status-indicator {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            width: 12px;
+            height: 12px;
+            background: #2ecc71;
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
+
+        @media (max-width: 768px) {
+            .header {
+                padding: 1rem;
+            }
+            
+            .container {
+                padding: 0 1rem;
+            }
+            
+            .ai-section {
+                padding: 0.5rem;
+                margin-top: 2rem;
+            }
+            
+            .ai-input-container {
+
+            }
+            
+            .console-grid {
+                grid-template-columns: 1fr;
+                gap: 1.5rem;
+            }
+            .user-name {
+                font-size: 1rem;
+                font-weight: bold;
+                color: var(--text-color);
+                margin: 0 0px 8px;
+                margin-top: 4rem;
+                text-align: center;
+            }
+            .user-info {
+                display: flex;
+                align-items: center;
+                gap: 12px;
+                position: relative;
+                margin-left: 5rem;
+            }
+        }
+    </style>
+
+    <style>
+        .ai-section {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            margin: 20px 0;
+            overflow: hidden;
+        }
+
+        .ai-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .ai-title {
+            font-size: 18px;
+            font-weight: 600;
+        }
+
+        .ai-minimize-btn {
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            color: white;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .ai-chat-container {
+            max-height: 400px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .ai-messages {
+            flex: 1;
+            padding: 15px;
+            overflow-y: auto;
+            max-height: 300px;
+            background: #f8f9fa;
+        }
+
+        .ai-message {
+            margin-bottom: 15px;
+            display: flex;
+        }
+
+        .bot-message {
+            justify-content: flex-start;
+        }
+
+        .user-message {
+            justify-content: flex-end;
+        }
+
+        .message-content {
+            max-width: 80%;
+            padding: 12px 16px;
+            border-radius: 18px;
+            line-height: 1.4;
+        }
+
+        .bot-message .message-content {
+            background: white;
+            border: 1px solid #e9ecef;
+            border-radius: 18px 18px 18px 4px;
+        }
+
+        .user-message .message-content {
+            background: #007bff;
+            color: white;
+            border-radius: 18px 18px 4px 18px;
+        }
+
+        .ai-input-container {
+            display: flex;
+            padding: 15px;
+            background: white;
+            border-top: 1px solid #e9ecef;
+            gap: 10px;
+        }
+
+        .ai-input {
+            flex: 1;
+            padding: 12px 16px;
+            border: 1px solid #ddd;
+            border-radius: 25px;
+            outline: none;
+            font-size: 14px;
+        }
+
+        .ai-input:focus {
+            border-color: #007bff;
+        }
+
+        .mic-button, .send-button {
+            background: #f8f9fa;
+            border: 1px solid #ddd;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .mic-button:hover, .send-button:hover {
+            background: #007bff;
+            color: white;
+            border-color: #007bff;
+        }
+
+        .mic-button.listening {
+            background: #dc3545;
+            color: white;
+            border-color: #dc3545;
+            animation: pulse 1.5s infinite;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+
+        .typing-indicator {
+            display: flex;
+            align-items: center;
+            color: #6c757d;
+            font-style: italic;
+        }
+
+        .typing-dots {
+            display: flex;
+            margin-left: 5px;
+        }
+
+        .typing-dots span {
+            animation: typing 1.4s infinite;
+            margin: 0 1px;
+        }
+
+        .typing-dots span:nth-child(2) { animation-delay: 0.2s; }
+        .typing-dots span:nth-child(3) { animation-delay: 0.4s; }
+
+        @keyframes typing {
+            0%, 60%, 100% { opacity: 0.3; }
+            30% { opacity: 1; }
+        }
+
+        .ai-section.minimized .ai-chat-container {
+            display: none;
+        }
+
+        .salon-ai-section {
+            border-left: 4px solid #ff6b6b; /* Salon-themed color */
+        }
+
+        .salon-ai-section .ai-header {
+            background: linear-gradient(135deg, #ff6b6b 0%, #ee5a52 100%);
+        }
+
+        .premium-badge {
+            background: linear-gradient(45deg, #FFD700, #FFA500);
+            color: #000;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 10px;
+            font-weight: bold;
+            margin-left: 8px;
+        }
+
+        /* Upgrade Required Styling */
+        .upgrade-required {
+            text-align: center;
+            padding: 10px;
+        }
+
+        .upgrade-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+        }
+
+        .upgrade-required h4 {
+            color: #333;
+            margin-bottom: 0.5rem;
+        }
+
+        .upgrade-required p {
+            color: #666;
+            margin-bottom: 1rem;
+        }
+
+        .upgrade-desc {
+            font-size: 0.9rem;
+            color: #777;
+        }
+
+        .upgrade-features {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+            margin: 1.5rem 0;
+        }
+
+        .feature-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: #555;
+            font-size: 0.9rem;
+        }
+
+        .feature-item i {
+            color: #007bff;
+            width: 16px;
+        }
+
+        .upgrade-btn {
+            display: inline-block;
+            background: linear-gradient(45deg, #007bff, #0056b3);
+            color: white;
+            padding: 12px 24px;
+            border-radius: 25px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            margin: 1rem 0;
+        }
+
+        .upgrade-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 123, 255, 0.3);
+            color: white;
+            text-decoration: none;
+        }
+
+        .upgrade-note {
+            margin-top: 1rem;
+            color: #999;
+        }
+
+        .upgrade-note a {
+            color: #007bff;
+            text-decoration: none;
+        }
+
+        /* Disabled Input Styling */
+        .disabled-input {
+            background-color: #f8f9fa;
+            color: #6c757d;
+            cursor: not-allowed;
+        }
+
+        .disabled-button {
+            background-color: #6c757d;
+            cursor: not-allowed;
+        }
+
+        .disabled-button:hover {
+            background-color: #5a6268;
+            transform: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        
+        <div class="user-info">
+            <p class="user-name"><strong>Hello, {{ user.company_name }}</strong></p>
+                <div class="user-circle" onclick="toggleUserDropdown()">
+                    {{ user.company_name|slice:":1" }}
+                </div>
+            <div class="user-dropdown" id="userDropdown">
+                <div class="dropdown-header">
+                    <div><strong>{{ user.company_name }}</strong></div>
+                    <div class="dropdown-email">{{ user.username }}</div>
+                </div>
+                <div class="dropdown-menu">
+                    {% if user.company_category == "spaza" %}
+                    <a href="{% url 'email_campaigns:emails' %}" class="dropdown-item">
+                        <i class="fa-solid fa-square-envelope"></i>
+                        Marketing Console
+                    </a>
+                    {% endif %}
+                    <a href="{% url 'subscription_plans' %}" class="dropdown-item">
+                        <i class="fa-solid fa-circle-chevron-up"></i>
+                        Upgrade Plan
+                    </a>
+                    <a href="{% url 'logout' %}" class="dropdown-item logout">
+                        <i class="fa-solid fa-right-from-bracket"></i>
+                        Logout
+                    </a>
+                </div>
+            </div>
+        </div>
+        
+        {% if user.company_category == "spaza" %}
+            <div class="ai-section">
+                <div class="ai-header">
+                    <div class="ai-title">
+                        AI Assistant 🤖
+                        {% if critical_alerts.has_critical_stock %}
+                            <span class="critical-badge">🚨</span>
+                        {% elif critical_alerts.has_low_stock %}
+                            <span class="warning-badge">⚠️</span>
+                        {% endif %}
+                        {% if not ai_access.allowed %}
+                            <span class="premium-badge">PREMIUM</span>
+                        {% endif %}
+                    </div>
+                    <button class="ai-minimize-btn" onclick="toggleAIChat()">+</button>
+                </div>
+                
+                <!-- Chat container starts HIDDEN -->
+                <div class="ai-chat-container" id="aiChatContainer" style="display: none;">
+                    <!-- Messages Container -->
+                    <div class="ai-messages" id="aiMessages">
+                        {% if ai_access.allowed %}
+                            <!-- Welcome Message for users with access -->
+                            <div class="ai-message bot-message">
+                                <div class="message-content">
+                                    <strong>Hi! I'm your AI assistant for {{ ai_context.business_name }}! 🚀</strong>
+                                    
+                                    <p>Quick Summary:</p>
+                                    <ul>
+                                        <li>{{ total_products }} products</li>
+                                        <li>R{{ ai_context.total_inventory_value|floatformat:0 }} inventory value</li>
+                                        <li>R{{ ai_context.total_actual_profit|floatformat:0 }} profit made</li>
+                                        {% if critical_alerts.has_critical_stock %}
+                                        <li>🚨 {{ ai_context.critical_stock_count }} items critically low!</li>
+                                        {% endif %}
+                                    </ul>
+                                    
+                                    <p><strong>Try asking:</strong></p>
+                                    <div class="quick-questions">
+                                        <button class="quick-btn" onclick="askQuestion('How much did we make?')">💰 Profit?</button>
+                                        <button class="quick-btn" onclick="askQuestion('What are my stock levels?')">📦 Stock?</button>
+                                        <button class="quick-btn" onclick="askQuestion('Show me top sellers')">🏆 Top sellers?</button>
+                                        <button class="quick-btn" onclick="askQuestion('Give me business advice')">💡 Advice?</button>
+                                    </div>
+                                </div>
+                            </div>
+                        {% else %}
+                            <!-- Upgrade Message for users without access -->
+                            <div class="ai-message bot-message">
+                                <div class="message-content">
+                                    <div class="upgrade-required">
+                                        <div class="upgrade-icon">🚀</div>
+                                        <h4>Upgrade to Access AI Assistant</h4>
+                                        <p>{{ ai_access.message }}</p>
+                                        
+                                        {% if ai_access.reason == 'no_subscription' %}
+                                            <p class="upgrade-desc">Get intelligent insights about your business with our AI-powered assistant.</p>
+                                        {% elif ai_access.reason == 'plan_restriction' %}
+                                            <p class="upgrade-desc">Upgrade to unlock AI-powered business intelligence and analytics.</p>
+                                        {% endif %}
+                                        
+                                        <div class="upgrade-features">
+                                            <div class="feature-item">
+                                                <i class="fas fa-robot"></i>
+                                                <span>AI Business Insights</span>
+                                            </div>
+                                            <div class="feature-item">
+                                                <i class="fas fa-chart-line"></i>
+                                                <span>Smart Analytics</span>
+                                            </div>
+                                            <div class="feature-item">
+                                                <i class="fas fa-lightbulb"></i>
+                                                <span>Growth Recommendations</span>
+                                            </div>
+                                        </div>
+                                        
+                                        <a href="{% url 'subscription_plans' %}" class="upgrade-btn">
+                                            <i class="fas fa-crown"></i>
+                                            View Plans
+                                        </a>
+                                        
+                                        <p class="upgrade-note">
+                                            <small>Already subscribed? <a href="{% url 'subscription_plans' %}">Refresh your plan status</a></small>
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        {% endif %}
+                    </div>
+                    
+                    <!-- Input Area -->
+                    <div class="ai-input-container">
+                        {% if ai_access.allowed %}
+                            <input 
+                                type="text" 
+                                class="ai-input" 
+                                id="aiInput" 
+                                placeholder="Ask me anything..."
+                                onkeypress="if(event.key==='Enter') sendAIMessage()"
+                                autocomplete="off"
+                            >
+                            <button class="send-button" onclick="sendAIMessage()">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                                    <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/>
+                                </svg>
+                            </button>
+                        {% else %}
+                            <input 
+                                type="text" 
+                                class="ai-input disabled-input" 
+                                placeholder="Upgrade to unlock AI Assistant..."
+                                disabled
+                            >
+                            <button class="send-button disabled-button" onclick="showUpgradeModal()">
+                                <i class="fas fa-lock"></i>
+                            </button>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        {% endif %}
+
+        <!-- Console Navigation Grid -->
+        <div class="console-grid">
+
+            {# ---- Spaza Shop ---- #}
+            {% if user.company_category == "spaza" %}
+                <a href="{% url 'contact' %}" class="console-link">
+                    <div class="console-box stock-box">
+                        <div class="status-indicator"></div>
+                        <div class="box-icon">📋</div>
+                        <div class="box-title">Stock Taking</div>
+                        <div class="box-description">Register incoming stock, track inventory levels, manage products</div>
+                    </div>
+                </a>
+
+                <a href="{% url 'ai_stock_page' %}" class="console-link">
+                    <div class="console-box customers-box">
+                        <div class="status-indicator"></div>
+                        <div class="box-icon">🤖</div>
+                        <div class="box-title">AI Stock Taking</div>
+                        <div class="box-description">Use AI to register incoming stock by taking a picture of items</div>
+                    </div>
+                </a>
+
+                <a href="{% url 'pos' %}" class="console-link">
+                    <div class="console-box pos-box">
+                        <div class="status-indicator"></div>
+                        <div class="box-icon">🛒</div>
+                        <div class="box-title">Point of Sale</div>
+                        <div class="box-description">Scan products, process sales, and manage customer transactions</div>
+                    </div>
+                </a>
+
+            {% endif %}
+
+
+{# ---- Clothing Brand ---- #}
+            {% if user.company_category == "clothing_brand" %}
+                <a href="{% url 'contact' %}" class="console-link">
+                    <div class="console-box inventory-box">
+                        <div class="status-indicator"></div>
+                        <div class="box-icon">👕</div>
+                        <div class="box-title">Inventory</div>
+                        <div class="box-description">Add and organize clothing items, track stock levels</div>
+                    </div>
+                </a>
+
+                <a href="{% url 'pos' %}" class="console-link">
+                    <div class="console-box sales-box">
+                        <div class="status-indicator"></div>
+                        <div class="box-icon">🛍️</div>
+                        <div class="box-title">Sell Items</div>
+                        <div class="box-description">Process customer sales quickly and efficiently</div>
+                    </div>
+                </a>
+
+                <a href="{% url 'generate_barcodes' %}" class="console-link">
+                    <div class="console-box barcode-box">
+                        <div class="status-indicator"></div>
+                        <div class="box-icon">🏷️</div>
+                        <div class="box-title">Barcodes</div>
+                        <div class="box-description">Generate and print barcodes for clothing items</div>
+                    </div>
+                </a>
+            {% endif %}
+
+            {# ---- Restaurant ---- #}
+            {% if user.company_category == "restaurant" %}
+                <a href="{% url 'pos_view' %}" class="console-link">
+                    <div class="console-box menu-box">
+                        <div class="status-indicator"></div>
+                        <div class="box-icon">🍽️</div>
+                        <div class="box-title">Menu Management</div>
+                        <div class="box-description">Create menus, create orders and manage lines </div>
+                    </div>
+                </a>
+
+                <a href="{% url 'contact' %}" class="console-link">
+                    <div class="console-box stock-box">
+                        <div class="status-indicator"></div>
+                        <div class="box-icon">📋</div>
+                        <div class="box-title">Stock Taking</div>
+                        <div class="box-description">Register incoming stock, track inventory levels, manage products</div>
+                    </div>
+                </a>
+
+                <a href="{% url 'pos' %}" class="console-link">
+                    <div class="console-box pos-box">
+                        <div class="status-indicator"></div>
+                        <div class="box-icon">🛒</div>
+                        <div class="box-title">Point of Sale</div>
+                        <div class="box-description">Scan products, process sales, and manage customer transactions</div>
+                    </div>
+                </a>
+            {% endif %}
+
+            {# ---- Salon ---- #}
+            {% if user.company_category == "salon" %}
+                <a href="{% url 'saloon:saloon' %}" class="console-link">
+                    <div class="console-box appointments-box">
+                        <div class="status-indicator"></div>
+                        <div class="box-icon">💇</div>
+                        <div class="box-title">Salon Workstation</div>
+                        <div class="box-description">Create appointments, add services, create stylists</div>
+                    </div>
+                </a>
+
+                <a href="{% url 'saloon:worker_list_create' %}" class="console-link">
+                    <div class="console-box services-box">
+                        <div class="status-indicator"></div>
+                        <div class="box-icon">👩‍🎤</div>
+                        <div class="box-title">Stylists Management</div>
+                        <div class="box-description">View staff information and manage payroll</div>
+                    </div>
+                </a>
+
+                <a href="{% url 'saloon:salon_report'  %}" class="console-link">
+                    <div class="console-box staff-box">
+                        <div class="status-indicator"></div>
+                        <div class="box-icon">🧾</div>
+                        <div class="box-title">View Reports</div>
+                        <div class="box-description">View reports, daily, weekly and monthly reports</div>
+                    </div>
+                </a>
+            {% endif %}
+
+            {% if user.company_category == "car_wash" %}
+                <a href="{% url 'dashboard'  %}" class="console-link">
+                    <div class="console-box booking-box">
+                        <div class="status-indicator"></div>
+                        <div class="box-icon">🚗</div>
+                        <div class="box-title">Car Workstation</div>
+                        <div class="box-description">Manage car wash bookings and appointments</div>
+                    </div>
+                </a>
+                <a href="{% url 'employee_list_create'  %}" class="console-link">
+                    <div class="console-box staff-box">
+                        <div class="status-indicator"></div>
+                        <div class="box-icon">🧑‍🔧</div>
+                        <div class="box-title">Staff Management</div>
+                        <div class="box-description">View staff information and manage payroll</div>
+                    </div>
+                </a>
+
+                <a href="{% url 'revenue_report'  %}" class="console-link">
+                    <div class="console-box services-box">
+                        <div class="status-indicator"></div>
+                        <div class="box-icon">🧾</div>
+                        <div class="box-title">View Reports</div>
+                        <div class="box-description">View reports, daily, weekly and monthly reports</div>
+                    </div>
+                </a>
+
+            {% endif %}
+
+            {# ---- Compulsory for All ---- #}
+            <a href="{% url 'list_income_statements' %}" class="console-link">
+                <div class="console-box statements-box">
+                    <div class="status-indicator"></div>
+                    <div class="box-icon">📊</div>
+                    <div class="box-title">Financial Statements</div>
+                    <div class="box-description">View sales reports, profit analysis, and financial performance metrics</div>
+                </div>
+            </a>
+
+            <a href="{% url 'subscription_settings' %}" class="console-link">
+                <div class="console-box subscription-box">
+                    <div class="status-indicator"></div>
+                    <div class="box-icon">💎</div>
+                    <div class="box-title">Subscription Plans</div>
+                    <div class="box-description">Manage your subscription, upgrade plans, and view billing information</div>
+                </div>
+            </a>
+
+            <a href="{% url 'profile' %}" class="console-link">
+                <div class="console-box settings-box">
+                    <div class="status-indicator"></div>
+                    <div class="box-icon">⚙️</div>
+                    <div class="box-title">Settings</div>
+                    <div class="box-description">Configure system preferences, user management, and profile</div>
+                </div>
+            </a>
+
+        </div>
+
+    </div>
+
+    <script>
+        let isRecording = false;
+
+        function navigateTo(page) {
+            // Add loading animation
+            event.target.style.transform = 'scale(0.95)';
+            setTimeout(() => {
+                event.target.style.transform = '';
+                // Navigate to the respective page
+                switch(page) {
+                    case 'stock':
+                        window.location.href = 'stock.html';
+                        break;
+                    case 'pos':
+                        window.location.href = 'pos.html';
+                        break;
+                    case 'statements':
+                        window.location.href = 'statements.html';
+                        break;
+                    case 'subscription':
+                        window.location.href = 'subscription.html';
+                        break;
+                    case 'settings':
+                        window.location.href = 'settings.html';
+                        break;
+                }
+            }, 150);
+        }
+
+        function sendMessage() {
+            const input = document.querySelector('.ai-input');
+            const message = input.value.trim();
+            
+            if (message) {
+                // Add loading state
+                const button = event.target;
+                button.textContent = 'Processing...';
+                button.disabled = true;
+                
+                // Simulate AI response (replace with actual AI integration)
+                setTimeout(() => {
+                    alert(`AI Response: I understand you want to ${message}. Let me help you with that!`);
+                    input.value = '';
+                    button.textContent = 'Send';
+                    button.disabled = false;
+                }, 1500);
+            }
+        }
+
+        function toggleMic() {
+            const micButton = event.target;
+            
+            if (!isRecording) {
+                // Start recording
+                isRecording = true;
+                micButton.style.background = '#27ae60';
+                micButton.textContent = '🔴';
+                
+                // Check if browser supports speech recognition
+                if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
+                    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+                    const recognition = new SpeechRecognition();
+                    
+                    recognition.continuous = false;
+                    recognition.interimResults = false;
+                    recognition.lang = 'en-US';
+                    
+                    recognition.onresult = function(event) {
+                        const transcript = event.results[0][0].transcript;
+                        document.querySelector('.ai-input').value = transcript;
+                    };
+                    
+                    recognition.onerror = function(event) {
+                        console.error('Speech recognition error:', event.error);
+                        alert('Speech recognition error. Please try again.');
+                    };
+                    
+                    recognition.onend = function() {
+                        isRecording = false;
+                        micButton.style.background = '#e74c3c';
+                        micButton.textContent = '🎤';
+                    };
+                    
+                    recognition.start();
+                } else {
+                    alert('Speech recognition not supported in this browser.');
+                    isRecording = false;
+                    micButton.style.background = '#e74c3c';
+                    micButton.textContent = '🎤';
+                }
+            } else {
+                // Stop recording
+                isRecording = false;
+                micButton.style.background = '#e74c3c';
+                micButton.textContent = '🎤';
+            }
+        }
+
+        // Allow Enter key to send message
+        document.querySelector('.ai-input').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                sendMessage();
+            }
+        });
+
+        function toggleUserDropdown() {
+            const dropdown = document.getElementById('userDropdown');
+            dropdown.classList.toggle('show');
+        }
+
+        function logout() {
+            if (confirm('Are you sure you want to logout?')) {
+                // Add logout logic here
+                window.location.href = 'login.html';
+            }
+        }
+
+        // Close dropdown when clicking outside
+        document.addEventListener('click', function(event) {
+            const dropdown = document.getElementById('userDropdown');
+            const circle = document.querySelector('.user-circle');
+            
+            if (!dropdown.contains(event.target) && !circle.contains(event.target)) {
+                dropdown.classList.remove('show');
+            }
+        });
+    </script>
+
+
+
+<script>
+const CSRF_TOKEN = "{{ csrf_token }}";
+let isChatOpen = false;
+
+// Initialize chat as closed
+document.addEventListener('DOMContentLoaded', function() {
+    // Ensure chat starts closed
+    const container = document.getElementById('aiChatContainer');
+    if (container) {
+        container.style.display = 'none';
+    }
+});
+
+// Toggle chat visibility with proper button state
+function toggleAIChat() {
+    const container = document.getElementById('aiChatContainer');
+    const toggleBtn = document.querySelector('.ai-minimize-btn');
+    
+    if (container.style.display === 'none') {
+        // Open chat
+        container.style.display = 'block';
+        toggleBtn.textContent = '−'; // Minus symbol
+        isChatOpen = true;
+        
+        // Focus input if user has access
+        if ({{ ai_access.allowed|yesno:"true,false" }}) {
+            const input = document.getElementById('aiInput');
+            if (input) {
+                setTimeout(() => input.focus(), 300);
+            }
+        }
+    } else {
+        // Close chat
+        container.style.display = 'none';
+        toggleBtn.textContent = '+'; // Plus symbol
+        isChatOpen = false;
+    }
+}
+
+// Quick question handler - only works if chat is open and user has access
+function askQuestion(question) {
+    if (!isChatOpen) {
+        toggleAIChat(); // Open chat first
+        // Wait for chat to open, then set the question
+        setTimeout(() => {
+            const input = document.getElementById('aiInput');
+            if (input && {{ ai_access.allowed|yesno:"true,false" }}) {
+                input.value = question;
+                sendAIMessage();
+            }
+        }, 350);
+    } else {
+        if ({{ ai_access.allowed|yesno:"true,false" }}) {
+            const input = document.getElementById('aiInput');
+            if (input) {
+                input.value = question;
+                sendAIMessage();
+            }
+        } else {
+            showUpgradeModal();
+        }
+    }
+}
+
+// Show upgrade modal for users without access
+function showUpgradeModal() {
+    alert("{{ ai_access.message }}\n\nPlease upgrade to access the AI Assistant features.");
+}
+
+// Send message to AI - only if user has access
+async function sendAIMessage() {
+    // Check if user has access
+    if (!{{ ai_access.allowed|yesno:"true,false" }}) {
+        showUpgradeModal();
+        return;
+    }
+    
+    const input = document.getElementById('aiInput');
+    const message = input.value.trim();
+    
+    if (!message) return;
+    
+    // Add user message
+    addMessage(message, 'user');
+    input.value = '';
+    input.disabled = true;
+    
+    // Show typing indicator
+    showTypingIndicator();
+    
+    try {
+        const response = await fetch('/ai-chat/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': CSRF_TOKEN
+            },
+            body: JSON.stringify({ message: message })
+        });
+        
+        const data = await response.json();
+        
+        removeTypingIndicator();
+        
+        if (data.success) {
+            addMessage(data.response, 'bot');
+        } else {
+            if (data.requires_upgrade) {
+                addMessage('This feature requires a premium subscription. Please upgrade your plan.', 'bot');
+            } else {
+                addMessage('Sorry, something went wrong. Please try again.', 'bot');
+            }
+        }
+        
+    } catch (error) {
+        console.error('Chat error:', error);
+        removeTypingIndicator();
+        addMessage('Connection error. Please check your internet.', 'bot');
+    } finally {
+        input.disabled = false;
+        input.focus();
+    }
+}
+
+// Add message to chat
+function addMessage(text, type) {
+    const messagesDiv = document.getElementById('aiMessages');
+    const messageDiv = document.createElement('div');
+    messageDiv.className = `ai-message ${type}-message`;
+    
+    // Format text (support **bold** markdown)
+    const formattedText = text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+    
+    messageDiv.innerHTML = `<div class="message-content">${formattedText}</div>`;
+    messagesDiv.appendChild(messageDiv);
+    
+    // Scroll to bottom
+    messagesDiv.scrollTop = messagesDiv.scrollHeight;
+}
+
+// Show typing indicator
+function showTypingIndicator() {
+    const messagesDiv = document.getElementById('aiMessages');
+    const typingDiv = document.createElement('div');
+    typingDiv.id = 'typingIndicator';
+    typingDiv.className = 'ai-message bot-message';
+    typingDiv.innerHTML = `
+        <div class="message-content">
+            <div class="typing-dots">
+                <span>.</span><span>.</span><span>.</span>
+            </div>
+        </div>
+    `;
+    messagesDiv.appendChild(typingDiv);
+    messagesDiv.scrollTop = messagesDiv.scrollHeight;
+}
+
+// Remove typing indicator
+function removeTypingIndicator() {
+    const indicator = document.getElementById('typingIndicator');
+    if (indicator) {
+        indicator.remove();
+    }
+}
+</script>
+
+
+<style>
+/* Minimal styles for typing indicator - add to your existing CSS */
+.typing-dots {
+    display: inline-flex;
+    gap: 4px;
+}
+
+.typing-dots span {
+    animation: blink 1.4s infinite;
+    opacity: 0.3;
+}
+
+.typing-dots span:nth-child(2) {
+    animation-delay: 0.2s;
+}
+
+.typing-dots span:nth-child(3) {
+    animation-delay: 0.4s;
+}
+
+@keyframes blink {
+    0%, 60%, 100% { opacity: 0.3; }
+    30% { opacity: 1; }
+}
+
+.quick-questions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 10px;
+}
+
+.quick-btn {
+    padding: 6px 12px;
+    border: 1px solid #ddd;
+    border-radius: 15px;
+    background: white;
+    cursor: pointer;
+    font-size: 12px;
+    transition: all 0.2s;
+}
+
+.quick-btn:hover {
+    background: #f0f0f0;
+    transform: translateY(-1px);
+}
+</style>
+
+</body>
+</html>

@@ -1,0 +1,357 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link rel="icon" href="{% static 'images/kasicon.png' %}">
+    <title>Ticket History</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: #f9fafa;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: #f9fafa;
+            border-radius: 12px;
+
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #4169E1, #6495ED);
+            color: white;
+            padding: 30px;
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .back-btn {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            text-decoration: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            transition: all 0.3s ease;
+            font-size: 14px;
+        }
+
+        .back-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: translateY(-1px);
+        }
+
+        .header h1 {
+            font-size: 28px;
+            font-weight: 600;
+        }
+
+        .content {
+            padding: 30px;
+        }
+
+        .filter-section {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 30px;
+        }
+
+        .filter-form {
+            display: flex;
+            gap: 20px;
+            align-items: end;
+            flex-wrap: wrap;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .form-group label {
+            font-weight: 500;
+            color: #333;
+            font-size: 14px;
+        }
+
+        .form-group select,
+        .form-group input {
+            padding: 10px 12px;
+            border: 2px solid #e1e5e9;
+            border-radius: 6px;
+            font-size: 14px;
+            transition: border-color 0.3s ease;
+        }
+
+        .form-group select:focus,
+        .form-group input:focus {
+            outline: none;
+            border-color: #4169E1;
+        }
+
+        .filter-btn {
+            background: #4169E1;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: background-color 0.3s ease;
+        }
+
+        .filter-btn:hover {
+            background: #3557c7;
+        }
+
+        .section-title {
+            font-size: 20px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 15px;
+            padding-bottom: 8px;
+            border-bottom: 2px solid #4169E1;
+        }
+
+        .table-container {
+            background: white;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            margin-bottom: 30px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th {
+            background: #4169E1;
+            color: white;
+            padding: 15px 12px;
+            text-align: left;
+            font-weight: 500;
+            font-size: 14px;
+        }
+
+        td {
+            padding: 12px;
+            border-bottom: 1px solid #f1f3f4;
+            font-size: 14px;
+        }
+
+        tr:hover {
+            background: #f8f9fa;
+        }
+
+        tr:last-child td {
+            border-bottom: none;
+        }
+
+        .empty-row {
+            text-align: center;
+            color: #6c757d;
+            font-style: italic;
+        }
+
+        .pagination {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+            margin: 30px 0;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 8px;
+        }
+
+        .pagination a {
+            background: #4169E1;
+            color: white;
+            text-decoration: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+            font-size: 14px;
+            transition: background-color 0.3s ease;
+        }
+
+        .pagination a:hover {
+            background: #3557c7;
+        }
+
+        .page-info {
+            color: #6c757d;
+            font-weight: 500;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            flex-wrap: wrap;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 8px;
+        }
+
+        .nav-links a {
+            background: white;
+            color: #4169E1;
+            text-decoration: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            border: 2px solid #4169E1;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+
+        .nav-links a:hover {
+            background: #4169E1;
+            color: white;
+        }
+
+        @media (max-width: 768px) {
+            .filter-form {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            
+            .form-group {
+                width: 100%;
+            }
+            
+            table {
+                font-size: 12px;
+            }
+            
+            th, td {
+                padding: 8px 6px;
+            }
+            
+            .header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Added styled header with back button -->
+        <div class="header">
+            <a href="{% url 'dashboard' %}" class="back-btn">← Back</a>
+            <h1>Ticket History</h1>
+        </div>
+
+        <div class="content">
+            <!-- Styled filter section -->
+            <div class="filter-section">
+                <form method="get" action="{% url 'ticket_list_create' %}" class="filter-form">
+                    <div class="form-group">
+                        <label for="search">Search:</label>
+                        <input type="text" id="search" name="search" value="{{ search_query }}" placeholder="Ticket #, plate or email">
+                    </div>
+
+                    <button type="submit" class="filter-btn">Filter</button>
+                </form>
+            </div>
+
+            <!-- Styled monthly revenue section -->
+            <h2 class="section-title">Monthly Revenue</h2>
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Month</th>
+                            <th>Total Cars</th>
+                            <th>Total Revenue</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for row in monthly_summary %}
+                            <tr>
+                                <td>{{ row.month|date:"F Y" }}</td>
+                                <td>{{ row.count }}</td>
+                                <td>R{{ row.total_revenue }}</td>
+                            </tr>
+                        {% empty %}
+                            <tr><td colspan="3" class="empty-row">No revenue data available</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Styled tickets section -->
+            <h2 class="section-title">All Tickets</h2>
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Ticket #</th>
+                            <th>Car Plate</th>
+                            <th>Service</th>
+                            <th>Employee</th>
+                            <!-- <th>Status</th> -->
+                            <th>Amount</th>
+                            <th>Created At</th>
+                            <th>Completed At</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for ticket in page_obj %}
+                            <tr>
+                                <td>{{ ticket.ticket_number }}</td>
+                                <td>{{ ticket.car_number_plate }}</td>
+                                <td>{{ ticket.service.name }}</td>
+                                <td>{{ ticket.employee.name }} {{ ticket.employee.surname }}</td>
+                                <!-- <td>{{ ticket.get_status_display }}</td> -->
+                                <td>R{{ ticket.total_amount }}</td>
+                                <td>{{ ticket.created_at |date:"d F Y H:i"}}</td>
+                                <td>{{ ticket.completed_at |date:"d F Y H:i"}}</td>
+                            </tr>
+                        {% empty %}
+                            <tr><td colspan="8" class="empty-row">No tickets found</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Styled pagination -->
+            <div class="pagination">
+                {% if page_obj.has_previous %}
+                    <a href="?page={{ page_obj.previous_page_number }}&status={{ status_filter }}&search={{ search_query }}">Previous</a>
+                {% endif %}
+
+                <span class="page-info">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+
+                {% if page_obj.has_next %}
+                    <a href="?page={{ page_obj.next_page_number }}&status={{ status_filter }}&search={{ search_query }}">Next</a>
+                {% endif %}
+            </div>
+
+            <!-- Styled navigation links -->
+
+        </div>
+    </div>
+</body>
+</html>

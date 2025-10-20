@@ -404,3 +404,26 @@ document.addEventListener("DOMContentLoaded", function () {
   categoryFilter.addEventListener("change", filterTable);
   statusFilter.addEventListener("change", filterTable);
 });
+
+
+function toggleUserDropdown() {
+    const dropdown = document.getElementById('userDropdown');
+    dropdown.classList.toggle('show');
+}
+
+function logout() {
+    if (confirm('Are you sure you want to logout?')) {
+        // Add logout logic here
+        window.location.href = 'login.html';
+    }
+}
+
+// Close dropdown when clicking outside
+document.addEventListener('click', function(event) {
+    const dropdown = document.getElementById('userDropdown');
+    const circle = document.querySelector('.user-circle');
+    
+    if (!dropdown.contains(event.target) && !circle.contains(event.target)) {
+        dropdown.classList.remove('show');
+    }
+});

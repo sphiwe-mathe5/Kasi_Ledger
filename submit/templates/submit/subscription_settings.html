@@ -198,12 +198,7 @@
         </style>
     </head>
     <body>
-        <nav class="navbar">
-            <a href="{% url 'index' %}" class="logo">KASI LEDGER</a>
-            <div class="quote_btn-container">
-                <a href="{% url 'index' %}" class="sign-up"><span>Home</span></a>
-            </div>
-        </nav>
+
         <div class="container">
             <div class="card">
                 <div class="card-header">
@@ -218,6 +213,16 @@
                     <div class="info-item">
                         <div class="info-label">Price</div>
                         <div class="info-value">R{{ subscription.plan.price }}/month</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">Trial Days Left</div>
+                        <div class="info-value">
+                            {% if trial_days_left %}
+                                {{ trial_days_left }} day{% if trial_days_left > 1 %}s{% endif %}
+                            {% else %}
+                                N/A
+                            {% endif %}
+                        </div>
                     </div>
                     <div class="info-item">
                         <div class="info-label">Next Payment</div>

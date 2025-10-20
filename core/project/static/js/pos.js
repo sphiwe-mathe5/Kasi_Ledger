@@ -1,19 +1,50 @@
 let cart = {};
 let lastScanTime = 0;
 let currentTotal = 0;
+let currentMode = 'scan';
+let html5QrcodeScanner = null;
 const scanCooldown = 2000; // 2 seconds cooldown between scans
 
-// Initialize HTML5 QR code scanner
-const html5QrcodeScanner = new Html5QrcodeScanner("reader", {
-  fps: 10,
-  qrbox: { width: 250, height: 250 },
-});
 
+function setMode(mode) {
+  currentMode = mode;
+  
+  // Update UI
+  document.getElementById('scanModeBtn').classList.toggle('active', mode === 'scan');
+  document.getElementById('manualModeBtn').classList.toggle('active', mode === 'manual');
+  document.getElementById('scannerSection').style.display = mode === 'scan' ? 'block' : 'none';
+  document.getElementById('manualSection').style.display = mode === 'manual' ? 'block' : 'none';
+  
+  // Handle scanner initialization/cleanup
+  if (mode === 'scan') {
+      if (!html5QrcodeScanner) {
+          initializeScanner();
+      } else {
+          html5QrcodeScanner.resume();
+      }
+  } else {
+      if (html5QrcodeScanner) {
+          html5QrcodeScanner.pause();
+      }
+  }
+}
+// Initialize HTML5 QR code scanner
+function initializeScanner() {
+  html5QrcodeScanner = new Html5QrcodeScanner("reader", {
+      fps: 10,
+      qrbox: { width: 250, height: 250 },
+  });
+  html5QrcodeScanner.render(onScanSuccess, onScanFailure);
+}
+
+// Modified onScanSuccess to check mode
 function onScanSuccess(decodedText, decodedResult) {
+  if (currentMode !== 'scan') return;
+  
   const currentTime = new Date().getTime();
   if (currentTime - lastScanTime < scanCooldown) {
-    console.log("Scan too soon, ignoring");
-    return;
+      console.log("Scan too soon, ignoring");
+      return;
   }
   lastScanTime = currentTime;
 
@@ -43,74 +74,111 @@ function playBeep() {
   audio.play();
 }
 
-function checkProduct(barcode) {
-    $.ajax({
+function checkProduct(barcode, itemCode) {
+  // Determine which identifier to use
+  const identifier = barcode || itemCode;
+  const identifierType = barcode ? 'barcode' : 'item_code';
+  
+  $.ajax({
       url: CHECK_PRODUCT_URL,
       type: "GET",
-      data: { barcode: barcode },
-      success: function (response) {
-        if (response.success) {
-          if (response.product.quantity > 0) {
-            playBeep();  // Only play beep on successful product addition
-            addToCart(response.product);
-            updateScannerStatus("Product added to cart!", "success");
+      data: { [identifierType]: identifier },
+      success: function(response) {
+          if (response.success) {
+              if (response.product.quantity > 0) {
+                  addToCart(response.product);
+                  updateScannerStatus("Product added to cart!", "success");
+              } else {
+                  updateScannerStatus("Product out of stock!", "error");
+              }
           } else {
-            updateScannerStatus("Product out of stock!", "error");
+              updateScannerStatus("Product not found", "error");
           }
-        } else {
-          updateScannerStatus("Product not found", "error");
-        }
       },
-      error: function () {
-        updateScannerStatus("Error checking product", "error");
+      error: function() {
+          updateScannerStatus("Error checking product", "error");
       },
-    });
-  }
-
-function addToCart(product) {
-  const maxQuantity = product.quantity; // Get available quantity
-
-  if (cart[product.barcode]) {
-    if (cart[product.barcode].quantity >= maxQuantity) {
-      updateScannerStatus("Maximum available quantity reached!", "error");
-      return;
-    }
-    cart[product.barcode].quantity += 1;
-    cart[product.barcode].total =
-      cart[product.barcode].quantity * product.price;
-    updateCartRow(product.barcode);
-  } else {
-    cart[product.barcode] = {
-      name: product.name,
-      price: product.price,
-      quantity: 1,
-      total: product.price,
-      maxQuantity: maxQuantity,
-    };
-    addCartRow(product.barcode);
-  }
-  updateTotal();
+  });
 }
 
-function addCartRow(barcode) {
-  const item = cart[barcode];
+function addToCart(product) {
+    // Use barcode if available, otherwise use item_code as the identifier
+    const identifier = product.barcode || product.item_code;
+    const maxQuantity = product.maxQuantity || product.quantity;
+
+    if (cart[identifier]) {
+        if (cart[identifier].quantity >= maxQuantity) {
+            updateScannerStatus("Maximum available quantity reached!", "error");
+            return;
+        }
+        cart[identifier].quantity += 1;
+        cart[identifier].total = cart[identifier].quantity * product.price;
+        updateCartRow(identifier);
+    } else {
+        cart[identifier] = {
+            name: product.name,
+            price: product.price,
+            quantity: 1,
+            total: product.price,
+            maxQuantity: maxQuantity,
+            barcode: product.barcode,
+            item_code: product.item_code
+        };
+        addCartRow(identifier);
+    }
+    updateTotal();
+    playBeep();
+}
+
+function addProductToCart(barcode, itemCode) {
+  // Determine which identifier to use for DOM lookup
+  const identifier = barcode || itemCode;
+  const selector = barcode ? `[data-barcode="${barcode}"]` : `[data-item-code="${itemCode}"]`;
+  
+  // Find the product in the DOM
+  const productCard = document.querySelector(`.product-card${selector}`);
+  
+  if (!productCard) {
+      alert('Product not found!');
+      return;
+  }
+  
+  const product = {
+      barcode: barcode,
+      item_code: itemCode,
+      name: productCard.dataset.name,
+      price: parseFloat(productCard.dataset.price),
+      quantity: 1,
+      maxQuantity: parseInt(productCard.dataset.quantity)
+  };
+  
+  addToCart(product);
+}
+
+// Initialize the default mode when page loads
+document.addEventListener('DOMContentLoaded', function() {
+  setMode('scan');
+});
+
+function addCartRow(identifier) {
+  const item = cart[identifier];
   const row = `
-          <tr data-barcode="${barcode}">
+          <tr data-identifier="${identifier}">
               <td>${item.name}</td>
               <td>R${item.price.toFixed(2)}</td>
               <td>${item.quantity}</td>
               <td>R${item.total.toFixed(2)}</td>
               <td>
-                  <span class="remove-item" onclick="removeItem('${barcode}')">❌</span>
+                  <span class="remove-item" onclick="removeItem('${identifier}')">❌</span>
               </td>
           </tr>
       `;
   $("#pos-table tbody").append(row);
 }
 
-function updateCartRow(barcode) {
-  const item = cart[barcode];
-  const row = $(`tr[data-barcode="${barcode}"]`);
+function updateCartRow(identifier) {
+  const item = cart[identifier];
+  const row = $(`tr[data-identifier="${identifier}"]`);
   row.find("td:nth-child(3)").text(item.quantity);
   row.find("td:nth-child(4)").text(`R${item.total.toFixed(2)}`);
 }
@@ -118,11 +186,15 @@ function updateCartRow(barcode) {
 function updateTotal() {
   const total = Object.values(cart).reduce((sum, item) => sum + item.total, 0);
   $(".total-amount").text(`R${total.toFixed(2)}`);
+  // Update the global currentTotal variable for change calculation
+  currentTotal = total;
+  // Recalculate change whenever total changes
+  calculateChange();
 }
 
-function removeItem(barcode) {
-  delete cart[barcode];
-  $(`tr[data-barcode="${barcode}"]`).remove();
+function removeItem(identifier) {
+  delete cart[identifier];
+  $(`tr[data-identifier="${identifier}"]`).remove();
   updateTotal();
 }
 
@@ -131,7 +203,6 @@ function clearCart() {
   $("#pos-table tbody").empty();
   updateTotal();
 }
-
 
 function calculateChange() {
   const moneyRendered = parseFloat(document.getElementById('moneyRendered').value) || 0;
@@ -146,9 +217,6 @@ function calculateChange() {
       document.getElementById('changeAmount').style.color = '#28a745';
   }
 }
-
-// Update total and recalculate change
-
 
 function processSale() {
   if (Object.keys(cart).length === 0) {
@@ -168,8 +236,9 @@ function processSale() {
   showLoader();
 
   const saleData = {
-      items: Object.entries(cart).map(([barcode, item]) => ({
-          barcode: barcode,
+      items: Object.entries(cart).map(([identifier, item]) => ({
+          barcode: item.barcode || null,
+          item_code: item.item_code || null,
           quantity: item.quantity,
           price: item.price,
       })),
@@ -389,3 +458,17 @@ function hideLoader(success = true) {
     overlay.style.display = 'none';
   }
 }
+
+document.getElementById("productSearch").addEventListener("keyup", function() {
+    let query = this.value.toLowerCase();
+    let products = document.querySelectorAll(".product-card");
+
+    products.forEach(product => {
+        let name = product.dataset.name.toLowerCase();
+        if (name.includes(query)) {
+            product.style.display = "block";
+        } else {
+            product.style.display = "none";
+        }
+    });
+});

@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <title>Style Ticket Receipt</title>
+</head>
+<body style="margin: 0; padding: 0; font-family: Poppins, sans-serif; background-color: #f4f4f4;">
+    <table role="presentation" style="width: 100%; border-collapse: collapse;">
+        <tr>
+            <td style="padding: 20px 0;">
+                <table role="presentation" style="width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+                    
+                    <!-- Header -->
+                    <tr>
+                        <td style="background: linear-gradient(135deg, #4caf50 0%, #45a049 100%); padding: 30px; text-align: center;">
+                            <h1 style="margin: 0; color: #ffffff; font-size: 28px; font-weight: bold;">{{ company_name }}</h1>
+                            <p style="margin: 10px 0 0 0; color: #ffffff; font-size: 16px;">Style Ticket Receipt</p>
+                        </td>
+                    </tr>
+                    
+                    <!-- Content -->
+                    <tr>
+                        <td style="padding: 40px 30px;">
+                            <h2 style="margin: 0 0 20px 0; color: #333333; font-size: 22px;">Thank you for choosing {{ company_name }} Salon!</h2>
+                            <p style="margin: 0 0 25px 0; color: #666666; font-size: 16px; line-height: 1.5;">Here are the details of your style ticket:</p>
+                            
+                            <!-- Ticket Details Box -->
+                            <table role="presentation" style="width: 100%; border-collapse: collapse; background-color: #f9f9f9; border-radius: 6px; overflow: hidden; margin-bottom: 25px;">
+                                <tr>
+                                    <td style="padding: 20px;">
+                                        <table role="presentation" style="width: 100%; border-collapse: collapse;">
+                                            <tr>
+                                                <td style="padding: 8px 0; color: #666666; font-size: 14px; border-bottom: 1px solid #e0e0e0;">
+                                                    <strong style="color: #333333;">Ticket Number:</strong>
+                                                </td>
+                                                <td style="padding: 8px 0; color: #333333; font-size: 14px; text-align: right; border-bottom: 1px solid #e0e0e0;">
+                                                    {{ ticket.ticket_number }}
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td style="padding: 8px 0; color: #666666; font-size: 14px; border-bottom: 1px solid #e0e0e0;">
+                                                    <strong style="color: #333333;">Customer Name:</strong>
+                                                </td>
+                                                <td style="padding: 8px 0; color: #333333; font-size: 14px; text-align: right; border-bottom: 1px solid #e0e0e0;">
+                                                    {{ ticket.customer_name }}
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td style="padding: 8px 0; color: #666666; font-size: 14px; border-bottom: 1px solid #e0e0e0;">
+                                                    <strong style="color: #333333;">Phone:</strong>
+                                                </td>
+                                                <td style="padding: 8px 0; color: #333333; font-size: 14px; text-align: right; border-bottom: 1px solid #e0e0e0;">
+                                                    {{ ticket.customer_phone }}
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td style="padding: 8px 0; color: #666666; font-size: 14px; border-bottom: 1px solid #e0e0e0;">
+                                                    <strong style="color: #333333;">Style:</strong>
+                                                </td>
+                                                <td style="padding: 8px 0; color: #333333; font-size: 14px; text-align: right; border-bottom: 1px solid #e0e0e0;">
+                                                    {{ ticket.style.name }}
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td style="padding: 12px 0 8px 0; color: #666666; font-size: 16px;">
+                                                    <strong style="color: #333333;">Total Amount:</strong>
+                                                </td>
+                                                <td style="padding: 12px 0 8px 0; color: #4caf50; font-size: 18px; font-weight: bold; text-align: right;">
+                                                    R{{ ticket.total_amount }}
+                                                </td>
+                                            </tr>
+                                        </table>
+                                    </td>
+                                </tr>
+                            </table>
+                            
+                            <p style="margin: 0 0 10px 0; color: #333333; font-size: 16px; line-height: 1.6;">
+                                Best regards,<br>
+                                <strong>{{ company_name }} Team</strong>
+                            </p>
+                        </td>
+                    </tr>
+                    
+                    <!-- Social Media -->
+                    <tr>
+                        <td style="padding: 20px 30px; background-color: #f9f9f9; border-top: 1px solid #e0e0e0;">
+                            <table role="presentation" style="width: 100%; border-collapse: collapse;">
+                                <tr>
+                                    <td style="text-align: center; padding-bottom: 15px;">
+                                        <p style="margin: 0 0 15px 0; color: #666666; font-size: 14px;">Follow us on social media</p>
+                                        <table role="presentation" style="display: inline-block; border-collapse: collapse;">
+                                            <tr>
+                                                <td style="padding: 0 8px;">
+                                                    <a href="https://www.facebook.com/people/Kasi-Algorithms/61561356537135/?mibextid=LQQJ4d" style="text-decoration: none;">
+                                                        <img src="https://img.icons8.com/color/48/000000/facebook-new.png" alt="Facebook" style="width: 32px; height: 32px; display: block;">
+                                                    </a>
+                                                </td>
+                                                <td style="padding: 0 8px;">
+                                                    <a href="https://www.instagram.com/kasialgorithms/profilecard/?igsh=MTVzYXJpMzhnZWJ5bg%3D%3D" style="text-decoration: none;">
+                                                        <img src="https://img.icons8.com/color/48/000000/instagram-new.png" alt="Instagram" style="width: 32px; height: 32px; display: block;">
+                                                    </a>
+                                                </td>
+                                                <td style="padding: 0 8px;">
+                                                    <a href="https://www.linkedin.com/company/your-company" style="text-decoration: none;">
+                                                        <img src="https://img.icons8.com/color/48/000000/linkedin.png" alt="LinkedIn" style="width: 32px; height: 32px; display: block;">
+                                                    </a>
+                                                </td>
+                                                <td style="padding: 0 8px;">
+                                                    <a href="https://wa.me/yourphonenumber" style="text-decoration: none;">
+                                                        <img src="https://img.icons8.com/color/48/000000/whatsapp--v1.png" alt="WhatsApp" style="width: 32px; height: 32px; display: block;">
+                                                    </a>
+                                                </td>
+                                            </tr>
+                                        </table>
+                                    </td>
+                                </tr>
+                            </table>
+                        </td>
+                    </tr>
+                    
+                    <!-- Footer -->
+                    <tr>
+                        <td style="padding: 20px 30px; background-color: #007bff; text-align: center;">
+                            <p style="margin: 0 0 10px 0; color: #ffffff; font-size: 13px; line-height: 1.6;">
+                                You are receiving this email because you visited <strong>{{ company_name }}</strong> which uses <b>KASI LEDGER<b> management system.
+                            </p>
+                            <p style="margin: 0 0 15px 0;">
+                                <a href="https://kasiledger.com/" style="color: #ffff; text-decoration: none; font-size: 13px;">Learn more about us</a>
+                            </p>
+                            <p style="margin: 0; color: #ffff; font-size: 12px;">
+                                &copy; 2025 Kasi Ledger. All rights reserved.
+                            </p>
+                        </td>
+                    </tr>
+                    
+                </table>
+            </td>
+        </tr>
+    </table>
+</body>
+</html>

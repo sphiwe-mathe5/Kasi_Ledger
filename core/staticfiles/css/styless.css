@@ -1079,6 +1079,7 @@ margin: 0 -2rem;
   gap: 2rem;
   padding: 2rem;
   flex-wrap: wrap;
+  margin-top: 9rem;
 }
 .pricing-card {
   background-color: #ffffff;

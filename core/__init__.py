@@ -5,4 +5,4 @@ class WebConfig(AppConfig):
     name = 'core'
 
     def ready(self):
-        import core.templatetags.custom_filters
+        import core.templatetags.core_filters

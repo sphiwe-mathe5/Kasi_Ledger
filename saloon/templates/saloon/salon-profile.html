@@ -1,0 +1,1361 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <link rel="icon" href="{% static 'images/kasicon.png' %}">
+    <title>{{ profile.user.company_name }} - Dashboard</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: #ffffff;
+            color: #333;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+
+        /* Redesigned header with grid layout */
+        .header {
+            display: grid;
+            grid-template-columns: 1fr auto;
+            gap: 20px;
+            align-items: center;
+            padding: 30px 0;
+            border-bottom: 1px solid #e0e0e0;
+            margin-bottom: 40px;
+        }
+
+        .header h1 {
+            font-size: 32px;
+            color: #1a1a1a;
+            font-weight: 700;
+        }
+
+        .edit-link {
+            background: #1a1a1a;
+            color: white;
+            padding: 12px 28px;
+            border-radius: 6px;
+            text-decoration: none;
+            font-weight: 500;
+            transition: background 0.3s;
+        }
+
+        .edit-link:hover {
+            background: #333;
+        }
+
+        /* Removed green gradient, using clean white card */
+        .booking-url-card {
+            background: #f8f9fa;
+            border: 2px solid #e0e0e0;
+            padding: 30px;
+            border-radius: 8px;
+            margin-bottom: 40px;
+        }
+
+        .booking-url-card h2 {
+            font-size: 18px;
+            margin-bottom: 12px;
+            font-weight: 600;
+            color: #1a1a1a;
+        }
+
+        .booking-url-card p {
+            margin-bottom: 10px;
+            color: #666;
+        }
+
+        .booking-url {
+            background: white;
+            padding: 12px 16px;
+            border-radius: 6px;
+            color: #1a1a1a;
+            text-decoration: none;
+            display: inline-block;
+            margin-top: 10px;
+            font-weight: 500;
+            border: 1px solid #e0e0e0;
+            transition: all 0.3s;
+        }
+
+        .booking-url:hover {
+            border-color: #1a1a1a;
+        }
+
+        /* Grid-based layout for all sections */
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(12, 1fr);
+            gap: 30px;
+            margin-bottom: 40px;
+        }
+
+        .grid-full {
+            grid-column: span 12;
+        }
+
+        .grid-half {
+            grid-column: span 6;
+        }
+
+        .grid-third {
+            grid-column: span 4;
+        }
+
+        .card {
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            border: 1px solid #e0e0e0;
+        }
+
+        .card h2 {
+            font-size: 20px;
+            color: #1a1a1a;
+            margin-bottom: 24px;
+            font-weight: 600;
+        }
+
+        /* Removed green border, using neutral gray */
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+        }
+
+        .info-item {
+            padding: 16px;
+            background: #f8f9fa;
+            border-radius: 6px;
+            border-left: 3px solid #1a1a1a;
+        }
+
+        .info-item strong {
+            display: block;
+            color: #666;
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 6px;
+            font-weight: 600;
+        }
+
+        .info-item span {
+            color: #1a1a1a;
+            font-size: 15px;
+        }
+
+        .info-item a {
+            color: #1a1a1a;
+            text-decoration: none;
+        }
+
+        .info-item a:hover {
+            text-decoration: underline;
+        }
+
+        /* Stats grid with neutral colors */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+            gap: 20px;
+        }
+
+        .stat-card {
+            background: #f8f9fa;
+            padding: 24px;
+            border-radius: 8px;
+            text-align: center;
+            border: 1px solid #e0e0e0;
+        }
+
+        .stat-card .label {
+            color: #666;
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+
+        .stat-card .value {
+            color: #1a1a1a;
+            font-size: 32px;
+            font-weight: 700;
+        }
+
+        /* Table Styles */
+        .table-container {
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        thead {
+            background: #f8f9fa;
+        }
+
+        th {
+            padding: 14px 16px;
+            text-align: left;
+            font-weight: 600;
+            color: #1a1a1a;
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            border-bottom: 2px solid #e0e0e0;
+        }
+
+        td {
+            padding: 16px;
+            border-bottom: 1px solid #f0f0f0;
+            color: #555;
+        }
+
+        tbody tr:hover {
+            background: #f8f9fa;
+        }
+
+        tbody tr:last-child td {
+            border-bottom: none;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: #999;
+        }
+
+        /* Status Badges */
+        .status-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: capitalize;
+        }
+
+        .status-active {
+            background: #e8f5e9;
+            color: #2e7d32;
+        }
+
+        .status-inactive {
+            background: #ffebee;
+            color: #c62828;
+        }
+
+        .status-pending {
+            background: #fff3e0;
+            color: #ef6c00;
+        }
+
+        .status-confirmed {
+            background: #e3f2fd;
+            color: #1565c0;
+        }
+
+        .status-completed {
+            background: #e8f5e9;
+            color: #2e7d32;
+        }
+
+        .status-cancelled {
+            background: #ffebee;
+            color: #c62828;
+        }
+
+        /* Updated button colors to remove green */
+        .action-buttons {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 6px 14px;
+            border: none;
+            border-radius: 6px;
+            font-size: 13px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-confirm {
+            background: #1a1a1a;
+            color: white;
+        }
+
+        .btn-confirm:hover {
+            background: #333;
+        }
+
+        .btn-cancel {
+            background: #f44336;
+            color: white;
+        }
+
+        .btn-cancel:hover {
+            background: #da190b;
+        }
+
+        .btn-complete {
+            background: #2196F3;
+            color: white;
+        }
+
+        .btn-complete:hover {
+            background: #0b7dda;
+        }
+
+        /* Updated view all link to remove green */
+        .view-all {
+            display: inline-block;
+            margin-top: 20px;
+            color: #1a1a1a;
+            text-decoration: none;
+            font-weight: 500;
+            padding: 10px 20px;
+            border: 2px solid #1a1a1a;
+            border-radius: 6px;
+            transition: all 0.3s;
+        }
+
+        .view-all:hover {
+            background: #1a1a1a;
+            color: white;
+        }
+
+        /* Profile Hero Styles */
+        .profile-hero {
+            background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+            padding: 50px;
+            border-radius: 12px;
+            color: white;
+            box-shadow: 0 2px 4px rgba(59, 130, 246, 0.2);
+            margin-bottom: 30px;
+        }
+
+        .profile-hero h2 {
+            font-size: 28px;
+            margin-bottom: 30px;
+            font-weight: 700;
+            color: white;
+        }
+
+        .profile-content {
+            display: flex;
+            gap: 40px;
+            align-items: flex-start;
+        }
+
+        .profile-main {
+            flex: 1;
+        }
+
+        .profile-bio {
+            font-size: 16px;
+            line-height: 1.8;
+            margin-bottom: 30px;
+            opacity: 0.95;
+        }
+
+        .profile-details {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 30px;
+        }
+
+        .detail-group {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .detail-icon {
+            width: 40px;
+            height: 40px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+        }
+
+        .detail-text {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .detail-label {
+            font-size: 12px;
+            opacity: 0.8;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .detail-value {
+            font-size: 15px;
+            font-weight: 600;
+        }
+
+        .detail-value a {
+            color: white;
+            text-decoration: none;
+        }
+
+        .detail-value a:hover {
+            text-decoration: underline;
+        }
+
+        .profile-sidebar {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .profile-stat {
+            background: rgba(255, 255, 255, 0.15);
+            padding: 24px;
+            border-radius: 10px;
+            text-align: center;
+            backdrop-filter: blur(10px);
+        }
+
+        .profile-stat-value {
+            font-size: 36px;
+            font-weight: 700;
+            margin-bottom: 5px;
+        }
+
+        .profile-stat-label {
+            font-size: 13px;
+            opacity: 0.9;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .status-indicator {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(255, 255, 255, 0.2);
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #4ade80;
+            animation: pulse 2s infinite;
+        }
+
+        .booking-container {
+            max-width: 1200px; /* Increased max-width for 3-column layout on large screens */
+            margin: 0 auto;
+        }
+
+        .booking-card {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        }
+
+        h2 {
+            font-size: 28px;
+            font-weight: 700;
+            color: #1a1a1a;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 14px;
+        }
+
+        .form-group {
+            margin-bottom: 24px;
+        }
+
+        label {
+            display: block;
+            font-size: 14px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 8px;
+        }
+
+        input[type="text"],
+        input[type="tel"],
+        input[type="email"],
+        input[type="date"],
+        input[type="time"],
+        select,
+        textarea {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 15px;
+            font-family: inherit;
+            transition: all 0.3s ease;
+            background: #fafafa;
+        }
+
+        input:focus,
+        select:focus,
+        textarea:focus {
+            outline: none;
+            border-color: #667eea;
+            background: white;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        select {
+            cursor: pointer;
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23333' d='M6 9L1 4h10z'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 16px center;
+            padding-right: 40px;
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+
+        .btn-submit {
+            width: 100%;
+            padding: 16px;
+            background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 10px;
+        }
+
+        .btn-submit:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-submit:active {
+            transform: translateY(0);
+        }
+
+        .required {
+            color: #e74c3c;
+            margin-left: 2px;
+        }
+
+        .optional-tag {
+            color: #999;
+            font-weight: 400;
+            font-size: 12px;
+            margin-left: 4px;
+        }
+
+        /* Added form grid layout for responsive columns */
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 24px;
+        }
+
+        .copy-btn {
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 18px;
+            color: #333;
+            transition: color 0.2s;
+        }
+
+        .copy-btn:hover {
+            color: #007bff;
+        }
+
+        @media (min-width: 768px) {
+            .form-grid {
+                grid-template-columns: repeat(3, 1fr);
+            }
+        }
+
+        .form-group-full {
+            grid-column: 1 / -1;
+        }
+
+        @media (max-width: 640px) {
+            .booking-card {
+                padding: 30px 20px;
+            }
+
+            h2 {
+                font-size: 24px;
+            }
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        @media (max-width: 1024px) {
+            .grid-half,
+            .grid-third {
+                grid-column: span 12;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 20px 15px;
+            }
+
+            .header {
+                grid-template-columns: 1fr;
+            }
+
+            .header h1 {
+                font-size: 24px;
+            }
+
+            .card {
+                padding: 20px;
+            }
+
+            .dashboard-grid {
+                gap: 20px;
+            }
+
+            table {
+                font-size: 14px;
+            }
+
+            th, td {
+                padding: 10px 8px;
+            }
+
+            .profile-hero {
+                padding: 30px 20px;
+            }
+
+            .profile-content {
+                flex-direction: column;
+                gap: 30px;
+            }
+
+            .profile-details {
+                flex-direction: column;
+                gap: 20px;
+            }
+        }
+
+        .booking-disabled-notice,
+            .booking-upgrade-notice {
+                background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+                border-radius: 12px;
+                padding: 40px;
+                text-align: center;
+                border: 2px solid #dee2e6;
+            }
+
+            .booking-disabled-notice .notice-icon,
+            .booking-upgrade-notice .notice-icon {
+                font-size: 48px;
+                margin-bottom: 20px;
+            }
+
+            .booking-disabled-notice h2,
+            .booking-upgrade-notice h2 {
+                color: #212529;
+                margin-bottom: 15px;
+                font-size: 24px;
+            }
+
+            .booking-disabled-notice .notice-message {
+                color: #6c757d;
+                font-size: 16px;
+                margin-bottom: 20px;
+            }
+
+            .booking-disabled-notice .contact-info {
+                background: white;
+                padding: 15px;
+                border-radius: 8px;
+                margin-top: 20px;
+                font-size: 16px;
+            }
+
+            .notice-header {
+                display: flex;
+                align-items: center;
+                gap: 15px;
+                margin-bottom: 25px;
+            }
+
+            .notice-content {
+                text-align: left;
+            }
+
+            .upgrade-benefits {
+                background: white;
+                padding: 20px;
+                border-radius: 8px;
+                margin: 20px 0;
+            }
+
+            .upgrade-benefits h3 {
+                margin-bottom: 15px;
+                color: #212529;
+            }
+
+            .upgrade-benefits ul {
+                list-style: none;
+                padding: 0;
+            }
+
+            .upgrade-benefits li {
+                padding: 10px 0;
+                color: #495057;
+                font-size: 15px;
+            }
+
+            .current-plan {
+                background: #fff3cd;
+                padding: 15px;
+                border-radius: 8px;
+                margin: 20px 0;
+            }
+
+            .btn-upgrade {
+                background: #007bff;
+                color: white;
+                padding: 12px 30px;
+                text-decoration: none;
+                border-radius: 8px;
+                display: inline-block;
+                margin-top: 15px;
+                transition: background 0.3s;
+            }
+
+            .btn-upgrade:hover {
+                background: #0056b3;
+            }
+
+            .status-badge {
+                padding: 6px 12px;
+                border-radius: 20px;
+                font-size: 12px;
+                font-weight: 600;
+            }
+
+            .status-pending {
+                background: #fff3cd;
+                color: #856404;
+            }
+
+            .status-confirmed {
+                background: #d1ecf1;
+                color: #0c5460;
+            }
+
+            .status-completed {
+                background: #d4edda;
+                color: #155724;
+            }
+
+            .status-cancelled {
+                background: #f8d7da;
+                color: #721c24;
+            }
+
+            .stats-grid {
+                display: grid;
+                grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+                gap: 15px;
+                margin-top: 25px;
+            }
+
+            .stat-card {
+                background: white;
+                padding: 15px;
+                border-radius: 8px;
+                text-align: center;
+                border: 1px solid #dee2e6;
+            }
+
+            .stat-label {
+                font-size: 12px;
+                color: #6c757d;
+                text-transform: uppercase;
+                margin-bottom: 8px;
+            }
+
+            .stat-value {
+                font-size: 24px;
+                font-weight: 700;
+                color: #007bff;
+            }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <h1>
+                <a href="javascript:history.back()" style="text-decoration:none; color:inherit;">
+                    <i class="fa fa-arrow-left" aria-hidden="true"></i>
+                </a>
+                {{ profile.user.company_name }}
+            </h1>
+
+            {% if is_owner %}
+            <a href="{% url 'saloon:create_salon_profile' %}" class="edit-link">Edit Profile</a>
+            {% else %}
+            <a href="#book-now" class="edit-link">Book Now</a>
+            {% endif %}
+        </div>
+
+        {% if is_owner %}
+
+        <div class="booking-url-card">
+            <p><strong>Share this link with customers for bookings:</strong></p>
+            
+            <div class="booking-url-wrapper">
+                <a href="{% url 'saloon:salon_profile' profile.slug %}" 
+                class="booking-url" 
+                target="_blank">
+                kasiledger.co.za/salon/{{ profile.slug }}
+                </a>
+                
+                <!-- Copy Button -->
+                <button class="copy-btn" onclick="copyBookingUrl()">
+                    <i class="fa fa-copy"></i>
+                </button>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Dashboard Grid Layout -->
+        <div class="dashboard-grid">
+            <!-- Profile Information (Both Owner & Public) -->
+            <div class="grid-full">
+                <div class="profile-hero">
+                    <h2>{% if is_owner %}Profile Information{% else %}About Us{% endif %}</h2>
+                    <div class="profile-content">
+                        <div class="profile-main">
+                            <p class="profile-bio">{{ profile.bio }}</p>
+                            
+                            <div class="profile-details">
+                                <div class="detail-group">
+                                    <div class="detail-icon">📍</div>
+                                    <div class="detail-text">
+                                        <span class="detail-label">Location</span>
+                                        <span class="detail-value">{{ profile.address }}, {{ profile.city }}</span>
+                                    </div>
+                                </div>
+
+                                <div class="detail-group">
+                                    <div class="detail-icon">💬</div>
+                                    <div class="detail-text">
+                                        <span class="detail-label">WhatsApp</span>
+                                        <span class="detail-value">
+                                            <a href="https://wa.me/{{ profile.whatsapp_number }}" target="_blank">{{ profile.whatsapp_number }}</a>
+                                        </span>
+                                    </div>
+                                </div>
+
+                                {% if profile.facebook_url %}
+                                <div class="detail-group">
+                                    <div class="detail-icon">📘</div>
+                                    <div class="detail-text">
+                                        <span class="detail-label">Facebook</span>
+                                        <span class="detail-value"><a href="{{ profile.facebook_url }}" target="_blank">Visit Page</a></span>
+                                    </div>
+                                </div>
+                                {% endif %}
+
+                                {% if profile.instagram_url %}
+                                <div class="detail-group">
+                                    <div class="detail-icon">📷</div>
+                                    <div class="detail-text">
+                                        <span class="detail-label">Instagram</span>
+                                        <span class="detail-value"><a href="{{ profile.instagram_url }}" target="_blank">Visit Profile</a></span>
+                                    </div>
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <div class="profile-sidebar">
+                            <div class="profile-stat">
+                                <div class="profile-stat-value">{{ profile.rating }}</div>
+                                <div class="profile-stat-label">⭐ Rating</div>
+                            </div>
+
+                            <div class="profile-stat">
+                                <div class="profile-stat-value">{{ profile.total_reviews }}</div>
+                                <div class="profile-stat-label">Reviews</div>
+                            </div>
+
+                            {% if is_owner %}
+                            <div class="status-indicator">
+                                {% if profile.is_active %}
+                                <span class="status-dot"></span>
+                                <span>Active</span>
+                                {% else %}
+                                <span>Inactive</span>
+                                {% endif %}
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {% if is_owner %}
+            <!-- Owner Only: Booking Statistics -->
+            <div class="grid-full">
+                <div class="card">
+                    <h2>Booking Statistics</h2>
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <div class="label">Total Bookings</div>
+                            <div class="value">{{ total_bookings }}</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="label">Pending</div>
+                            <div class="value">{{ pending_bookings }}</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="label">Confirmed</div>
+                            <div class="value">{{ confirmed_bookings }}</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="label">Completed</div>
+                            <div class="value">{{ completed_bookings }}</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="label">Cancelled</div>
+                            <div class="value">{{ cancelled_bookings }}</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="label">Total Revenue</div>
+                            <div class="value">R{{ total_revenue }}</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Working Hours (Both Owner & Public) -->
+            <div class="grid-half">
+                <div class="card">
+                    <h2>Working Hours</h2>
+                    <div class="table-container">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Day</th>
+                                    <th>Opening</th>
+                                    <th>Closing</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for hours in working_hours_list %}
+                                <tr>
+                                    <td>{{ hours.get_day_of_week_display }}</td>
+                                    <td>{{ hours.opening_time }}</td>
+                                    <td>{{ hours.closing_time }}</td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="3" class="empty-state">No working hours set</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            {% if is_owner %}
+            <!-- Owner Only: Workers -->
+            <div class="grid-half">
+                <div class="card">
+                    <h2>Your Workers</h2>
+                    <div class="table-container">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Phone</th>
+                                    <th>Completed</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for worker in workers %}
+                                <tr>
+                                    <td>{{ worker.full_name }}</td>
+                                    <td>{{ worker.phone }}</td>
+                                    <td><strong>{{ worker.styles_completed_count }}</strong></td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="3" class="empty-state">No workers added yet</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            {% else %}
+            <!-- Public View: Our Team -->
+            <div class="grid-half">
+                <div class="card">
+                    <h2>Our Team</h2>
+                    <div class="table-container">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Experience</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for worker in workers %}
+                                <tr>
+                                    <td>{{ worker.full_name }}</td>
+                                    <td>{{ worker.styles_completed_count }} styles completed</td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="2" class="empty-state">Team information coming soon</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Services (Both Owner & Public) -->
+            <div class="grid-full">
+                <div class="card">
+                    <h2>{% if is_owner %}Your Services{% else %}Our Services{% endif %}</h2>
+                    <div class="table-container">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Service Name</th>
+                                    <th>Price</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for style in styles %}
+                                {% if is_owner or style.is_active %}
+                                <tr>
+                                    <td>{{ style.name }}</td>
+                                    <td><strong>R{{ style.price }}</strong></td>
+                                </tr>
+                                {% endif %}
+                                {% empty %}
+                                <tr>
+                                    <td colspan="{% if is_owner %}4{% else %}3{% endif %}" class="empty-state">
+                                        {% if is_owner %}No services added yet{% else %}Services coming soon{% endif %}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            {% if not is_owner %}
+            <div class="grid-full">
+                <div class="card">
+                    <h2>Customer Reviews</h2>
+                    {% if reviews %}
+                    <div class="reviews-container">
+                        {% for review in reviews %}
+                        <div class="review-card">
+                            <div class="review-header">
+                                <strong>{{ review.customer_name }}</strong>
+                                <span class="review-rating">{{ review.rating }}⭐</span>
+                            </div>
+                            <p class="review-comment">{{ review.comment }}</p>
+                            <span class="review-date">{{ review.created_at|date:"d M Y" }}</span>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <p class="empty-state">No reviews yet. Be the first to leave a review!</p>
+                    {% endif %}
+                </div>
+            </div>
+            {% endif %}
+
+            {% if is_owner %}
+            <!-- Owner Only: Recent Bookings -->
+             {% if can_view_bookings %}
+            <div class="grid-full" id="recent-bookings">
+                <div class="card">
+                    <h2>Recent Bookings</h2>
+                    <div class="table-container">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Booking #</th>
+                                    <th>Customer</th>
+                                    <th>Phone</th>
+                                    <th>Service</th>
+                                    <th>Worker</th>
+                                    <th>Date</th>
+                                    <th>Time</th>
+                                    <th>Status</th>
+                                    <th>Price</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for booking in bookings %}
+                                <tr>
+                                    <td><strong>{{ booking.booking_number }}</strong></td>
+                                    <td>{{ booking.customer_name }}</td>
+                                    <td>{{ booking.customer_phone }}</td>
+                                    <td>{{ booking.style.name }}</td>
+                                    <td>{{ booking.worker.full_name|default:"Not assigned" }}</td>
+                                    <td>{{ booking.booking_date }}</td>
+                                    <td>{{ booking.booking_time }}</td>
+                                    <td>
+                                        <span class="status-badge status-{{ booking.status }}">
+                                            {{ booking.get_status_display }}
+                                        </span>
+                                    </td>
+                                    <td><strong>R{{ booking.price }}</strong></td>
+                                    <td>
+                                        <div class="action-buttons">
+                                            {% if booking.status == 'pending' %}
+                                            <form method="POST" action="{% url 'saloon:update_booking_status' booking.id %}" style="display:inline;">
+                                                {% csrf_token %}
+                                                <input type="hidden" name="status" value="confirmed">
+                                                <button type="submit" class="btn btn-confirm">Confirm</button>
+                                            </form>
+                                            <form method="POST" action="{% url 'saloon:update_booking_status' booking.id %}" style="display:inline;">
+                                                {% csrf_token %}
+                                                <input type="hidden" name="status" value="cancelled">
+                                                <button type="submit" class="btn btn-cancel">Cancel</button>
+                                            </form>
+                                            {% elif booking.status == 'confirmed' %}
+                                            <form method="POST" action="{% url 'saloon:update_booking_status' booking.id %}" style="display:inline;">
+                                                {% csrf_token %}
+                                                <input type="hidden" name="status" value="completed">
+                                                <button type="submit" class="btn btn-complete">Complete</button>
+                                            </form>
+                                            {% endif %}
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="10" class="empty-state">No bookings yet</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    {% if bookings|length >= 20 %}
+                    <a href="{% url 'saloon:all_bookings' profile.slug %}" class="view-all">View All Bookings →</a>
+                    {% endif %}
+                </div>
+            </div>
+                {% else %}
+        <!-- Owner without Business Pro: Show Upgrade Notice -->
+        <div class="grid-full" id="recent-bookings">
+            <div class="card booking-upgrade-notice">
+                <div class="notice-header">
+                    <span class="notice-icon">📊</span>
+                    <h2>Bookings Management Locked</h2>
+                </div>
+                
+                <div class="notice-content">
+                    <p>View and manage all your customer bookings by upgrading to <strong>Business Pro</strong> plan.</p>
+                    
+                    <div class="upgrade-benefits">
+                        <h3>Business Pro Includes:</h3>
+                        <ul>
+                            <li>✓ Full booking management dashboard</li>
+                            <li>✓ Unlimited appointments per month</li>
+                            <li>✓ AI chatbot assistant</li>
+                            <li>✓ Advanced analytics</li>
+                            <li>✓ Priority support</li>
+                        </ul>
+                    </div>
+
+                    <div class="current-plan">
+                        <p><strong>Current Plan:</strong> 
+                            {% if booking_restriction_reason == 'Business Pro only' %}
+                                Growth Plan - Limited features
+                            {% elif booking_restriction_reason == 'Trial expired' %}
+                                Free Trial Expired
+                            {% elif booking_restriction_reason == 'Subscription expired' %}
+                                Subscription Expired
+                            {% else %}
+                                No Active Subscription
+                            {% endif %}
+                        </p>
+                    </div>
+
+                    <a href="{% url 'subscription_plans' %}" class="btn btn-primary btn-upgrade">
+                        Upgrade to Business Pro - R199.99/month
+                    </a>
+                </div>
+            </div>
+        </div>
+    {% endif %}
+            {% endif %}
+        </div>
+    </div>
+
+    {% if not is_owner %}
+    <div class="booking-container " id="book-now">
+        <div class="booking-card">
+            {% if booking_allowed %}
+            <h2>Book an Appointment</h2>
+            <p class="subtitle">Fill in the details below to schedule your visit</p>
+            
+            <form method="POST" action=" {% url 'saloon:create_booking' profile.slug %} ">
+                {% csrf_token %}
+                
+                <!-- Wrapped form fields in grid container for 3-column layout -->
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="customer_name">Your Name <span class="required">*</span></label>
+                        <input type="text" id="customer_name" name="customer_name" placeholder="Enter your full name" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="customer_phone">Phone Number <span class="required">*</span></label>
+                        <input type="tel" id="customer_phone" name="customer_phone" placeholder="e.g., 0712345678" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="customer_email">Email <span class="optional-tag">(optional)</span></label>
+                        <input type="email" id="customer_email" name="customer_email" placeholder="your.email@example.com">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="style">Select Service <span class="required">*</span></label>
+                        <select id="style" name="style" required>
+                            <option value="">Choose a service...</option>
+                            {% for style in styles %}
+                            {% if style.is_active %}
+                            <option value="{{ style.id }}" data-price="{{ style.price }}">{{ style.name }} - R{{ style.price }}</option>
+                            {% endif %}
+                            {% endfor %}
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="worker">Select Worker <span class="optional-tag">(optional)</span></label>
+                        <select id="worker" name="worker">
+                            <option value="">Any available worker</option>
+                            {% for worker in workers %}
+                            <option value="{{ worker.id }}">{{ worker.full_name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="booking_date">Select Date <span class="required">*</span></label>
+                        <input type="date" id="booking_date" name="booking_date" required min="{{ today }}">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="booking_time">Select Time <span class="required">*</span></label>
+                        <input type="time" id="booking_time" name="booking_time" required>
+                    </div>
+                    
+                    <div class="form-group form-group-full">
+                        <label for="customer_notes">Additional Notes <span class="optional-tag">(optional)</span></label>
+                        <textarea id="customer_notes" name="customer_notes" rows="3" placeholder="Any special requests or preferences..."></textarea>
+                    </div>
+                </div>
+                <button type="submit" class="btn-submit">Book Appointment</button>
+            </form>
+            {% else %}
+                <!-- Booking Form Disabled -->
+                <div class="booking-disabled-notice">
+                    <div class="notice-icon">🔒</div>
+                    <h2>Bookings Currently Unavailable</h2>
+                    <p class="notice-message">
+                        Unfortunately, this salon is not currently accepting online bookings. 
+                        Please contact them directly for appointment scheduling.
+                    </p>
+                    {% if profile.phone %}
+                        <p class="contact-info">
+                            <strong>Contact:</strong> {{ profile.phone }}
+                        </p>
+                    {% endif %}
+                </div>
+            {% endif %}
+        </div>
+    </div>
+    {% endif %}
+
+<script>
+function copyBookingUrl() {
+    // Get the booking link text
+    const bookingLink = document.querySelector('.booking-url').textContent.trim();
+    
+    // Copy to clipboard
+    navigator.clipboard.writeText(bookingLink).then(() => {
+        // Show quick feedback
+        const btn = document.querySelector('.copy-btn');
+        const original = btn.innerHTML;
+        btn.innerHTML = '<i class="fa fa-check"></i>';
+        setTimeout(() => btn.innerHTML = original, 1500);
+    });
+}
+</script>
+</body>
+</html>

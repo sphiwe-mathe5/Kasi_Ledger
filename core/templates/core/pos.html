@@ -1,0 +1,308 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Point of Sale</title>
+        <script src="https://unpkg.com/html5-qrcode"></script>
+        <link rel="stylesheet" href="{% static 'css/main.css' %}" />
+        <link rel="stylesheet" href="{% static 'css/pos.css' %}" />
+        <link rel="icon" href="{% static 'images/kasicon.png' %}">
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+        <link
+            href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css"
+            rel="stylesheet"
+        />
+        <link
+            rel="stylesheet"
+            href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap"
+        />
+
+        <style>
+            .mode-selector {
+                display: flex;
+                justify-content: center; /* Centers items horizontally */
+                align-items: center;     /* Optional: centers items vertically */
+                margin-bottom: 20px;
+                border-bottom: 1px solid #ddd;
+                flex-wrap: wrap;         /* Allows buttons to wrap on smaller screens */
+            }
+            
+            
+            .mode-btn {
+                padding: 10px 20px;
+                background: #f1f1f1;
+                border: none;
+                cursor: pointer;
+                font-size: 16px;
+                transition: all 0.3s;
+            }
+            
+            .mode-btn.active {
+                background: #4CAF50;
+                color: white;
+            }
+            
+            .mode-section {
+                margin-bottom: 20px;
+            }
+            
+            .products-grid {
+                display: grid;
+                grid-template-columns: repeat(3, 1fr);
+                gap: 16px;
+                padding: 10px;
+            }
+        
+            .product-card {
+                border: 1px solid #ccc;
+                border-radius: 6px;
+                padding: 10px;
+                background-color: #f9f9f9;
+                text-align: center;
+                font-size: 10px;
+                box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+                transition: transform 0.2s ease, box-shadow 0.2s ease;
+                cursor: pointer;
+            }
+        
+            .product-card:hover {
+                transform: translateY(-3px);
+                box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+            }
+        
+            .product-card h3 {
+                font-size: 16px;
+                margin: 0;
+                color: #333;
+            }
+        
+            @media screen and (max-width: 768px) {
+                .products-grid {
+                    grid-template-columns: repeat(2, 1fr);
+                }
+            }
+        
+            @media screen and (max-width: 480px) {
+                .products-grid {
+                    grid-template-columns: 1fr;
+                }
+            }
+        </style>
+
+        
+    </head>
+    <body>
+        <nav class="navbar">
+            <a href="{% url 'index' %}" class="logo">KASI LEDGER</a>
+            <div class="quote_btn-container">
+                <a href="#" id="openCalculatorBtn" class="sign-up"><span>Calculator</span></a>
+            </div>
+        </nav>
+        <div id="calculatorModal" class="modals">
+            <div class="modals-content">
+                <span class="close">&times;</span>
+                <div class="calculator">
+                    <div id="result">0</div>
+                    <button onclick="appendNumber(1)">1</button>
+                    <button onclick="appendNumber(2)">2</button>
+                    <button onclick="appendNumber(3)">3</button>
+                    <button onclick="appendOperator('+')">+</button>
+                    <button onclick="appendNumber(4)">4</button>
+                    <button onclick="appendNumber(5)">5</button>
+                    <button onclick="appendNumber(6)">6</button>
+                    <button onclick="appendOperator('-')">-</button>
+                    <button onclick="appendNumber(7)">7</button>
+                    <button onclick="appendNumber(8)">8</button>
+                    <button onclick="appendNumber(9)">9</button>
+                    <button onclick="appendOperator('*')">*</button>
+                    <button onclick="appendNumber(0)">0</button>
+                    <button onclick="clearResult()">C</button>
+                    <button onclick="calculateResult()">=</button>
+                    <button onclick="appendOperator('/')">/</button>
+                </div>
+            </div>
+        </div>
+        <div class="loader-overlay">
+            <div class="loader-content">
+                <div class="spinner"></div>
+                <div class="checkmark">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="#4CAF50" stroke-width="2">
+                        <path d="M20 6L9 17L4 12" stroke-linecap="round" stroke-linejoin="round" />
+                    </svg>
+                </div>
+                <div class="processing-text">Processing Sale...</div>
+            </div>
+        </div>
+
+        <div class="mode-selector">
+            <button id="scanModeBtn" class="mode-btn active" onclick="setMode('scan')">Scan Mode</button>
+            <button id="manualModeBtn" class="mode-btn" onclick="setMode('manual')">Manual Mode</button>
+        </div>
+        <div class="container">
+
+
+            
+            <!-- Scanner Section (shown by default) -->
+            <div id="scannerSection" class="mode-section">
+                <div class="scanner-section">
+                    <h4>Scanner</h4>
+                    <div id="reader"></div>
+                    <div id="scanner-status"></div>
+                    <audio id="beepAudio">
+                        <source src="{% static 'js/BEEP.wav' %}" type="audio/mpeg" />
+                    </audio>
+                </div>
+            </div>
+            
+            <!-- Manual Product Selection Section (hidden by default) -->
+            <div id="manualSection" class="mode-section" style="display: none;">
+                <div class="scanner-section">
+                    <h4>Your Products</h4>
+                    
+                    <!-- Search Bar -->
+                    <div class="search-container" style="margin-bottom: 20px;">
+                        <input type="text" id="productSearch" placeholder="Search products by name, barcode, or item code..." 
+                            class="form-control" value="{{ search_query }}"
+                            onkeyup="filterProducts()">
+                        <button onclick="clearSearch()" class="btn btn-secondary" style="margin-top: 5px;">
+                            Clear
+                        </button>
+                    </div>
+                    
+                    <div class="products-grid" id="productsGrid">
+                        {% for product in products %}
+                            {% if product.quantity > 0 %}
+                                <div class="product-card clickable-product" 
+                                    data-barcode="{{ product.barcode|default:'' }}"
+                                    data-item-code="{{ product.item_code|default:'' }}"
+                                    data-name="{{ product.name|lower }}"
+                                    data-price="{{ product.price }}"
+                                    data-quantity="{{ product.quantity }}"
+                                    onclick="addProductToCart('{{ product.barcode|default:'' }}', '{{ product.item_code|default:'' }}')">
+                                    <h3 title="{{ product.name }}">
+                                        {{ product.name|slice:":15" }}{% if product.name|length > 15 %}...{% endif %} R{{ product.price }}
+                                    </h3>
+                                </div>
+                            {% endif %}
+                        {% endfor %}
+                    </div>
+                    
+                    <!-- No results message (initially hidden) -->
+                    <div id="noResults" style="display: none; text-align: center; padding: 20px;">
+                        <p>No products found matching your search.</p>
+                    </div>
+                </div>
+            </div>
+            
+
+            <div class="cart-section">
+                <h4>Current Sale</h4>
+                <div class="table-container">
+                    <table id="pos-table">
+                        <thead>
+                            <tr>
+                                <th>Product Name</th>
+                                <th>Price</th>
+                                <th>Quantity</th>
+                                <th>Total</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+                <div class="total-section">
+                    <h3>Total Amount</h3>
+                    <div class="total-amount">R0.00</div>
+                </div>
+
+                <div class="payment-section">
+                    <div class="form-group" style="margin: 15px 0">
+                        <label for="moneyRendered">Money Rendered:</label>
+                        <input
+                            type="number"
+                            id="moneyRendered"
+                            class="form-control"
+                            placeholder="Enter amount received"
+                            step="0.01"
+                            min="0"
+                            style="width: 95%; padding: 8px; margin: 5px 0"
+                            onchange="calculateChange()"
+                        />
+                    </div>
+                </div>
+
+                <div class="form-group" style="margin: 15px 0">
+                    <label for="customerEmail">Customer Email (Optional):</label>
+                    <input
+                        type="email"
+                        id="customerEmail"
+                        class="form-control"
+                        placeholder="Enter customer email for receipt"
+                        style="width: 95%; padding: 8px; margin: 5px 0"
+                    />
+                </div>
+                <div class="action-buttons">
+                    <button class="checkout-btn" onclick="processSale()">Complete Sale</button>
+                    <button class="clear-btn" onclick="clearCart()">Clear Cart</button>
+                </div>
+            </div>
+        </div>
+        <script>
+            const CHECK_PRODUCT_URL = "{% url 'check_product' %}";
+            const PROCESS_SALE_URL = "{% url 'process_sale' %}";
+            const CSRF_TOKEN = "{{ csrf_token }}";
+        </script>
+        <script src="{% static 'js/pos.js' %}"></script>
+        <script src="{% static 'js/jquery-3.4.1.min.js' %}"></script>
+
+<script>
+function filterProducts() {
+    const searchTerm = document.getElementById('productSearch').value.toLowerCase();
+    const productCards = document.querySelectorAll('.product-card');
+    const productsGrid = document.getElementById('productsGrid');
+    const noResults = document.getElementById('noResults');
+    let visibleCount = 0;
+    
+    productCards.forEach(card => {
+        const productName = card.dataset.name;
+        const barcode = card.dataset.barcode.toLowerCase();
+        const itemCode = card.dataset.itemCode.toLowerCase();
+        
+        // Check if search term matches name, barcode, or item code
+        const matches = productName.includes(searchTerm) || 
+                       barcode.includes(searchTerm) || 
+                       itemCode.includes(searchTerm);
+        
+        if (matches || searchTerm === '') {
+            card.style.display = 'block';
+            visibleCount++;
+        } else {
+            card.style.display = 'none';
+        }
+    });
+    
+    // Show/hide no results message
+    if (visibleCount === 0 && searchTerm !== '') {
+        noResults.style.display = 'block';
+        productsGrid.style.display = 'none';
+    } else {
+        noResults.style.display = 'none';
+        productsGrid.style.display = 'grid';
+    }
+}
+
+function clearSearch() {
+    document.getElementById('productSearch').value = '';
+    filterProducts();
+}
+
+// Initialize search on page load
+document.addEventListener('DOMContentLoaded', function() {
+    filterProducts(); // Apply any existing search query from page load
+});
+</script>
+    </body>
+</html>

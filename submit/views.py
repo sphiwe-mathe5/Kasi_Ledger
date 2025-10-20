@@ -1,8 +1,9 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from .forms import UserRegisterForm, UserUpdateForm
 from django.contrib.auth.models import User
+from django.contrib.auth.hashers import make_password
 from .forms import SearchForm
 from .models import Profile, ProductPeriod
 from django.utils import timezone
@@ -14,7 +15,7 @@ from datetime import timedelta
 import hashlib
 from submit.utility import delete_expired_free_trials
 import logging
-from django.http import JsonResponse, HttpResponse
+from django.http import JsonResponse, HttpResponse, HttpResponseBadRequest
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods
 from decimal import Decimal
@@ -23,6 +24,7 @@ from django.conf import settings
 import requests
 from django.db.models import Q
 from django.db import models
+from django.db import transaction
 from .models import User
 from django.db import IntegrityError
 from django.contrib.auth.decorators import login_required
@@ -36,13 +38,17 @@ from django.core.mail import send_mail
 from django.template.loader import render_to_string
 from django.utils.html import strip_tags
 from django.contrib.sites.shortcuts import get_current_site
+import re
+from django.contrib.auth import update_session_auth_hash
 
-
-
-
+#Authentication VIEWS
 def login_view(request):
     if request.method == 'POST':
-        # Verify reCAPTCHA
+        # Check if this is a social auth redirect
+        if 'google-oauth2' in request.path:
+            return redirect('social:begin', backend='google-oauth2')
+        
+        # Verify reCAPTCHA for regular login
         recaptcha_token = request.POST.get('recaptcha_token')
         data = {
             'secret': settings.RECAPTCHA_PRIVATE_KEY,
@@ -51,16 +57,17 @@ def login_view(request):
         r = requests.post('https://www.google.com/recaptcha/api/siteverify', data=data)
         result = r.json()
 
-        if not result['success'] or result['score'] < 0.5:  # Adjust score threshold as needed
+        if not result['success'] or result['score'] < 0.5:
             messages.error(request, 'reCAPTCHA verification failed. Please try again.')
             return redirect('login')
 
-        email = request.POST['email']
+        username = request.POST['username']  # <-- can be email or phone
         password = request.POST['password']
-        user = authenticate(request, username=email, password=password)
+        user = authenticate(request, username=username, password=password)
+        
         if user is not None:
             login(request, user)
-            return redirect('index')
+            return redirect_based_on_category(user)
         else:
             messages.error(request, 'Invalid credentials')
 
@@ -68,8 +75,37 @@ def login_view(request):
         'RECAPTCHA_PUBLIC_KEY': settings.RECAPTCHA_PUBLIC_KEY,
     })
 
+def redirect_based_on_category(user):
+    """Helper function to redirect based on company category"""
+    # If profile incomplete, force profile completion
+    if not user.company_name or not user.company_category:
+        return redirect("complete_profile")
+    
+    if user.company_category == "salon":
+        return redirect("saloon:saloon")
+    elif user.company_category in ["restaurant", "clothing_brand", "spaza"]:
+        return redirect("console")
+    elif user.company_category == "car_wash":
+        return redirect("dashboard")
+    
+    return redirect("console")
+
+
+def is_valid_email(value):
+    # Simple email pattern
+    return re.match(r"[^@]+@[^@]+\.[^@]+", value)
+
+def is_valid_phone_number(value):
+    # Allow formats like +1234567890, 123-456-7890, (123) 456-7890, etc.
+    digits_only = re.sub(r'\D', '', value)  # Strip all non-digit characters
+    return 7 <= len(digits_only) <= 15  # Basic length check
+
+
 def signup_view(request):
     if request.method == 'POST':
+
+        if 'google-oauth2' in request.path:
+            return redirect('social:begin', backend='google-oauth2')
         # Verify reCAPTCHA
         recaptcha_token = request.POST.get('recaptcha_token')
         data = {
@@ -85,19 +121,32 @@ def signup_view(request):
             return redirect('signup')
 
         # Continue processing only if reCAPTCHA is successful
-        admin_password = request.POST['admin_password']
+
         company_name = request.POST['company_name']
         company_category = request.POST['company_category']
-        email = request.POST['email']
+        username = request.POST.get('username', '').strip()
         password = request.POST['password']
+
+        email = None
+        phone_number = None
+
+        # Determine if input is valid email or phone
+        if is_valid_email(username):
+            email = username
+        elif is_valid_phone_number(username):
+            # Optionally normalize phone number by removing symbols
+            phone_number = re.sub(r'\D', '', username)
+        else:
+            messages.error(request, 'Please enter a valid email or phone number.')
+            return redirect('signup')
 
         try:
             # Create the user
             user = CustomUser.objects.create_user(
-                username=email,
-                email=email,
+                username=email or phone_number,  # Django requires something here
+                email=email if email else None,
+                phone_number=phone_number if phone_number else None,
                 company_category=company_category,
-                admin_password=admin_password,
                 company_name=company_name,
                 password=password,
             )
@@ -121,17 +170,96 @@ def signup_view(request):
             )
 
             # Log the user in and redirect to the index page
-            login(request, user, backend='submit.backends.EmailBackend')
+            login(request, user, backend='submit.backends.EmailOrPhoneBackend')
             return redirect('index')
 
         except IntegrityError:
-            messages.error(request, 'An account with this email already exists. Please log in or use a different email.')
-            return redirect('signup')  
+            messages.error(request, 'An account with this email or phone already exists. Please log in or use a different one.')
+            return redirect_based_on_category(user)  
 
     return render(request, 'submit/register.html', {
         'RECAPTCHA_PUBLIC_KEY': settings.RECAPTCHA_PUBLIC_KEY,
     })
 
+
+from submit.pipeline import redirect_based_on_category
+def complete_profile_view(request):
+    """Complete profile after Google OAuth"""
+    # Get user from session (set in pipeline)
+    user_id = request.session.get('incomplete_user_id')
+    if not user_id:
+        if request.user.is_authenticated:
+            user = request.user
+        else:
+            return redirect('login')
+    else:
+        user = get_object_or_404(CustomUser, id=user_id)
+    
+    # If profile is already complete, redirect appropriately
+    if user.company_name and user.company_category:
+        return redirect_based_on_category(user)
+    
+    if request.method == 'POST':
+        company_name = request.POST.get('company_name')
+        company_category = request.POST.get('company_category')
+        #admin_password = request.POST.get('admin_password')
+        
+        if company_name and company_category:
+            # Update user with company details
+            user.company_name = company_name
+            user.company_category = company_category
+            #user.admin_password = admin_password
+            user.save()
+            
+            # Clear session
+            if 'incomplete_user_id' in request.session:
+                del request.session['incomplete_user_id']
+            
+            # Log in user if not already logged in
+            if not request.user.is_authenticated:
+                from django.contrib.auth import login
+                login(request, user, backend='social_core.backends.google.GoogleOAuth2')
+            
+            messages.success(request, 'Profile completed successfully!')
+            
+            # Redirect based on company category
+            if company_category == "salon":
+                return redirect("saloon:saloon")
+            elif company_category == "restaurant":
+                return redirect("console")
+            elif company_category == "clothing_brand":
+                return redirect("console")
+            elif company_category == "spaza":
+                return redirect("console")
+            elif company_category == "car_wash":
+                return redirect("dashboard")
+            else:
+                return redirect('console')
+        else:
+            messages.error(request, 'All fields are required.')
+    
+    # Get Google profile picture if available
+    google_picture = None
+    try:
+        if user.social_auth.exists():
+            social_user = user.social_auth.get(provider='google-oauth2')
+            google_picture = social_user.extra_data.get('picture')
+    except:
+        pass
+    
+    context = {
+        'user': user,
+        'google_picture': google_picture,
+        'COMPANY_CATEGORIES': [
+            ('restaurant', 'Restaurant'),
+            ('clothing_brand', 'Clothing Brand'),
+            ('spaza', 'Spaza'),
+            ('salon', 'Salon'),
+            ('car_wash', 'Car Wash'),
+        ]
+    }
+    
+    return render(request, 'submit/complete_profile.html', context)
 
 def forgot_password_view(request):
     if request.method == 'POST':
@@ -206,11 +334,8 @@ def reset_admin_password_view(request, token):
 
     if request.method == 'POST':
         new_admin_password = request.POST['new_admin_password']
-        
-        
         reset_request.user.admin_password = new_admin_password
         reset_request.user.save()
-        
         messages.success(request, 'Admin password reset successful.')
         return redirect('contact')  
 
@@ -233,6 +358,44 @@ def reset_password_view(request, token):
 
     return render(request, 'submit/reset_password.html', {'token': token})
 
+@login_required
+def transaction_pin_settings(request):
+    """View to manage transaction PIN"""
+    user = request.user
+    
+    if request.method == 'POST':
+        action = request.POST.get('action')
+        
+        if action == 'set_pin':
+            pin = request.POST.get('pin', '').strip()
+            confirm_pin = request.POST.get('confirm_pin', '').strip()
+            
+            # Validate PIN
+            if not pin:
+                messages.error(request, "Please enter a PIN.")
+            elif len(pin) < 4:
+                messages.error(request, "PIN must be at least 4 characters long.")
+            elif pin != confirm_pin:
+                messages.error(request, "PINs do not match.")
+            else:
+                # Set the PIN
+                user.set_transaction_pin(pin)
+                messages.success(request, "Transaction PIN set successfully!")
+                return redirect('contact')
+        
+        elif action == 'remove_pin':
+            user.remove_transaction_pin()
+            # Clear any active session
+            if 'transactions_unlocked' in request.session:
+                del request.session['transactions_unlocked']
+            messages.success(request, "Transaction PIN removed successfully!")
+            return redirect('contact')
+    
+    return render(request, 'submit/transaction_pin_settings.html', {
+        'has_pin': user.has_transaction_pin()
+    })
+
+
 def logout_view(request):
     logout(request)
 
@@ -244,7 +407,7 @@ def profile(request):
     if request.method == 'POST':
         u_form = UserUpdateForm(request.POST, instance=request.user)
 
-        if u_form.is_valid() and p_form.is_valid():
+        if u_form.is_valid():
             u_form.save()
             messages.success(request, f'updated!')
             return redirect('profile')
@@ -256,9 +419,88 @@ def profile(request):
 
     return render(request, 'submit/profile.html', context)
 
-    
+
+@login_required
+def update_profile(request):
+    user = request.user
+
+    if request.method == 'POST':
+        first_name = request.POST.get('first_name', '').strip()
+        last_name = request.POST.get('last_name', '').strip()
+        username = request.POST.get('username', '').strip()
+        email = request.POST.get('email', '').strip()
+        phone_number = request.POST.get('phone_number', '').strip()
+        company_name = request.POST.get('company_name', '').strip()
+        company_category = request.POST.get('company_category', '').strip()
+
+        # Optional: Validate inputs here
+
+        # Update user fields
+        user.first_name = first_name
+        user.last_name = last_name
+        user.username = username
+        user.email = email
+        user.phone_number = phone_number
+        user.company_name = company_name
+        user.company_category = company_category
+
+        try:
+            user.save()
+            messages.success(request, 'Profile updated successfully.')
+        except Exception as e:
+            messages.error(request, f'Error updating profile: {str(e)}')
+
+        return redirect('profile')  # Update this name to match your URL
+
+    return render(request, 'submit/profile.html', {'user': user}) 
 
 
+@login_required
+def change_password(request):
+    if request.method == 'POST':
+        current_password = request.POST.get('current_password', '').strip()
+        new_password = request.POST.get('new_password', '').strip()
+        confirm_password = request.POST.get('confirm_password', '').strip()
+
+        user = request.user
+
+        # Check if current password is correct
+        if not user.check_password(current_password):
+            messages.error(request, 'Your current password is incorrect.')
+            return redirect('profile')
+
+        # Check if new passwords match
+        if new_password != confirm_password:
+            messages.error(request, 'New passwords do not match.')
+            return redirect('profile')
+
+        # Optional: Enforce password strength (length, complexity, etc.)
+        if len(new_password) < 8:
+            messages.error(request, 'New password must be at least 8 characters long.')
+            return redirect('profile')
+
+        # Set new password
+        user.set_password(new_password)
+        user.save()
+
+        # Keep the user logged in after password change
+        update_session_auth_hash(request, user)
+
+        messages.success(request, 'Your password has been changed successfully.')
+        return redirect('profile')  # Or wherever you want to redirect after success
+
+    return render(request, 'submit/profile.html')  # Use your actual template name
+
+@login_required
+def delete_account(request):
+    if request.method == 'POST':
+        user = request.user
+        user.delete()
+        messages.success(request, "Your account has been deleted.")
+        return redirect('index')  # Or wherever you want to redirect after deletion
+
+    messages.error(request, "Invalid request method.")
+    return redirect('profile')  # Redirect if user accessed via GET
 
 @login_required
 def subscription_plans(request):
@@ -463,6 +705,17 @@ def webhook(request):
         print(f"Webhook error: {str(e)}")
         return HttpResponse(status=500)
 
+def send_payment_success_email(subscription_id):
+    subscription = Subscription.objects.get(id=subscription_id)
+    subject = 'Payment Successful'
+    html_message = render_to_string('submit/emails/payment_success.html', {
+        'subscription': subscription
+    })
+    plain_message = strip_tags(html_message)
+    from_email = settings.DEFAULT_FROM_EMAIL
+    to_email = subscription.user.email
+    send_mail(subject, plain_message, from_email, [to_email], html_message=html_message)
+
 def handle_successful_charge(payload):
     with transaction.atomic():
         data = payload.get('data', {})
@@ -496,8 +749,8 @@ def handle_successful_charge(payload):
                 paid_at=timezone.now()
             )
             
-            
-            send_payment_success_email.delay(subscription.id)
+            # Send email directly instead of using delay
+            send_payment_success_email(subscription.id)
             
             return HttpResponse(status=200)
             
@@ -505,7 +758,7 @@ def handle_successful_charge(payload):
             logger.error(f"Error processing successful charge: {str(e)}")
             return HttpResponse(status=500)
 
-from django.db import transaction 
+
  
 def payment_callback(request):
     reference = request.GET.get('reference')
@@ -687,10 +940,14 @@ def subscription_settings(request):
         print(f"Subscription Plan: {subscription.plan.name}, Status: {subscription.status}")
 
         # Check if the trial has ended
-        if subscription.status == 'trialing' and subscription.trial_end_date <= timezone.now():
-            # Treat as if there is no subscription
-            messages.warning(request, "Your free trial has ended. Please subscribe to a plan.")
-            return redirect('subscription_plans')
+        days_left = None
+        if subscription.status == 'trialing':
+            now = timezone.now()
+            if subscription.trial_end_date > now:
+                days_left = (subscription.trial_end_date - now).days
+            else:
+                messages.warning(request, "Your free trial has ended. Please subscribe to a plan.")
+                return redirect('subscription_plans')
 
         # Fetch payment history for the subscription
         payment_history = PaymentHistory.objects.filter(
@@ -704,7 +961,8 @@ def subscription_settings(request):
             'current_plan': subscription.plan.name,  
             'status': subscription.status,  
             'next_payment': subscription.next_payment_date,  
-            'plan_price': subscription.plan.price  
+            'plan_price': subscription.plan.price,
+            'trial_days_left': days_left  
         }
 
         # Render the subscription settings page
@@ -712,7 +970,7 @@ def subscription_settings(request):
 
     except Subscription.DoesNotExist:
         # Handle case where the user doesn't have a subscription
-        messages.warning(request, "You don't have an active subscription.")
+        messages.warning(request, "You don't have an active subscription, Choose a plan here.")
         return redirect('subscription_plans')
 
     except Subscription.DoesNotExist:

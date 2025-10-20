@@ -1,0 +1,354 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" href="{% static 'images/kasicon.png' %}">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <title>{{ user.company_name }}</title>
+    <title>Ticket History</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: #f9fafa;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: #f9fafa;
+            border-radius: 12px;
+
+            overflow: hidden;
+        }
+
+        .header {
+            color: white;
+            padding: 30px;
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .back-btn {
+            color: #4169E1;
+            text-decoration: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+            border: 1px solid #4169E1;
+            transition: all 0.3s ease;
+            font-size: 14px;
+        }
+
+        .back-btn:hover {
+            background: #4169E1;
+            transform: translateY(-1px);
+            color: white;
+        }
+
+        .header h1 {
+            font-size: 25px;
+            font-weight: 600;
+            color: #3b82f6;
+        }
+
+        .content {
+            padding: 30px;
+        }
+
+        .filter-section {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 30px;
+        }
+
+        .filter-form {
+            display: flex;
+            gap: 20px;
+            align-items: end;
+            flex-wrap: wrap;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .form-group label {
+            font-weight: 500;
+            color: #333;
+            font-size: 14px;
+        }
+
+        .form-group select,
+        .form-group input {
+            padding: 10px 12px;
+            border: 2px solid #e1e5e9;
+            border-radius: 6px;
+            font-size: 14px;
+            transition: border-color 0.3s ease;
+        }
+
+        .form-group select:focus,
+        .form-group input:focus {
+            outline: none;
+            border-color: #4169E1;
+        }
+
+        .filter-btn {
+            background: #4169E1;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: background-color 0.3s ease;
+        }
+
+        .filter-btn:hover {
+            background: #3557c7;
+        }
+
+        .section-title {
+            font-size: 20px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 15px;
+            padding-bottom: 8px;
+            border-bottom: 2px solid #4169E1;
+        }
+
+        .table-container {
+            background: white;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            margin-bottom: 30px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th {
+            background: #3b82f6;
+            color: white;
+            padding: 15px 12px;
+            text-align: left;
+            font-weight: 500;
+            font-size: 14px;
+        }
+
+        td {
+            padding: 12px;
+            border-bottom: 1px solid #f1f3f4;
+            font-size: 14px;
+        }
+
+        tr:hover {
+            background: #f8f9fa;
+        }
+
+        tr:last-child td {
+            border-bottom: none;
+        }
+
+        .empty-row {
+            text-align: center;
+            color: #6c757d;
+            font-style: italic;
+        }
+
+        .pagination {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+            margin: 30px 0;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 8px;
+        }
+
+        .pagination a {
+            background: #4169E1;
+            color: white;
+            text-decoration: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+            font-size: 14px;
+            transition: background-color 0.3s ease;
+        }
+
+        .pagination a:hover {
+            background: #3557c7;
+        }
+
+        .page-info {
+            color: #6c757d;
+            font-weight: 500;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            flex-wrap: wrap;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 8px;
+        }
+
+        .nav-links a {
+            background: white;
+            color: #4169E1;
+            text-decoration: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            border: 2px solid #4169E1;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+
+        .nav-links a:hover {
+            background: #4169E1;
+            color: white;
+        }
+
+        @media (max-width: 768px) {
+            .filter-form {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            
+            .form-group {
+                width: 100%;
+            }
+            
+            table {
+                font-size: 12px;
+            }
+            
+            th, td {
+                padding: 8px 6px;
+            }
+            
+            .header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+<body>
+    <div class="container">
+        <!-- Added styled header with back button -->
+        <div class="header">
+            <a href="{% url 'saloon:saloon' %}" class="back-btn">← Back to Dashboard</a>
+            <h1>Appointment History</h1>
+        </div>
+
+        <div class="content">
+            <!-- Styled filter section -->
+            <div class="filter-section">
+                <form method="get" action="#" class="filter-form">
+                    <div class="form-group">
+                        <label for="search">Search:</label>
+                        <input type="text" id="search" name="search" value="{{ search_query }}" placeholder="Ticket #, customer name, phone or email">
+                    </div>
+
+                    <button type="submit" class="filter-btn">Filter</button>
+                </form>
+            </div>
+
+
+            <h2 class="section-title">All Appointments ({{ total_tickets }})</h2>
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Type</th>
+                            <th>Number</th>
+                            <th>Customer Name</th>
+                            <th>Customer Phone</th>
+                            <th>Customer Email</th>
+                            <th>Style/Service</th>
+                            <th>Stylist</th>
+                            <th>Amount</th>
+                            <th>Created At</th>
+                            {% comment %} <th>Booking Date</th> {% endcomment %}
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for appointment in page_obj %}
+                            <tr>
+                                <td>
+                                    {% if appointment.type == 'ticket' %}
+                                        <span style="background: #4a6cf7; color: white; padding: 4px 8px; border-radius: 4px; font-size: 12px;">Ticket</span>
+                                    {% else %}
+                                        <span style="background: #10b981; color: white; padding: 4px 8px; border-radius: 4px; font-size: 12px;">Booking</span>
+                                    {% endif %}
+                                </td>
+                                <td>{{ appointment.number }}</td>
+                                <td>{{ appointment.customer_name }}</td>
+                                <td>{{ appointment.customer_phone|default:"-" }}</td>
+                                <td>{{ appointment.customer_email|default:"-" }}</td>
+                                <td>{{ appointment.service }}</td>
+                                <td>
+                                    {% if appointment.worker %}
+                                        {{ appointment.worker.name }} {{ appointment.worker.surname }}
+                                    {% else %}
+                                        -
+                                    {% endif %}
+                                </td>
+                                <td>R{{ appointment.amount }}</td>
+                                <td>{{ appointment.created_at|date:"d F Y H:i" }}</td>
+                                {% comment %} 
+                                {% if appointment.type == 'booking' %}
+                                    <td>{{ appointment.booking_date|date:"d F Y" }} at {{ appointment.booking_time|time:"H:i" }}</td>
+                                {% else %}
+                                    <td>-</td>
+                                {% endif %}
+                                {% endcomment %}
+                            </tr>
+                        {% empty %}
+                            <tr><td colspan="10" class="empty-row">No appointments found</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Styled pagination -->
+            <div class="pagination">
+                {% if page_obj.has_previous %}
+                    <a href="?page={{ page_obj.previous_page_number }}&search={{ search_query }}">Previous</a>
+                {% endif %}
+
+                <span class="page-info">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+
+                {% if page_obj.has_next %}
+                    <a href="?page={{ page_obj.next_page_page_number }}&search={{ search_query }}">Next</a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</body>
+</html>

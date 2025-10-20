@@ -1,0 +1,2156 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" href="{% static 'images/kasicon.png' %}">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <title>{{ user.company_name }}</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: #f8fafc;
+            color: #334155;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: #1e293b;
+            margin-bottom: 2rem;
+            text-align: center;
+        }
+
+        h2 {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: #1e293b;
+            margin-bottom: 1rem;
+        }
+
+        /* Navigation as card-based buttons instead of navbar */
+        .quick-links {
+            background: white;
+            border-radius: 12px;
+            padding: 2rem;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            margin-bottom: 2rem;
+        }
+
+        .nav-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            list-style: none;
+        }
+
+        .nav-card {
+            background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+            border-radius: 8px;
+            padding: 1.5rem;
+            text-align: center;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 4px rgba(59, 130, 246, 0.2);
+        }
+
+        .nav-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(59, 130, 246, 0.3);
+        }
+
+        .nav-card a {
+            color: white;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 1rem;
+        }
+
+        /* Statistics cards layout */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .stats-card {
+            background: white;
+            border-radius: 12px;
+            padding: 2rem;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            border-left: 4px solid #3b82f6;
+        }
+
+        .stats-card h2 {
+            color: #3b82f6;
+            margin-bottom: 1.5rem;
+        }
+
+        .stat-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.75rem 0;
+            border-bottom: 1px solid #f1f5f9;
+        }
+
+        .stat-item:last-child {
+            border-bottom: none;
+        }
+
+        .stat-label {
+            font-weight: 500;
+            color: #64748b;
+        }
+
+        .stat-value {
+            font-weight: 700;
+            font-size: 1.25rem;
+            color: #1e293b;
+        }
+
+        /* Modern table styling */
+        .table-section {
+            background: white;
+            border-radius: 12px;
+            padding: 2rem;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            margin-bottom: 2rem;
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            border: none;
+        }
+
+        th {
+            background: #f8fafc;
+            color: #475569;
+            font-weight: 600;
+            padding: 1rem;
+            text-align: left;
+            border-bottom: 2px solid #e2e8f0;
+        }
+
+        td {
+            padding: 1rem;
+            border-bottom: 1px solid #f1f5f9;
+        }
+
+        tr:hover {
+            background: #f8fafc;
+        }
+
+        .status-badge {
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+            font-size: 0.875rem;
+            font-weight: 500;
+        }
+
+        .status-pending {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .status-completed {
+            background: #d1fae5;
+            color: #065f46;
+        }
+
+        .status-in-progress {
+            background: #dbeafe;
+            color: #1e40af;
+        }
+
+        /* Responsive design */
+        @media (max-width: 768px) {
+            .container {
+                padding: 1rem;
+            }
+
+            h1 {
+                font-size: 2rem;
+            }
+
+            .nav-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .table-section {
+                padding: 1rem;
+            }
+
+            table {
+                font-size: 0.875rem;
+            }
+
+            th, td {
+                padding: 0.75rem 0.5rem;
+            }
+        }
+
+        .modal-overlays {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(4px);
+            z-index: 1000;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .modal-overlays.show {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-contents {
+            background: white;
+            border-radius: 16px;
+            padding: 2rem;
+            width: 90%;
+            max-width: 500px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
+            transform: scale(0.9);
+            animation: modalSlideIn 0.3s ease forwards;
+            position: relative;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            padding-bottom: 1rem;
+            border-bottom: 2px solid #f1f3f4;
+        }
+
+        .modal-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #4169E1;
+            margin: 0;
+        }
+
+        .close-btn {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            color: #6c757d;
+            cursor: pointer;
+            padding: 0.5rem;
+            border-radius: 50%;
+            transition: all 0.2s ease;
+        }
+
+        .close-btn:hover {
+            background: #f8f9fa;
+            color: #dc3545;
+        }
+
+        /* Form Styles */
+        .form-groups {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-labels {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+            color: #495057;
+            font-size: 0.9rem;
+        }
+
+        .form-inputs {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            background: #fff;
+        }
+
+        .form-inputs:focus {
+            outline: none;
+            border-color: #4169E1;
+            box-shadow: 0 0 0 3px rgba(65, 105, 225, 0.1);
+        }
+
+        .form-inputs:hover {
+            border-color: #ced4da;
+        }
+
+        .error-message {
+            color: #dc3545;
+            font-size: 0.875rem;
+            margin-top: 0.25rem;
+            display: block;
+        }
+
+        /* Button Styles */
+        .button-groups {
+            display: flex;
+            gap: 1rem;
+            margin-top: 2rem;
+            justify-content: flex-end;
+        }
+
+        .btn {
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+            text-align: center;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #4169E1, #6495ED);
+            color: white;
+            box-shadow: 0 4px 15px rgba(65, 105, 225, 0.2);
+        }
+
+        .btn-primary:hover {
+            background: linear-gradient(135deg, #3557C7, #5A7FE8);
+            transform: translateY(-1px);
+            box-shadow: 0 6px 20px rgba(65, 105, 225, 0.3);
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #5a6268;
+            transform: translateY(-1px);
+        }
+
+        /* Animations */
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes modalSlideIn {
+            from {
+                transform: scale(0.9) translateY(-20px);
+                opacity: 0;
+            }
+            to {
+                transform: scale(1) translateY(0);
+                opacity: 1;
+            }
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .modal-content {
+                margin: 1rem;
+                padding: 1.5rem;
+            }
+            
+            .button-group {
+                flex-direction: column;
+            }
+            
+            .btn {
+                width: 100%;
+            }
+        }
+
+
+        
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(4px);
+            z-index: 1000;
+        }
+
+        .modal-content {
+            background: white;
+            margin: 3% auto;
+            padding: 0;
+            width: 90%;
+            max-width: 700px;
+            max-height: 90vh;
+            overflow-y: auto;
+            border-radius: 12px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+        }
+
+        .modal-header {
+            padding: 24px;
+            border-bottom: 1px solid #e5e7eb;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-header h2 {
+            margin: 0;
+            color: #1f2937;
+            font-size: 24px;
+            font-weight: 600;
+        }
+
+        .close-btn {
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: #6b7280;
+            padding: 8px;
+            border-radius: 6px;
+            transition: all 0.2s ease;
+        }
+
+        .close-btn:hover {
+            background: #f3f4f6;
+            color: #374151;
+        }
+
+        .modal-body {
+            padding: 24px;
+        }
+
+        .search-form {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 24px;
+        }
+
+        .search-input {
+            flex: 1;
+            padding: 12px 16px;
+            border: 1px solid #d1d5db;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: border-color 0.2s ease;
+        }
+
+        .search-input:focus {
+            outline: none;
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+
+        .search-btn {
+            padding: 12px 24px;
+            background: #3b82f6;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+        }
+
+        .search-btn:hover {
+            background: #2563eb;
+        }
+
+        .services-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 24px;
+            background: white;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+
+        .services-table th {
+            background: #f8fafc;
+            padding: 16px;
+            text-align: left;
+            font-weight: 600;
+            color: #374151;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        .services-table td {
+            padding: 16px;
+            border-bottom: 1px solid #f3f4f6;
+            color: #6b7280;
+        }
+
+        .services-table tr:hover {
+            background: #f9fafb;
+        }
+
+        .pagination {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 12px;
+            margin: 24px 0;
+        }
+
+        .pagination a {
+            padding: 8px 16px;
+            background: #f3f4f6;
+            color: #374151;
+            text-decoration: none;
+            border-radius: 6px;
+            font-size: 14px;
+            transition: all 0.2s ease;
+        }
+
+        .pagination a:hover {
+            background: #3b82f6;
+            color: white;
+        }
+
+        .pagination span {
+            color: #6b7280;
+            font-size: 14px;
+        }
+
+        .form-section {
+            border-top: 1px solid #e5e7eb;
+            padding-top: 24px;
+        }
+
+        .form-section h3 {
+            margin: 0 0 20px 0;
+            color: #1f2937;
+            font-size: 18px;
+            font-weight: 600;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #374151;
+            font-weight: 500;
+            font-size: 14px;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 12px 16px;
+            border: 1px solid #d1d5db;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: border-color 0.2s ease;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+
+        .save-btn {
+            padding: 12px 32px;
+            background: #10b981;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+        }
+
+        .save-btn:hover {
+            background: #059669;
+        }
+
+
+
+        
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(5px);
+            z-index: 1000;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .modal-overlay.show {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* Modern modal container with clean styling */
+        .modal-container {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+            width: 90%;
+            max-width: 500px;
+            max-height: 90vh;
+            overflow-y: auto;
+            margin-left: 45rem;
+            margin-top: 10rem;
+            transform: scale(0.9);
+            animation: modalSlideIn 0.3s ease forwards;
+        }
+
+        .modal-header {
+            padding: 24px 24px 0;
+            border-bottom: 1px solid #e9ecef;
+            margin-bottom: 24px;
+        }
+
+        .modal-header h2 {
+            color: #2c3e50;
+            font-size: 24px;
+            font-weight: 600;
+            margin-bottom: 16px;
+        }
+
+        .modal-body {
+            padding: 0 24px 24px;
+        }
+
+        /* Clean form styling */
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #374151;
+            font-weight: 500;
+            font-size: 14px;
+        }
+
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: all 0.2s ease;
+            background: white;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: #4169E1;
+            box-shadow: 0 0 0 3px rgba(65, 105, 225, 0.1);
+        }
+
+        /* Modern button styling */
+        .button-group {
+            display: flex;
+            gap: 12px;
+            margin-top: 32px;
+            padding-top: 20px;
+            border-top: 1px solid #e9ecef;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            flex: 1;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #4169E1, #5a7bff);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: linear-gradient(135deg, #3557d1, #4a6bef);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(65, 105, 225, 0.3);
+        }
+
+        .btn-secondary {
+            background: #f8f9fa;
+            color: #6c757d;
+            border: 1px solid #dee2e6;
+        }
+
+        .btn-secondary:hover {
+            background: #e9ecef;
+            color: #495057;
+        }
+
+        /* Animations */
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes modalSlideIn {
+            from {
+                opacity: 0;
+                transform: scale(0.9) translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1) translateY(0);
+            }
+        }
+
+        /* Responsive design */
+        @media (max-width: 768px) {
+            .modal-container {
+                width: 95%;
+                margin: 20px;
+            }
+            
+            .modal-header,
+            .modal-body {
+                padding-left: 16px;
+                padding-right: 16px;
+            }
+            
+            .button-group {
+                flex-direction: column;
+            }
+        }
+
+        
+        .user-name {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: var(--text-color);
+            margin: 0 0px 8px;
+            margin-top: 4rem;
+            text-align: center;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            position: relative;
+            margin-left: 25rem;
+        }
+
+        .user-circle {
+            width: 32px;
+            height: 32px;
+            background: #f8f9fa;
+            border: 2px solid #e1e5e9;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            margin-top: 3.3rem;
+            color: #6c757d;
+        }
+
+        .user-circle:hover {
+            background: #e9ecef;
+            border-color: #3498db;
+            color: #3498db;
+        }
+
+        .user-dropdown {
+            position: absolute;
+            top: 60px;
+            right: 20px;
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            z-index: 1000;
+            width: 300px;
+            overflow: hidden;
+
+            /* Hidden by default */
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(20px);
+            transition: all 0.3s ease;
+        }
+
+        .user-dropdown.show {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+        }
+
+        .dropdown-header {
+            padding: 16px;
+        }
+
+        .dropdown-email {
+            color: #6c757d;
+            font-size: 14px;
+            margin-top: 4px;
+        }
+
+        .dropdown-menu {
+            padding: 8px 0;
+        }
+
+        .dropdown-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 16px;
+            color: #333;
+            text-decoration: none;
+            background: none;
+            width: 100%;
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+        }
+
+        .dropdown-item:hover {
+            background: #f8f9fa;
+        }
+
+        .dropdown-item.logout {
+            color: #dc3545;
+        }
+
+        .dropdown-item.logout:hover {
+            background: #fff5f5;
+        }
+
+
+        .dropdown-icon {
+            width: 16px;
+            height: 16px;
+        }
+        .logo {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #2980b9;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .user-initials {
+            width: 40px;
+            height: 40px;
+            background: #3498db;
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 1rem;
+        }
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .section-header h2 {
+            margin: 0;
+            color: #2c3e50;
+        }
+
+        .section-header .menu-card {
+            background: linear-gradient(135deg, #3498db, #2980b9);
+            color: white;
+            padding: 8px 16px;
+            border-radius: 6px;
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+
+        .section-header .menu-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(52, 152, 219, 0.3);
+        }
+        @media (max-width: 768px) {
+
+            .user-name {
+                font-size: 1rem;
+                font-weight: bold;
+                color: var(--text-color);
+                margin: 0 0px 8px;
+                margin-top: 4rem;
+                text-align: center;
+            }
+            .user-info {
+                display: flex;
+                align-items: center;
+                gap: 12px;
+                position: relative;
+                margin-left: 5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="user-info">
+        <p class="user-name"><strong>Hello, {{ user.company_name }}</strong></p>
+        <div class="user-circle" onclick="toggleUserDropdown()">
+            {{ user.company_name|slice:":1" }}
+        </div>
+
+        <div class="user-dropdown" id="userDropdown">
+            <div class="dropdown-header">
+                <div><strong>{{ user.company_name }}</strong></div>
+                <div class="dropdown-email">{{ user.email }}</div>
+            </div>
+            <div class="dropdown-menu">
+                <a href="{% url 'email_campaigns:emails' %}" class="dropdown-item">
+                    <i class="fa-solid fa-square-envelope"></i>
+                    Marketing Console
+                </a>
+                {% if user.salon_profile %}
+                    <a href="{% url 'saloon:salon_profile' user.salon_profile.slug %}" class="dropdown-item">
+                        <i class="fa-solid fa-store"></i>
+                        View Profile
+                    </a>
+                {% else %}
+                    <a href="{% url 'saloon:create_salon_profile' %}" class="dropdown-item">
+                        <i class="fa-solid fa-user-plus"></i>
+                        Add Profile
+                    </a>
+                {% endif %}
+                <a href="{% url 'console' %}" class="dropdown-item">
+                    <i class="fa-solid fa-terminal"></i>
+                    Console
+                </a>
+                <a href="{% url 'profile' %}" class="dropdown-item">
+                    <i class="fa-solid fa-gear"></i>
+                    Settings
+                </a>
+                <a href="{% url 'logout' %}" class="dropdown-item logout">
+                    <i class="fa-solid fa-right-from-bracket"></i>
+                    Logout
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div id="employeeFormModal" class="modal-overlays">
+        <div class="modal-contents">
+            <div class="modal-header">
+                <h2 class="modal-title">Add New Stylist</h2>
+                <button type="button" class="close-btn" id="closeEmployeeForm">&times;</button>
+            </div>
+            
+            <form method="POST" action="{% url 'saloon:worker_list_create' %}">
+                {% csrf_token %}
+                <div class="form-groups">
+                    <label for="id_name" class="form-labels">First Name:</label>
+                    <input type="text" id="id_name" name="name" class="form-inputs" required>
+                    <span class="error-message" style="display: none;">This field is required.</span>
+                </div>
+
+                <div class="form-groups">
+                    <label for="id_surname" class="form-labels">Surname:</label>
+                    <input type="text" id="id_surname" name="surname" class="form-inputs" required>
+                    <span class="error-message" style="display: none;">This field is required.</span>
+                </div>
+
+                <div class="form-groups">
+                    <label for="id_phone" class="form-labels">Phone:</label>
+                    <input type="tel" id="id_phone" name="phone" class="form-inputs" required>
+                    <span class="error-message" style="display: none;">Please enter a valid phone number.</span>
+                </div>
+
+                <div class="form-groups">
+                    <label for="id_email" class="form-labels">Email:</label>
+                    <input type="email" id="id_email" name="email" class="form-inputs" required>
+                    <span class="error-message" style="display: none;">Please enter a valid email address.</span>
+                </div>
+
+                <div class="button-groups">
+                    <button type="button" class="btn btn-secondary" id="cancelBtn">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Save Stylist</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div id="serviceModal" class="modal-overlay">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Manage Styles & Services</h2>
+                <button id="closeServiceModal" class="close-btn">×</button>
+            </div>
+
+            <div class="modal-body">
+                <form method="GET" action="" class="search-form">
+                    <input type="text" name="search" placeholder="Search styles..." value="{{ search_query }}" class="search-input">
+                    <button type="submit" class="search-btn">Search</button>
+                </form>
+
+                <h3>Available Styles & Services</h3>
+                <table class="services-table">
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Price</th>
+                            <th>Usage Count</th>
+                            <th>Revenue Generated</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for style in page_obj %}
+                            <tr>
+                                <td>{{ style.name }}</td>
+                                <td>R{{ style.price }}</td>
+                                <td>{{ style.usage_count }}</td>
+                                <td>{{ style.revenue_generated }}</td>
+                            </tr>
+                        {% empty %}
+                            <tr>
+                                <td colspan="4">No styles found.</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+
+                <div class="pagination">
+                    {% if page_obj.has_previous %}
+                        <a href="?page=1{% if search_query %}&search={{ search_query }}{% endif %}">First</a>
+                        <a href="?page={{ page_obj.previous_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}">Previous</a>
+                    {% endif %}
+
+                    <span>Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+
+                    {% if page_obj.has_next %}
+                        <a href="?page={{ page_obj.next_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}">Next</a>
+                        <a href="?page={{ page_obj.paginator.num_pages }}{% if search_query %}&search={{ search_query }}{% endif %}">Last</a>
+                    {% endif %}
+                </div>
+
+                <hr>
+
+                <div class="form-section">
+                    <h3>Add New Style/Service</h3>
+                    <form method="POST" action="{% url 'saloon:style_create' %}">
+                        {% csrf_token %}
+                        <div class="form-group">
+                            <label for="id_name">Style/Service Name:</label>
+                            <input type="text" id="id_name" name="name" class="form-input" required>
+                            <span class="error-message" style="display: none;">This field is required.</span>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="id_price">Price:</label>
+                            <input type="number" step="0.01" id="id_price" name="price" class="form-input" required>
+                            <span class="error-message" style="display: none;">This field is required.</span>
+                        </div>
+                        <button type="submit" class="save-btn">Save Style</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="ticketFormModal" class="modal-overlay">
+        <div class="modal-container">
+            <div class="modal-header">
+                <h2>Create Style Appointment</h2>
+                <button type="button" class="close-btn" id="closeTicketForm">&times;</button>
+            </div>
+            
+            <div class="modal-body">
+                <form method="POST" action="{% url 'saloon:ticket_create' %}">
+                    {% csrf_token %}
+                    
+                    <div class="form-group">
+                        <label for="id_customer_name">Customer Name:</label>
+                        <input type="text" id="id_customer_name" name="customer_name" class="form-input" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="id_customer_phone">Customer Phone:</label>
+                        <input type="tel" id="id_customer_phone" name="customer_phone" class="form-input">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="id_customer_email">Customer Email:</label>
+                        <input type="email" id="id_customer_email" name="customer_email" class="form-input" 
+                            autocomplete="off" list="email-suggestions">
+
+                        <div id="email-suggestions-container" class="suggestions-container" style="display: none;"></div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="id_style">Style/Service:</label>
+                        <select id="id_style" name="style" class="form-input" required>
+                            {% for style in styles %}
+                                <option value="{{ style.id }}">{{ style.name }} - R{{ style.price }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="id_worker">Stylist:</label>
+                        <select id="id_worker" name="worker" class="form-input" required>
+                            {% for worker in workers %}
+                                <option value="{{ worker.id }}">{{ worker.name }} {{ worker.surname }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    
+
+                    <div class="button-group">
+                        <button type="submit" class="btn btn-primary">Create Appointment</button>
+                        <button type="button" class="btn btn-secondary" id="closeTicketForm">Cancel</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <section class="quick-links">
+        <ul class="nav-grid">
+            <li class="nav-card"><a href="#" id="openTicketForm">Create Appointments</a></li>
+            <li class="nav-card"><a href="#" id="employeesLink">Add Stylist</a></li>
+            <li class="nav-card"><a href="#" id="openServiceModal">Add Styles</a></li>
+            <li class="nav-card"><a href="{% url 'saloon:salon_report' %}">View Reports</a></li>
+        </ul>
+    </section>
+
+    <div class="stats-grid">
+        <section class="stats-card">
+            <h2>Overview</h2>
+            <div class="stat-item">
+                <span class="stat-label">Total Stylists:</span>
+                <span class="stat-value">{{ active_workers }}</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-label">Total Styles:</span>
+                <span class="stat-value">{{ styless }}</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-label">Total Appointments:</span>
+                <span class="stat-value">{{ total_tickets }}</span>
+            </div>
+        </section>
+
+        <section class="stats-card">
+            <h2>Today's Statistics</h2>
+            <div class="stat-item">
+                <span class="stat-label">Appointments Today:</span>
+                <span class="stat-value">{{ today_tickets_count }}</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-label">Revenue Today:</span>
+                <span class="stat-value">R{{ today_revenue }}</span>
+            </div>
+        </section>
+
+        <section class="stats-card">
+            <h2>This Month's Statistics</h2>
+            <div class="stat-item">
+                <span class="stat-label">Appointments This Month:</span>
+                <span class="stat-value">{{ month_tickets_count }}</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-label">Revenue This Month:</span>
+                <span class="stat-value">R{{ month_revenue }}</span>
+            </div>
+        </section>
+    </div>
+
+<!-- Modern table styling -->
+    <section class="table-section">
+        <div class="section-header">
+            <h2>Recent Transactions</h2>
+            <a href="{% url 'saloon:ticket_create' %}" class="menu-card">View All Transactions</a>
+        </div>
+        <table>
+            <thead>
+                <tr>
+                    <th>Type</th>
+                    <th>Customer</th>
+                    <th>Service</th>
+                    <th>Stylist</th>
+                    <th>Amount</th>
+                    <th>Date</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for transaction in recent_transactions %}
+                <tr>
+                    <td>
+                        {% if transaction.type == 'ticket' %}
+                            <span class="badge badge-ticket">Ticket</span>
+                        {% else %}
+                            <span class="badge badge-booking">Booking</span>
+                        {% endif %}
+                    </td>
+                    <td>{{ transaction.customer_name }}</td>
+                    <td>{{ transaction.service }}</td>
+                    <td>{{ transaction.worker.name }} {{ transaction.worker.surname }}</td>
+                    <td>R{{ transaction.amount }}</td>
+                    <td>{{ transaction.date|date:"d F Y H:i" }}</td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="7">No recent transactions</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </section>
+
+    <section class="table-section">
+        <div class="section-header">
+            <h2>Top Stylists (This Month)</h2>
+            <a href="{% url 'saloon:worker_list_create' %}" class="menu-card">View All Stylists</a>
+        </div>
+        <table>
+            <thead>
+                <tr>
+                    <th>Stylist</th>
+                    <th>Total Appointments</th>
+                    <th>Revenue Generated</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for stat in worker_stats %}
+                <tr>
+                    <td>{{ stat.worker.name }} {{ stat.worker.surname }}</td>
+                    <td>{{ stat.total_appointments }}</td>
+                    <td>R{{ stat.total_revenue }}</td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="3">No stylist stats available</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </section>
+</div>
+
+{% if show_ai_chatbot %}
+<!-- AI Chatbot Modal -->
+<div id="salonAiChatModal" class="ai-chat-modal">
+    <div class="ai-chat-container" style="display: flex; flex-direction: column; height: 100%;">
+        <!-- Chat Header -->
+        <div class="ai-chat-header">
+            <div class="ai-chat-title">
+                <span class="ai-avatar">💈</span>
+                <div class="ai-title-text">
+                    <strong>Salon Assistant</strong>
+                    <small>Online</small>
+                </div>
+            </div>
+            <div class="ai-chat-actions">
+                <button class="ai-btn ai-btn-minimize" onclick="minimizeSalonChat()">
+                    <i class="fas fa-minus"></i>
+                </button>
+                <button class="ai-btn ai-btn-close" onclick="closeSalonChat()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+        </div>
+        
+        <!-- Chat Messages -->
+        <div class="ai-chat-messages" id="salonAiMessages">
+            <div class="ai-message ai-bot-message">
+                <div class="ai-message-avatar">💈</div>
+                <div class="ai-message-content">
+                    <div class="ai-message-text">
+                        Hello! I'm your Salon Assistant 🤖
+                        <br><br>
+                        Today's Summary:
+                        • {{ today_tickets_count }} appointments
+                        • R{{ today_revenue }} revenue
+                        • {{ pending_tickets }} pending style tickets
+                        • {{ pending_bookings }} pending bookings
+                        <br>
+                        Ask me about appointments, revenue, or stylist performance!
+                    </div>
+                    <div class="ai-message-time">{{ current_time|time:"H:i" }}</div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Chat Input -->
+        <div class="ai-chat-input-container">
+            <div class="ai-chat-input-wrapper">
+                <input type="text" 
+                       class="ai-chat-input" 
+                       id="salonAiInput"
+                       placeholder="Ask about appointments, revenue, stylists..."
+                       onkeypress="handleSalonAIKeyPress(event)">
+                <button class="ai-send-btn" onclick="sendSalonAIMessage()">
+                    <i class="fas fa-paper-plane"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Floating Chat Button -->
+<div class="ai-chat-button" id="salonAiChatButton" onclick="openSalonChat()">
+    <div class="ai-chat-button-icon">
+        <i class="fas fa-robot"></i>
+    </div>
+    <div class="ai-chat-button-pulse"></div>
+</div>
+<style>
+.suggestions-container {
+    position: absolute;
+    background: white;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    max-height: 200px;
+    overflow-y: auto;
+    z-index: 1000;
+    width: 100%;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+
+.suggestion-item {
+    padding: 10px;
+    cursor: pointer;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.suggestion-item:hover {
+    background: #f5f5f5;
+}
+
+.suggestion-item:last-child {
+    border-bottom: none;
+}
+
+.suggestion-email {
+    font-weight: bold;
+    color: #333;
+}
+
+.suggestion-name {
+    font-size: 12px;
+    color: #666;
+    margin-left: 10px;
+}
+
+.form-group {
+    position: relative;
+}
+</style>
+
+<style>
+/* Floating Chat Button */
+.ai-chat-button {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    width: 60px;
+    height: 60px;
+    background: linear-gradient(135deg, #ff6b6b, #ee5a52);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    box-shadow: 0 4px 20px rgba(255, 107, 107, 0.3);
+    z-index: 1000;
+    transition: all 0.3s ease;
+}
+
+.ai-chat-button:hover {
+    transform: scale(1.1);
+    box-shadow: 0 6px 25px rgba(255, 107, 107, 0.4);
+}
+
+.ai-chat-button-icon {
+    color: white;
+    font-size: 24px;
+}
+
+.ai-chat-button-pulse {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    background: rgba(255, 107, 107, 0.6);
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0% {
+        transform: scale(1);
+        opacity: 1;
+    }
+    100% {
+        transform: scale(1.5);
+        opacity: 0;
+    }
+}
+
+/* Chat Modal - LARGER SIZE */
+.ai-chat-modal {
+    position: fixed;
+    bottom: 90px;
+    right: 20px;
+    width: 450px;
+    height: 600px;
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+    z-index: 1001;
+    display: none;
+    flex-direction: column;
+    border: 1px solid #e9ecef;
+}
+
+.ai-chat-modal.open {
+    display: flex;
+    animation: slideUp 0.3s ease;
+}
+
+@keyframes slideUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Chat Header */
+.ai-chat-header {
+    background: linear-gradient(135deg, #ff6b6b, #ee5a52);
+    color: white;
+    padding: 15px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-shrink: 0; /* Prevent header from shrinking */
+}
+
+.ai-chat-title {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.ai-avatar {
+    font-size: 20px;
+}
+
+.ai-title-text strong {
+    font-size: 16px;
+}
+
+.ai-title-text small {
+    opacity: 0.8;
+    font-size: 12px;
+    display: block;
+}
+
+.ai-chat-actions {
+    display: flex;
+    gap: 5px;
+}
+
+.ai-btn {
+    background: rgba(255, 255, 255, 0.2);
+    border: none;
+    color: white;
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.3s ease;
+    font-size: 12px;
+}
+
+.ai-btn:hover {
+    background: rgba(255, 255, 255, 0.3);
+}
+
+/* Chat Messages - IMPROVED SCROLLING */
+
+.ai-chat-messages {
+    flex: 1;
+    padding: 20px;
+    overflow-y: auto;
+    background: #f8f9fa;
+    display: flex;
+    flex-direction: column;
+    height: calc(100% - 140px); /* Adjust for header and input container */
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior: contain;
+    scroll-behavior: smooth;
+}
+
+/* Custom scrollbar for better appearance */
+.ai-chat-messages::-webkit-scrollbar {
+    width: 6px;
+}
+
+.ai-chat-messages::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 3px;
+}
+
+.ai-chat-messages::-webkit-scrollbar-thumb {
+    background: #c1c1c1;
+    border-radius: 3px;
+}
+
+.ai-chat-messages::-webkit-scrollbar-thumb:hover {
+    background: #a8a8a8;
+}
+
+.ai-message {
+    display: flex;
+    margin-bottom: 15px;
+    gap: 10px;
+    flex-shrink: 0; /* Prevent messages from shrinking */
+}
+
+.ai-bot-message {
+    align-items: flex-start;
+}
+
+.ai-user-message {
+    align-items: flex-end;
+    flex-direction: row-reverse;
+}
+
+.ai-message-avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    flex-shrink: 0; /* Prevent avatar from shrinking */
+}
+
+.ai-bot-message .ai-message-avatar {
+    background: #ff6b6b;
+    color: white;
+}
+
+.ai-user-message .ai-message-avatar {
+    background: #007bff;
+    color: white;
+}
+
+.ai-message-content {
+    max-width: 85%; /* Increased from 70% for better readability */
+    flex: 1;
+}
+
+.ai-message-text {
+    padding: 12px 16px;
+    border-radius: 18px;
+    line-height: 1.5; /* Better line height for readability */
+    font-size: 14px;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    white-space: pre-line; /* Preserve line breaks from AI responses */
+}
+
+.ai-bot-message .ai-message-text {
+    background: white;
+    border: 1px solid #e9ecef;
+    border-radius: 18px 18px 18px 4px;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+.ai-user-message .ai-message-text {
+    background: #007bff;
+    color: white;
+    border-radius: 18px 18px 4px 18px;
+    box-shadow: 0 1px 2px rgba(0, 123, 255, 0.2);
+}
+
+.ai-message-time {
+    font-size: 11px;
+    color: #6c757d;
+    margin-top: 5px;
+    text-align: right;
+}
+
+/* Chat Input */
+.ai-chat-input-container {
+    padding: 15px;
+    background: white;
+    border-top: 1px solid #e9ecef;
+    flex-shrink: 0; /* Prevent input from shrinking */
+}
+
+.ai-chat-input-wrapper {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
+
+.ai-chat-input {
+    flex: 1;
+    padding: 12px 16px;
+    border: 1px solid #ddd;
+    border-radius: 25px;
+    outline: none;
+    font-size: 14px;
+    transition: border-color 0.3s ease;
+}
+
+.ai-chat-input:focus {
+    border-color: #ff6b6b;
+    box-shadow: 0 0 0 2px rgba(255, 107, 107, 0.1);
+}
+
+.ai-send-btn {
+    background: #ff6b6b;
+    color: white;
+    border: none;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+    font-size: 14px;
+}
+
+.ai-send-btn:hover {
+    background: #ee5a52;
+    transform: scale(1.05);
+}
+
+.ai-send-btn:active {
+    transform: scale(0.95);
+}
+
+/* Typing Indicator */
+.ai-typing-indicator {
+    display: flex;
+    align-items: center;
+    color: #6c757d;
+    font-style: italic;
+    padding: 12px 16px;
+    font-size: 14px;
+}
+
+.typing-dots {
+    display: flex;
+    margin-left: 5px;
+}
+
+.typing-dots span {
+    animation: typing 1.4s infinite;
+    margin: 0 1px;
+    font-weight: bold;
+}
+
+.typing-dots span:nth-child(2) { animation-delay: 0.2s; }
+.typing-dots span:nth-child(3) { animation-delay: 0.4s; }
+
+@keyframes typing {
+    0%, 60%, 100% { opacity: 0.3; }
+    30% { opacity: 1; }
+}
+
+/* Minimized State */
+.ai-chat-modal.minimized {
+    height: 60px;
+    overflow: hidden;
+}
+
+.ai-chat-modal.minimized .ai-chat-messages,
+.ai-chat-modal.minimized .ai-chat-input-container {
+    display: none;
+}
+
+/* Responsive design for smaller screens */
+@media (max-width: 768px) {
+    .ai-chat-modal {
+        width: calc(100vw - 40px);
+        right: 20px;
+        left: 20px;
+        height: 70vh;
+        bottom: 80px;
+    }
+    
+    .ai-chat-button {
+        bottom: 20px;
+        right: 20px;
+    }
+}
+
+/* Auto-scroll to bottom when new messages arrive */
+.ai-chat-messages {
+    scroll-behavior: smooth;
+}
+
+/* Ensure long words break properly */
+.ai-message-text {
+    word-break: break-word;
+}
+
+/* Style for code or formatted text in responses */
+.ai-message-text pre {
+    background: #f8f9fa;
+    border: 1px solid #e9ecef;
+    border-radius: 4px;
+    padding: 8px;
+    margin: 5px 0;
+    overflow-x: auto;
+    font-size: 12px;
+    font-family: 'Courier New', monospace;
+}
+
+.ai-message-text code {
+    background: #f8f9fa;
+    padding: 2px 4px;
+    border-radius: 3px;
+    font-size: 12px;
+    font-family: 'Courier New', monospace;
+}
+
+/* Make lists in responses look better */
+.ai-message-text ul,
+.ai-message-text ol {
+    margin: 8px 0;
+    padding-left: 20px;
+}
+
+.ai-message-text li {
+    margin: 4px 0;
+}
+</style>
+
+<script>
+const SALON_CSRF_TOKEN = "{{ csrf_token }}";
+let isSalonChatOpen = false;
+let isSalonChatMinimized = false;
+
+function openSalonChat() {
+    const modal = document.getElementById('salonAiChatModal');
+    const button = document.getElementById('salonAiChatButton');
+    
+    modal.classList.add('open');
+    button.style.display = 'none';
+    isSalonChatOpen = true;
+    isSalonChatMinimized = false;
+    
+    // Focus on input when opened
+    setTimeout(() => {
+        document.getElementById('salonAiInput').focus();
+    }, 300);
+}
+
+function closeSalonChat() {
+    const modal = document.getElementById('salonAiChatModal');
+    const button = document.getElementById('salonAiChatButton');
+    
+    modal.classList.remove('open');
+    button.style.display = 'flex';
+    isSalonChatOpen = false;
+}
+
+function minimizeSalonChat() {
+    const modal = document.getElementById('salonAiChatModal');
+    
+    if (isSalonChatMinimized) {
+        modal.classList.remove('minimized');
+        isSalonChatMinimized = false;
+    } else {
+        modal.classList.add('minimized');
+        isSalonChatMinimized = true;
+    }
+}
+
+function handleSalonAIKeyPress(event) {
+    if (event.key === 'Enter') {
+        sendSalonAIMessage();
+    }
+}
+
+async function sendSalonAIMessage() {
+    const input = document.getElementById('salonAiInput');
+    const message = input.value.trim();
+    
+    if (!message) return;
+    
+    // Add user message
+    addSalonMessage(message, 'user');
+    input.value = '';
+    
+    // Show typing indicator
+    showSalonTypingIndicator();
+    
+    try {
+        const response = await fetch('/salon-ai-chat/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': SALON_CSRF_TOKEN
+            },
+            body: JSON.stringify({ message: message })
+        });
+        
+        const data = await response.json();
+        
+        removeSalonTypingIndicator();
+        
+        if (data.success) {
+            addSalonMessage(data.response, 'bot');
+        } else {
+            addSalonMessage('Sorry, I encountered an error. Please try again.', 'bot');
+        }
+        
+    } catch (error) {
+        removeSalonTypingIndicator();
+        addSalonMessage('Connection error. Please check your internet and try again.', 'bot');
+    }
+}
+
+function addSalonMessage(content, sender) {
+    const messagesContainer = document.getElementById('salonAiMessages');
+    const messageDiv = document.createElement('div');
+    messageDiv.className = `ai-message ai-${sender}-message`;
+    
+    const time = new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+    
+    messageDiv.innerHTML = `
+        <div class="ai-message-avatar">${sender === 'bot' ? '💈' : '👤'}</div>
+        <div class="ai-message-content">
+            <div class="ai-message-text">${content.replace(/\n/g, '<br>')}</div>
+            <div class="ai-message-time">${time}</div>
+        </div>
+    `;
+    
+    messagesContainer.appendChild(messageDiv);
+    
+    // Auto-scroll to bottom with smooth behavior
+    messagesContainer.scrollTo({
+        top: messagesContainer.scrollHeight,
+        behavior: 'smooth'
+    });
+}
+
+function showSalonTypingIndicator() {
+    const messagesContainer = document.getElementById('salonAiMessages');
+    const typingDiv = document.createElement('div');
+    typingDiv.className = 'ai-message ai-bot-message';
+    typingDiv.id = 'salonTypingIndicator';
+    
+    typingDiv.innerHTML = `
+        <div class="ai-message-avatar">💈</div>
+        <div class="ai-message-content">
+            <div class="ai-typing-indicator">
+                Analyzing salon data
+                <div class="typing-dots">
+                    <span>.</span><span>.</span><span>.</span>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    messagesContainer.appendChild(typingDiv);
+    
+    // Auto-scroll to bottom when typing indicator appears
+    messagesContainer.scrollTo({
+        top: messagesContainer.scrollHeight,
+        behavior: 'smooth'
+    });
+}
+function removeSalonTypingIndicator() {
+    const typingIndicator = document.getElementById('salonTypingIndicator');
+    if (typingIndicator) {
+        typingIndicator.remove();
+    }
+}
+
+// Close chat when clicking outside
+document.addEventListener('click', function(event) {
+    const modal = document.getElementById('salonAiChatModal');
+    const button = document.getElementById('salonAiChatButton');
+    
+    if (isSalonChatOpen && !modal.contains(event.target) && !button.contains(event.target)) {
+        closeSalonChat();
+    }
+});
+</script>
+{% endif %}
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    const modal = document.getElementById('employeeFormModal');
+    const employeesLink = document.getElementById('employeesLink');
+    const closeBtn = document.getElementById('closeEmployeeForm');
+    const cancelBtn = document.getElementById('cancelBtn');
+
+    if (!modal || !employeesLink) return;
+
+    employeesLink.addEventListener('click', function(e) {
+        e.preventDefault();
+        modal.classList.add('show');
+        document.body.style.overflow = 'hidden';
+    });
+
+    function closeModal() {
+        modal.classList.remove('show');
+        document.body.style.overflow = 'auto';
+        document.querySelector('form')?.reset();
+        document.querySelectorAll('.error-message').forEach(error => {
+            error.style.display = 'none';
+        });
+    }
+
+    closeBtn?.addEventListener('click', closeModal);
+    cancelBtn?.addEventListener('click', closeModal);
+
+    modal.addEventListener('click', function(e) {
+        if (e.target === modal) {
+            closeModal();
+        }
+    });
+
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape' && modal.classList.contains('show')) {
+            closeModal();
+        }
+    });
+});
+</script>
+
+<script>
+    const openBtn = document.getElementById("openServiceModal");
+    const closeBtn = document.getElementById("closeServiceModal");
+    const modal = document.getElementById("serviceModal");
+
+    openBtn.onclick = function() {
+        modal.style.display = "block";
+    };
+    closeBtn.onclick = function() {
+        modal.style.display = "none";
+    };
+    window.onclick = function(event) {
+        if (event.target == modal) {
+            modal.style.display = "none";
+        }
+    };
+</script>
+
+<script>
+// Ticket Form Modal
+document.addEventListener('DOMContentLoaded', () => {
+    const ticketModal = document.getElementById('ticketFormModal');
+    const openTicketBtn = document.getElementById('openTicketForm');
+    const closeTicketBtn = document.getElementById('closeTicketForm');
+
+    openTicketBtn.addEventListener('click', function(e) {
+        e.preventDefault();
+        ticketModal.style.display = 'block';
+    });
+
+    closeTicketBtn.addEventListener('click', function() {
+        ticketModal.style.display = 'none';
+    });
+
+    window.addEventListener('click', function(event) {
+        if (event.target == ticketModal) {
+            ticketModal.style.display = 'none';
+        }
+    });
+});
+
+// User Dropdown
+function toggleUserDropdown() {
+    const dropdown = document.getElementById("userDropdown");
+    dropdown.classList.toggle("show");
+}
+
+// Close dropdown if clicking outside
+window.addEventListener("click", function(event) {
+    const dropdown = document.getElementById("userDropdown");
+    const userInfo = document.querySelector(".user-info");
+
+    if (!userInfo.contains(event.target)) {
+        dropdown.classList.remove("show");
+    }
+});
+</script>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const emailInput = document.getElementById('id_customer_email');
+    const suggestionsContainer = document.getElementById('email-suggestions-container');
+    const customerNameInput = document.getElementById('id_customer_name');
+    const customerPhoneInput = document.getElementById('id_customer_phone');
+    
+    let currentSuggestions = [];
+    
+    // Fetch existing emails when modal opens
+    function fetchExistingEmails() {
+        fetch('{% url "saloon:get_customer_emails" %}')
+            .then(response => response.json())
+            .then(data => {
+                currentSuggestions = data.emails || [];
+                updateDatalist(currentSuggestions);
+            })
+            .catch(error => console.error('Error fetching emails:', error));
+    }
+    
+    // Update datalist with suggestions
+    function updateDatalist(emails) {
+        const datalist = document.getElementById('email-suggestions');
+        datalist.innerHTML = '';
+        
+        emails.forEach(email => {
+            const option = document.createElement('option');
+            option.value = email.email;
+            if (email.name) {
+                option.textContent = `${email.email} (${email.name})`;
+            }
+            datalist.appendChild(option);
+        });
+    }
+    
+    // Show custom suggestions dropdown
+    function showSuggestions(emails) {
+        if (emails.length === 0) {
+            suggestionsContainer.style.display = 'none';
+            return;
+        }
+        
+        suggestionsContainer.innerHTML = '';
+        emails.forEach((email, index) => {
+            const div = document.createElement('div');
+            div.className = 'suggestion-item';
+            div.innerHTML = `
+                <span class="suggestion-email">${email.email}</span>
+                ${email.name ? `<span class="suggestion-name">${email.name}</span>` : ''}
+            `;
+            
+            div.addEventListener('click', function() {
+                emailInput.value = email.email;
+                if (email.name && !customerNameInput.value) {
+                    customerNameInput.value = email.name;
+                }
+                if (email.phone && !customerPhoneInput.value) {
+                    customerPhoneInput.value = email.phone;
+                }
+                suggestionsContainer.style.display = 'none';
+            });
+            
+            suggestionsContainer.appendChild(div);
+        });
+        
+        suggestionsContainer.style.display = 'block';
+    }
+    
+    // Filter suggestions based on input
+    function filterSuggestions(searchTerm) {
+        if (!searchTerm || searchTerm.length < 2) {
+            suggestionsContainer.style.display = 'none';
+            return;
+        }
+        
+        const filtered = currentSuggestions.filter(email => 
+            email.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            (email.name && email.name.toLowerCase().includes(searchTerm.toLowerCase()))
+        );
+        
+        showSuggestions(filtered);
+    }
+    
+    // Event listeners
+    emailInput.addEventListener('input', function() {
+        filterSuggestions(this.value);
+    });
+    
+    emailInput.addEventListener('focus', function() {
+        if (this.value.length >= 2) {
+            filterSuggestions(this.value);
+        }
+    });
+    
+    // Close suggestions when clicking outside
+    document.addEventListener('click', function(e) {
+        if (!emailInput.contains(e.target) && !suggestionsContainer.contains(e.target)) {
+            suggestionsContainer.style.display = 'none';
+        }
+    });
+    
+    // Fetch emails when modal is opened
+    const openTicketFormBtn = document.getElementById('openTicketForm');
+    if (openTicketFormBtn) {
+        openTicketFormBtn.addEventListener('click', fetchExistingEmails);
+    }
+    
+    // Also fetch when modal is shown via other means
+    const ticketModal = document.getElementById('ticketFormModal');
+    if (ticketModal) {
+        // If using a modal library, trigger on show event
+        // For simple display, we'll fetch when input is focused
+        emailInput.addEventListener('focus', fetchExistingEmails);
+    }
+});
+</script>
+</body>
+</html>

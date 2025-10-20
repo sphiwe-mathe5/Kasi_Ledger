@@ -7,9 +7,14 @@ from .views import *
 urlpatterns = [
     path('register/', signup_view, name='signup'),
     path('login/', login_view, name='login'),
+    path('complete-profile/', views.complete_profile_view, name='complete_profile'),
+    path('profile/update/', views.update_profile, name='update_profile'),
+    path('password/change/', change_password, name='change_password'),
+    path('account/delete/', delete_account, name='delete_account'),
     path('forgot-password/', forgot_password_view, name='forgot_password'),
     path('reset-password/<str:token>/',reset_password_view,name='reset_password'),
     path('logout/', logout_view, name='logout'),
+    path('transaction-pin-settings/', views.transaction_pin_settings, name='transaction_pin_settings'),
     path('settings/', user_views.profile, name='profile'),
     
     path('subscribe/free/<int:plan_id>/', register_free_plan, name='register_free_plan'),

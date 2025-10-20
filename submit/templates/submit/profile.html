@@ -3,401 +3,635 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Profile Settings</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css?family=Poppins:400,600,700&display=swap" rel="stylesheet" />
+    <title>Profile & Settings</title>
     <style>
-        :root {
-            --primary-color: #4f46e5;
-            --primary-hover: #4338ca;
-            --secondary-color: #f3f4f6;
-            --text-color: #1f2937;
-            --text-light: #6b7280;
-            --error-color: #ef4444;
-            --danger-color: #dc2626;
-            --danger-hover: #b91c1c;
-            --border-color: #e5e7eb;
-            --input-bg: #f9fafb;
-            --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-            --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-            --radius: 8px;
-          }
-          * {
+        * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            font-family: "Inter", sans-serif;
-          }
-          body {
-            min-height: 100vh;
+        }
+
+        body {
+            font-family: Poppins;
+            background-color: white;
+            color: #333;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+
+        }
+
+        .header h1 {
+            color: #333;
+            margin-bottom: 5px;
+        }
+
+        .header p {
+            color: #666;
+        }
+        .back-link {
+            color: #4169E1;
+            text-decoration: none;
+            padding: 5px 10px;
+            border-radius: 6px;
+            border: 1px solid #4169E1;
+            transition: all 0.3s ease;
+            font-size: 14px;
+        }
+
+        .back-link:hover {
+            background: #4169E1;
+            transform: translateY(-1px);
+            color: white;
+        }
+        .card {
+            background: white;
+            border-radius: 8px;
+            padding: 24px;
+            margin-bottom: 20px;
+
+        }
+
+        .card h2 {
+            color: #333;
+            margin-bottom: 20px;
+            font-size: 18px;
+            font-weight: 600;
+        }
+
+        .form-group {
+            margin-bottom: 16px;
+        }
+
+        .form-row {
+            display: flex;
+            gap: 16px;
+        }
+
+        .form-row .form-group {
+            flex: 1;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 6px;
+            font-weight: 500;
+            color: #333;
+        }
+
+        input[type="text"],
+        input[type="email"],
+        input[type="tel"],
+        input[type="password"],
+        select {
+            width: 100%;
+            padding: 10px 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 6px;
+            font-size: 14px;
+            transition: border-color 0.2s;
+        }
+
+        input:focus,
+        select:focus {
+            outline: none;
+            border-color: #4caf50;
+        }
+
+        .btn {
+            background: #4caf50;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: background-color 0.2s;
+        }
+
+        .btn:hover {
+            background: #45a049;
+        }
+
+        .btn-secondary {
+            background: #666;
+        }
+
+        .btn-secondary:hover {
+            background: #555;
+        }
+
+        .setting-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 0;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        .setting-item:last-child {
+            border-bottom: none;
+        }
+
+        .setting-info h3 {
+            font-size: 14px;
+            font-weight: 500;
+            margin-bottom: 2px;
+        }
+
+        .setting-info p {
+            font-size: 12px;
+            color: #666;
+        }
+
+        .toggle {
+            position: relative;
+            width: 44px;
+            height: 24px;
+            background: #ccc;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        .toggle.active {
+            background: #4caf50;
+        }
+
+        .toggle::after {
+            content: '';
+            position: absolute;
+            top: 2px;
+            left: 2px;
+            width: 20px;
+            height: 20px;
+            background: white;
+            border-radius: 50%;
+            transition: transform 0.2s;
+        }
+
+        .toggle.active::after {
+            transform: translateX(20px);
+        }
+
+        .danger-zone {
+            border: 1px solid #ff4444;
+            border-radius: 8px;
+            padding: 16px;
+            margin-top: 20px;
+        }
+
+        .danger-zone h3 {
+            color: #ff4444;
+            margin-bottom: 8px;
+        }
+
+        .btn-danger {
+            background: #ff4444;
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #cc3333;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 10px;
+            }
+
+            .form-row {
+                flex-direction: column;
+                gap: 0;
+            }
+
+            .card {
+                padding: 16px;
+            }
+        }
+        .messages-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1000;
+            max-width: 400px;
+        }
+
+        .message {
+            background: white;
+            border-radius: 8px;
+            padding: 16px 20px;
+            margin-bottom: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            border-left: 4px solid #4caf50;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            animation: slideIn 0.3s ease-out;
+            transition: all 0.3s ease;
+        }
+
+        .message.success {
+            border-left-color: #4caf50;
+        }
+
+        .message.error {
+            border-left-color: #f44336;
+        }
+
+        .message.warning {
+            border-left-color: #ff9800;
+        }
+
+        .message.info {
+            border-left-color: #2196f3;
+        }
+
+        .message-content {
+            display: flex;
+            align-items: center;
+            flex: 1;
+        }
+
+        .message-icon {
+            width: 20px;
+            height: 20px;
+            margin-right: 12px;
+            flex-shrink: 0;
+        }
+
+        .message-text {
+            color: #333;
+            font-size: 14px;
+            font-weight: 500;
+            line-height: 1.4;
+        }
+
+        .message-close {
+            background: none;
+            border: none;
+            color: #999;
+            cursor: pointer;
+            font-size: 18px;
+            padding: 0;
+            margin-left: 12px;
+            width: 20px;
+            height: 20px;
             display: flex;
             align-items: center;
             justify-content: center;
-            background-color: #f5f7fb;
-            color: var(--text-color);
-            padding: 20px;
-          }
-          .container {
-            width: 100%;
-            max-width: 600px;
-          }
-          .profile-card {
-            background-color: #fff;
-            border-radius: var(--radius);
-            box-shadow: var(--shadow);
-            overflow: hidden;
-          }
-          .profile-header {
-            background-color: var(--primary-color);
-            color: #fff;
-            padding: 24px 32px;
-            text-align: center;
-          }
-          .profile-header h1 {
-            font-size: 24px;
-            font-weight: 600;
-            margin-bottom: 8px;
-          }
-          .profile-email {
-            font-size: 16px;
-            opacity: 0.8;
-          }
-          .tabs {
-            position: relative;
-            padding-top: 10px;
-          }
-          .tabs input[type="radio"] {
-            display: none;
-          }
-          .tabs ul {
-            display: flex;
-            list-style-type: none;
-            padding: 0;
-            border-bottom: 1px solid var(--border-color);
-          }
-          .tabs ul li {
-            flex: 1;
-            text-align: center;
-          }
-          .tabs ul li label {
-            display: block;
-            padding: 16px;
-            color: var(--text-light);
-            font-size: 14px;
-            font-weight: 500;
-            cursor: pointer;
+            border-radius: 50%;
             transition: all 0.2s ease;
-          }
-          .slider {
-            position: relative;
-            width: 33.33%;
-            transition: all 0.3s ease-out;
-          }
-          .slider .indicator {
-            position: absolute;
-            left: 0;
-            bottom: 0;
-            width: 100%;
-            height: 2px;
-            background: var(--primary-color);
-          }
-          .content {
-            margin-top: 30px;
-          }
-          .content section {
-            display: none;
-            padding: 0 32px 32px;
-          }
-          .content section h2 {
-            margin-bottom: 20px;
-            color: var(--primary-color);
-          }
-          #tab1:checked ~ ul li:nth-child(1) label,
-          #tab2:checked ~ ul li:nth-child(2) label,
-          #tab3:checked ~ ul li:nth-child(3) label {
-            color: var(--primary-color);
-          }
-          #tab1:checked ~ .slider {
-            transform: translateX(0%);
-          }
-          #tab2:checked ~ .slider {
+        }
+
+        .message-close:hover {
+            background: #f5f5f5;
+            color: #666;
+        }
+
+        .message.fade-out {
+            opacity: 0;
             transform: translateX(100%);
-          }
-          #tab3:checked ~ .slider {
-            transform: translateX(200%);
-          }
-          #tab1:checked ~ .content #content1,
-          #tab2:checked ~ .content #content2,
-          #tab3:checked ~ .content #content3 {
-            display: block;
-          }
-          .form-group {
-            margin-bottom: 20px;
-          }
-          .form-group label {
-            display: block;
-            margin-bottom: 8px;
-            font-size: 14px;
-            font-weight: 500;
-          }
-          .form-group input[type="text"],
-          .form-group input[type="file"] {
-            width: 100%;
-            height: 48px;
-            padding: 0 16px;
-            border: 1px solid var(--border-color);
-            border-radius: var(--radius);
-            background-color: var(--input-bg);
-            font-size: 15px;
-            color: var(--text-color);
-            transition: all 0.2s ease;
-          }
-          .form-group input[type="file"] {
-            padding: 12px 16px;
-          }
-          .form-group input:focus {
-            border-color: var(--primary-color);
-            outline: none;
-            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
-          }
-          .btn {
-            display: inline-block;
-            padding: 12px 24px;
-            border: none;
-            border-radius: var(--radius);
-            font-size: 15px;
-            font-weight: 500;
-            cursor: pointer;
-            transition: all 0.2s ease;
-          }
-          .btn-primary {
-            background-color: var(--primary-color);
-            color: #fff;
-          }
-          .btn-primary:hover {
-            background-color: var(--primary-hover);
-          }
-          .btn-danger {
-            background-color: var(--danger-color);
-            color: #fff;
-          }
-          .btn-danger:hover {
-            background-color: var(--danger-hover);
-          }
-          .alert {
-            padding: 12px;
-            border-radius: var(--radius);
-            margin-bottom: 20px;
-            font-size: 14px;
-          }
-          .alert-success {
-            background-color: #d1fae5;
-            color: #065f46;
-          }
-          .alert-error {
-            background-color: #fee2e2;
-            color: #991b1b;
-          }
-          .danger-zone {
-            background-color: #fee2e2;
-            border: 1px solid #fecaca;
-            border-radius: var(--radius);
-            padding: 24px;
-            margin-top: 24px;
-          }
-          .danger-zone h3 {
-            color: var(--danger-color);
-            margin-bottom: 8px;
-          }
-          .danger-zone p {
-            margin-bottom: 16px;
-            font-size: 14px;
-          }
-          @media screen and (max-width: 480px) {
-            .container {
-              padding: 0 16px;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateX(100%);
             }
-            .profile-header,
-            .content section {
-              padding: 24px;
-            }
-            .tabs ul li label {
-              padding: 12px;
-            }
-          }
-          :root {
-            --primary-color: #4f46e5;
-            --primary-hover: #4338ca;
-            --text-color: #1f2937;
-            --text-light: #6b7280;
-            --border-color: #e5e7eb;
-            --input-bg: #f9fafb;
-            --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-            --radius: 8px;
-        }
-        .profile-form {
-            max-width: 500px;
-            margin: 0 auto;
-        }
-        .form-group {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 20px;
-        }
-        .form-field {
-            flex: 1 1 calc(50% - 20px);
-            display: flex;
-            flex-direction: column;
-        }
-        .form-label {
-            display: block;
-            margin-bottom: 0.5rem;
-            font-size: 0.875rem;
-            font-weight: 500;
-            color: var(--text-color);
-        }
-        .form-input {
-            display: block;
-            width: 100%;
-            padding: 0.625rem 0.75rem;
-            font-size: 0.875rem;
-            line-height: 1.25rem;
-            color: var(--text-color);
-            background-color: var(--input-bg);
-            background-clip: padding-box;
-            border: 1px solid var(--border-color);
-            border-radius: var(--radius);
-            transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
-        }
-        .form-input:focus {
-            border-color: var(--primary-color);
-            outline: 0;
-            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
-        }
-        .btn {
-            display: inline-block;
-            padding: 0.625rem 1.25rem;
-            font-size: 0.875rem;
-            font-weight: 500;
-            line-height: 1.25rem;
-            text-align: center;
-            text-decoration: none;
-            vertical-align: middle;
-            cursor: pointer;
-            user-select: none;
-            border: 1px solid transparent;
-            border-radius: var(--radius);
-            transition: color 0.15s ease-in-out, background-color 0.15s ease-in-out, border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
-        }
-        .btn-primary {
-            color: #ffffff;
-            background-color: var(--primary-color);
-            border-color: var(--primary-color);
-        }
-        .btn-primary:hover {
-            background-color: var(--primary-hover);
-            border-color: var(--primary-hover);
-        }
-        @media (max-width: 640px) {
-            .profile-form {
-                padding: 0 1rem;
+            to {
+                opacity: 1;
+                transform: translateX(0);
             }
         }
 
-        .reflections-section {
-          margin-bottom: 30px;
+        .progress-bar {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            height: 3px;
+            background: #4caf50;
+            border-radius: 0 0 8px 8px;
+            animation: progress 5s linear;
         }
-        
-        .reflections-section h2 {
-          color: #4CAF50;
-          margin-bottom: 15px;
+
+        .message.success .progress-bar {
+            background: #4caf50;
         }
-        
-        .reflection-card {
-          background-color: #f9f9f9;
-          padding: 15px;
-          border-radius: 10px;
-          margin-bottom: 15px;
-          box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+
+        .message.error .progress-bar {
+            background: #f44336;
         }
-        
-        .reflection-header {
-          font-weight: bold;
-          margin-bottom: 10px;
+
+        .message.warning .progress-bar {
+            background: #ff9800;
         }
-        
-        .reflection-content {
-          margin-bottom: 10px;
+
+        .message.info .progress-bar {
+            background: #2196f3;
         }
-        
-        .reflection-content p {
-          margin: 5px 0;
+
+        @keyframes progress {
+            from {
+                width: 100%;
+            }
+            to {
+                width: 0%;
+            }
         }
-        
-        .no-reflections {
-          color: #666;
-          font-style: italic;
+
+        @media (max-width: 480px) {
+            .messages-container {
+                top: 10px;
+                right: 10px;
+                left: 10px;
+                max-width: none;
+            }
         }
-        
-        .divider {
-          border: 0;
-          height: 1px;
-          background: #ddd;
-          margin: 20px 0;
+
+        .password-wrapper {
+            position: relative;
         }
+
+        .password-wrapper input {
+            width: 100%;
+            padding-right: 30px; /* make space for the eye icon */
+        }
+
+        .toggle-password {
+            position: absolute;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            cursor: pointer;
+            user-select: none;
+        }
+
     </style>
 </head>
 <body>
-    <div class="container">
-        <div class="profile-card">
-            <div class="profile-header">
-                <h1>Hello 🙂</h1>
-            </div>
-            <div class="tabs">
-                <input type="radio" id="tab1" name="tab-control" checked>
-                
-                <input type="radio" id="tab3" name="tab-control">
-                <ul>
-                    <li><label for="tab1">Profile</label></li>
-                   
-                    <li><label for="tab3">Danger Zone</label></li>
-                </ul>
-                <div class="slider"><div class="indicator"></div></div>
-                <div class="content">
-                    <section id="content1">
-                        <form method="POST" enctype="multipart/form-data" class="profile-form">
-                            <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
-                            <div class="form-group">
-                                <div class="form-field">
-                                    <label for="id_email" class="form-label">Email:</label>
-                                    <input type="email" name="email" value="{{ user.email }}" maxlength="320" required id="id_email" class="form-input">
-                                </div>
-                                <div class="form-field">
-                                    <label for="id_account_name" class="form-label">Company name:</label>
-                                    <input type="text" name="account_name" value="{{ user.company_name }}" required id="id_account_name" class="form-input">
-                                </div>
-                                <div class="form-field">
-                                    <label for="id_account_name" class="form-label">Company Category:</label>
-                                    <input type="text" name="account_name" value="{{ user.company_category }}" required id="id_account_name" class="form-input">
-                                </div>
-                            </div>
-                            <button class="btn btn-primary" type="submit">Update Profile</button>
-                            
-                        </form>
-                    </section>
-                    <section id="content3">
-                        <h2>Danger Zone</h2>
-                        <div class="danger-zone">
-                            <h3>Delete Account</h3>
-                            <p>Once you delete your account, there is no going back. Please be certain.</p>
-                            <form action="/delete-account" method="POST" onsubmit="return confirm('Are you sure you want to delete your account? This action cannot be undone.');">
-                                {% csrf_token %}
-                                <button class="btn btn-danger" type="submit">Delete Account</button>
-                            </form>
+
+    <div class="messages-container">
+        {% if messages %}
+            {% for message in messages %}
+                <div class="message {{ message.tags }}" data-message-id="{{ forloop.counter }}">
+                    <div class="message-content">
+                        <div class="message-icon">
+                            {% if message.tags == 'success' %}
+                                <svg viewBox="0 0 20 20" fill="currentColor" style="color: #4caf50;">
+                                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+                                </svg>
+                            {% elif message.tags == 'error' %}
+                                <svg viewBox="0 0 20 20" fill="currentColor" style="color: #f44336;">
+                                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"/>
+                                </svg>
+                            {% elif message.tags == 'warning' %}
+                                <svg viewBox="0 0 20 20" fill="currentColor" style="color: #ff9800;">
+                                    <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/>
+                                </svg>
+                            {% else %}
+                                <svg viewBox="0 0 20 20" fill="currentColor" style="color: #2196f3;">
+                                    <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"/>
+                                </svg>
+                            {% endif %}
                         </div>
-                    </section>
+                        <div class="message-text">{{ message }}</div>
+                    </div>
+                    <button class="message-close" onclick="closeMessage(this)">×</button>
+                    <div class="progress-bar"></div>
                 </div>
+            {% endfor %}
+        {% endif %}
+    </div>
+
+    <div class="container">
+        <div class="header">
+            
+            <h1><a href="{% url 'console' %}" class="back-link">←</a> Profile & Settings</h1>
+            <p>Manage your account information and preferences</p>
+        </div>
+
+        <!-- Profile Information -->
+        <div class="card">
+            <h2>Profile Information</h2>
+            <form method="post" action="{% url 'update_profile' %}">
+                {% csrf_token %}
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="first_name">First Name</label>
+                        <input type="text" id="first_name" name="first_name" value="{{ user.first_name }}">
+                    </div>
+                    <div class="form-group">
+                        <label for="last_name">Last Name</label>
+                        <input type="text" id="last_name" name="last_name" value="{{ user.last_name }}">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="username">Username</label>
+                    <input type="text" id="username" name="username" value="{{ user.username }}">
+                </div>
+
+                <div class="form-group">
+                    <label for="email">Email Address</label>
+                    <input type="email" id="email" name="email" value="{{ user.email }}">
+                </div>
+
+                <div class="form-group">
+                    <label for="phone_number">Phone Number</label>
+                    <input type="tel" id="phone_number" name="phone_number" value="{{ user.phone_number|default:'' }}">
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="company_name">Company Name</label>
+                        <input type="text" id="company_name" name="company_name" value="{{ user.company_name|default:'' }}">
+                    </div>
+                    <div class="form-group">
+                        <label for="company_category">Company Category</label>
+                        <select id="company_category" name="company_category">
+                            <option value="">Select Category</option>
+                            <option value="restaurant" {% if user.company_category == 'restaurant' %}selected{% endif %}>Restaurant</option>
+                            <option value="clothing_brand" {% if user.company_category == 'clothing_brand' %}selected{% endif %}>Clothing Brand</option>
+                            <option value="spaza" {% if user.company_category == 'spaza' %}selected{% endif %}>Spaza</option>
+                            <option value="salon" {% if user.company_category == 'salon' %}selected{% endif %}>Salon</option>
+                            <option value="car_wash" {% if user.company_category == 'car_wash' %}selected{% endif %}>Car Wash</option>
+                        </select>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn">Save Changes</button>
+            </form>
+        </div>
+
+        <!-- Notification Settings -->
+        <div class="card">
+            <h2>Notification Settings</h2>
+            <div class="setting-item">
+                <div class="setting-info">
+                    <h3>Email Notifications</h3>
+                    <p>Receive updates about your orders and account</p>
+                </div>
+                <div class="toggle active" onclick="toggleSetting(this)"></div>
+            </div>
+            <div class="setting-item">
+                <div class="setting-info">
+                    <h3>SMS Notifications</h3>
+                    <p>Get text messages for important updates</p>
+                </div>
+                <div class="toggle" onclick="toggleSetting(this)"></div>
             </div>
         </div>
+
+        <!-- Security Settings -->
+        <div class="card">
+            <h2>Security Settings</h2>
+                <form method="post" action="{% url 'change_password' %}">
+                    {% csrf_token %}
+                    
+                    <div class="form-group">
+                        <label for="current_password">Current Password</label>
+                        <div class="password-wrapper">
+                            <input type="password" id="current_password" name="current_password">
+                            <span class="toggle-password" onclick="togglePassword('current_password', this)">👁️</span>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="new_password">New Password</label>
+                        <div class="password-wrapper">
+                            <input type="password" id="new_password" name="new_password">
+                            <span class="toggle-password" onclick="togglePassword('new_password', this)">👁️</span>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="confirm_password">Confirm New Password</label>
+                        <div class="password-wrapper">
+                            <input type="password" id="confirm_password" name="confirm_password">
+                            <span class="toggle-password" onclick="togglePassword('confirm_password', this)">👁️</span>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn">Change Password</button>
+                </form>
+
+
+            <div class="setting-item" style="margin-top: 20px;">
+                <div class="setting-info">
+                    <h3>Two-Factor Authentication</h3>
+                    <p>Add an extra layer of security to your account</p>
+                </div>
+                <button class="btn btn-secondary">Enable 2FA</button>
+            </div>
+        </div>
+
+        <!-- Admin Settings (if user is admin) -->
+        {% if user.is_staff %}
+        <div class="card">
+            <h2>Admin Settings</h2>
+            <div class="setting-item">
+                <div class="setting-info">
+                    <h3>Admin Dashboard Access</h3>
+                    <p>Quick access to admin panel</p>
+                </div>
+                <button class="btn" onclick="window.open('/admin/', '_blank')">Open Admin Panel</button>
+            </div>
+            <div class="setting-item">
+                <div class="setting-info">
+                    <h3>User Management</h3>
+                    <p>Manage user accounts and permissions</p>
+                </div>
+                <button class="btn btn-secondary">Manage Users</button>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Danger Zone -->
+        <div class="card">
+            <h2>Account Management</h2>
+            <div class="danger-zone">
+                <h3>Danger Zone</h3>
+                <p>These actions cannot be undone. Please be careful.</p>
+                <button class="btn btn-danger" onclick="confirmDelete()">Delete Account</button>
+
+                <form id="deleteForm" method="post" action="{% url 'delete_account' %}" style="display: none;">
+                    {% csrf_token %}
+                </form>
+            </div>
+        </div>
+
     </div>
+
+    <script>
+        // Auto-hide messages after 5 seconds
+        document.addEventListener('DOMContentLoaded', function() {
+            const messages = document.querySelectorAll('.message');
+            
+            messages.forEach(function(message, index) {
+                // Stagger the auto-hide timing if multiple messages
+                setTimeout(function() {
+                    hideMessage(message);
+                }, 5000 + (index * 500));
+            });
+        });
+
+        function closeMessage(button) {
+            const message = button.closest('.message');
+            hideMessage(message);
+        }
+
+        function hideMessage(message) {
+            message.classList.add('fade-out');
+            setTimeout(function() {
+                if (message.parentNode) {
+                    message.parentNode.removeChild(message);
+                }
+            }, 300);
+        }
+
+        // Close message on click (optional)
+        document.addEventListener('click', function(e) {
+            if (e.target.closest('.message-content')) {
+                const message = e.target.closest('.message');
+                hideMessage(message);
+            }
+        });
+    </script>
+
+    <script>
+    function togglePassword(fieldId, iconElement) {
+        const field = document.getElementById(fieldId);
+        if (field.type === "password") {
+            field.type = "text";
+            iconElement.textContent = "🙈"; // change icon to "hide"
+        } else {
+            field.type = "password";
+            iconElement.textContent = "👁️"; // change icon to "show"
+        }
+    }
+    </script>
+
+    <script>
+    function confirmDelete() {
+        const confirmed = confirm("Are you sure you want to delete your account? This action cannot be undone.");
+        if (confirmed) {
+            document.getElementById("deleteForm").submit();
+        }
+    }
+    </script>
 </body>
 </html>

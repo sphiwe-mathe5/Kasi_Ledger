@@ -1,0 +1,409 @@
+{% load static %}
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" href="{% static 'images/kasicon.png' %}">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <title>{{ user.company_name }}</title>
+    <title>Email Marketing</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background-color: #f5f5f5;
+            color: #333;
+            line-height: 1.6;
+        }
+
+        .email-marketing-container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+
+        h1 {
+            font-size: 32px;
+            color: #2c3e50;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+
+        /* Stats Section */
+        .stats {
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin-bottom: 30px;
+        }
+
+        .stats p {
+            font-size: 16px;
+            margin-bottom: 10px;
+        }
+
+        .stats strong {
+            color: #4A90E2;
+            font-size: 20px;
+        }
+
+        .stats small {
+            color: #7f8c8d;
+            font-size: 14px;
+        }
+
+        .no-emails {
+            color: #e74c3c;
+            font-weight: 600;
+        }
+
+        /* Email List */
+        .email-list {
+            margin-top: 25px;
+        }
+
+        .email-list h3 {
+            font-size: 18px;
+            color: #2c3e50;
+            margin-bottom: 15px;
+        }
+
+        .emails-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 10px;
+            max-height: 200px;
+            overflow-y: auto;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 6px;
+            border: 1px solid #e0e0e0;
+        }
+
+        .email-item {
+            background: white;
+            padding: 10px 15px;
+            border-radius: 4px;
+            font-size: 14px;
+            color: #555;
+            border: 1px solid #e0e0e0;
+        }
+
+        /* Form Styling */
+        form {
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin-bottom: 30px;
+        }
+
+        .step {
+            margin-bottom: 30px;
+            padding-bottom: 30px;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        .step:last-of-type {
+            border-bottom: none;
+            margin-bottom: 0;
+            padding-bottom: 0;
+        }
+
+        .step h2 {
+            font-size: 20px;
+            color: #4A90E2;
+            margin-bottom: 15px;
+        }
+
+        select, input[type="file"], textarea {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 6px;
+            font-size: 15px;
+            font-family: inherit;
+            transition: border-color 0.3s;
+        }
+
+        select:focus, input[type="file"]:focus, textarea:focus {
+            outline: none;
+            border-color: #4A90E2;
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+
+        small {
+            display: block;
+            margin-top: 8px;
+            color: #7f8c8d;
+            font-size: 13px;
+        }
+
+        /* Action Button */
+        .action {
+            margin-top: 30px;
+            text-align: center;
+        }
+
+        .send-button {
+            background: #4A90E2;
+            color: white;
+            border: none;
+            padding: 15px 40px;
+            font-size: 18px;
+            font-weight: 600;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        .send-button:hover {
+            background: #357ABD;
+        }
+
+        /* No Customers Message */
+        .no-customers {
+            background: white;
+            padding: 40px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .no-customers p {
+            font-size: 16px;
+            color: #7f8c8d;
+            margin-bottom: 10px;
+        }
+
+        /* Messages */
+        .messages {
+            margin-bottom: 30px;
+        }
+
+        .message {
+            padding: 15px 20px;
+            border-radius: 6px;
+            margin-bottom: 10px;
+            font-size: 15px;
+        }
+
+        .message.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .message.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .message.info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+
+        /* Preview Section */
+        .preview {
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .preview h2 {
+            font-size: 22px;
+            color: #2c3e50;
+            margin-bottom: 20px;
+        }
+
+        .preview ol {
+            padding-left: 25px;
+        }
+
+        .preview li {
+            font-size: 15px;
+            color: #555;
+            margin-bottom: 12px;
+            line-height: 1.6;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .email-marketing-container {
+                padding: 20px 15px;
+            }
+
+            h1 {
+                font-size: 24px;
+            }
+
+            .emails-container {
+                grid-template-columns: 1fr;
+            }
+
+            form, .stats, .preview {
+                padding: 20px;
+            }
+
+            .send-button {
+                width: 100%;
+                padding: 15px 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+<div class="email-marketing-container">
+    <h1>
+        <a href="javascript:history.back()" style="text-decoration:none; color:inherit;">
+            <i class="fa fa-arrow-left" aria-hidden="true"></i>
+        </a> 📧 Send Marketing Email
+    </h1>
+
+    <div class="stats">
+        {% if customer_emails_count > 0 %}
+            <p><strong>{{ customer_emails_count }}</strong> customers will receive this email</p>
+            <p><small>These are customers from your appointment bookings and tickets</small></p>
+        {% else %}
+            <p class="no-emails">No customer emails found in your system.</p>
+            <p><small>You need to have customers with email addresses in your appointments/tickets</small></p>
+        {% endif %}
+    </div>
+
+    {% if not has_email_access %}
+        <!-- Subscription Gate: User needs to upgrade -->
+        <div class="upgrade-notice" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 40px; border-radius: 12px; text-align: center; margin: 30px 0;">
+            <h2 style="margin: 0 0 15px 0; font-size: 28px;">🚀 Unlock Email Marketing</h2>
+            <p style="font-size: 18px; margin: 0 0 25px 0; opacity: 0.95;">
+                {{ access_message }}
+            </p>
+            <a href="{% url 'subscription_plans' %}" 
+               style="display: inline-block; background: white; color: #667eea; padding: 15px 40px; 
+                      border-radius: 8px; text-decoration: none; font-weight: bold; font-size: 16px;
+                      transition: transform 0.2s;">
+                ⭐ Upgrade Your Plan
+            </a>
+            <p style="margin: 20px 0 0 0; font-size: 14px; opacity: 0.85;">
+                Send professional email campaigns to all your customers
+            </p>
+        </div>
+            {% if messages %}
+            <div class="messages">
+                {% for message in messages %}
+                <div class="message {{ message.tags }}">
+                    {{ message }}
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
+        <!-- Show disabled form as preview -->
+        <div style="opacity: 0.4; pointer-events: none; user-select: none;">
+            <div class="step">
+                <h2>1. Choose Template</h2>
+                <select disabled>
+                    <option value="">Select a template...</option>
+                    {% for template in templates %}
+                    <option value="{{ template.id }}">{{ template.name }} - {{ template.category }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="step">
+                <h2>2. Add Images (Optional)</h2>
+                <input type="file" disabled>
+                <small>You can select multiple images</small>
+            </div>
+
+            <div class="step">
+                <h2>3. Customize Message with AI (Optional)</h2>
+                <textarea disabled placeholder="E.g., 'Make this more festive for Christmas'" rows="4"></textarea>
+                <small>Tell AI how you want to modify the email content</small>
+            </div>
+
+            <div class="action">
+                <button type="button" disabled class="send-button" style="opacity: 0.5; cursor: not-allowed;">
+                    🚀 Send to {{ customer_emails_count }} Customers
+                </button>
+            </div>
+        </div>
+
+    {% elif customer_emails_count > 0 %}
+        <!-- Active Form: User has access -->
+        <form method="POST" enctype="multipart/form-data">
+            {% csrf_token %}
+            
+            <!-- Step 1: Choose Template -->
+            <div class="step">
+                <h2>1. Choose Template</h2>
+                <select name="template" required>
+                    <option value="">Select a template...</option>
+                    {% for template in templates %}
+                    <option value="{{ template.id }}">{{ template.name }} - {{ template.category }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <!-- Step 2: Add Images -->
+            <div class="step">
+                <h2>2. Add Images (Optional)</h2>
+                <input type="file" name="images" multiple accept="image/*">
+                <small>You can select multiple images</small>
+            </div>
+
+            <!-- Step 3: AI Message Helper -->
+            <div class="step">
+                <h2>3. Customize Message with AI (Optional)</h2>
+                <textarea name="ai_prompt" 
+                          placeholder="E.g., 'Make this more festive for Christmas' or 'Add a summer sale theme'" 
+                          rows="4"></textarea>
+                <small>Tell AI how you want to modify the email content</small>
+            </div>
+
+            <div class="action">
+                <button type="submit" class="send-button">
+                    🚀 Send to {{ customer_emails_count }} Customers
+                </button>
+            </div>
+        </form>
+
+    {% else %}
+        <!-- No customers case -->
+        <div class="no-customers">
+            <p>You need to have customers with email addresses in your system first.</p>
+            <p>Create some appointments or tickets with customer email addresses, then come back here.</p>
+        </div>
+    {% endif %}
+
+
+
+
+        <div class="preview">
+            <h2>How it works:</h2>
+            <ol>
+                <li>System automatically finds all customer emails from your appointments/tickets</li>
+                <li>Choose an email template</li>
+                <li>Add your images (optional)</li>
+                <li>Tell AI how to customize the message (optional)</li>
+                <li>Click send - goes to all your customers automatically</li>
+            </ol>
+        </div>
+    </div>
+</body>
+</html>

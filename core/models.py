@@ -6,21 +6,39 @@ from django.db import models
 import random
 import datetime
 from submit.models import Profile, CustomUser
+import uuid
+from django.conf import settings
+
 
 
 class Category(models.Model):
-    name = models.CharField(max_length=100, unique=True, null=True, blank=True)
+    name = models.CharField(max_length=100, null=True, blank=True)
     profile = models.ForeignKey(Profile, on_delete=models.CASCADE, null=True, blank=True)
     user = models.ForeignKey(CustomUser, on_delete=models.CASCADE, null=True, blank=True)
+    
     def __str__(self):
         return self.name
 
     def get_absolute_url(self):
         return reverse('contact', kwargs={'pk': self.pk})
+    
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=['name', 'user'], 
+                name='unique_category_name_per_user'
+            ),
+            models.UniqueConstraint(
+                fields=['name', 'profile'], 
+                name='unique_category_name_per_profile',
+                condition=models.Q(profile__isnull=False)
+            )
+        ]
 
 
 class Product(models.Model):
-    barcode = models.CharField(max_length=100, unique=True, default='12345')
+    barcode = models.CharField(max_length=100, unique=True, null=True, blank=True, default=None)
+    item_code = models.CharField(max_length=50, unique=False, null=True, blank=True, default=None)
     name = models.CharField(max_length=200)
     status = models.CharField(max_length=10,
                               choices=[('IN', 'In Stock'),
@@ -66,6 +84,14 @@ class Product(models.Model):
     def total_cost(self):
         return self.cost * self.quantity
 
+#    @property
+#    def profit_loss_message(self):
+#        return f"{self.profit_loss:.2f}"
+    
+#    @property
+#    def profit_loss(self):
+        return (self.price - self.cost) * self.quantity
+    
     def calculate_profit_loss(self):
         profit_loss = self.price - self.cost
         if profit_loss > 0:
@@ -84,7 +110,19 @@ class Product(models.Model):
             self.last_modified = None
         self.save()
 
+class StockImage(models.Model):
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="stock_images"
+    )
+    image = models.ImageField(upload_to="stock_uploads/")
+    uploaded_at = models.DateTimeField(auto_now_add=True)
+    processed = models.BooleanField(default=False)
 
+    def __str__(self):
+        return f"{self.user.username} - {self.id}"
+    
 class Sale(models.Model):
     transaction_id = models.CharField(max_length=50, unique=True)
     date_created = models.DateTimeField(auto_now_add=True)

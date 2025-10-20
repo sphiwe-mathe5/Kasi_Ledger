@@ -11,63 +11,11 @@
     <script src="https://unpkg.com/html5-qrcode"></script>
     <link rel="stylesheet" href="{% static 'css/main.css' %}">
     <link rel="icon" href="{% static 'images/kasicon.png' %}">
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins&display=swap" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 </head>
 <body>
-  {% if show_modal %}
-  <div class="modal" id="adminPasswordModal" tabindex="-1" role="dialog" aria-labelledby="modalLabel" aria-hidden="true">
-    <div class="modal-dialog" role="document">
-        <div class="modal-content">
-            <form method="POST">
-                {% csrf_token %}
-                <div class="modal-header">
-                    <h5 class="modal-title" id="modalLabel">Enter Admin Password</h5>
-                </div>
-                <div class="modal-body">
-                    <p class="notification">Please enter your admin password to access this section. This is required for security purposes.<a href="{% url 'guide' %}" class="forgot-password" id="forgotPasswordLink">Read More</a></p>
-                    {% if messages %}
-                        <div class="error-message">
-                            {% for message in messages %}
-                                <p class="alert alert-danger">{{ message }}</p>
-                            {% endfor %}
-                        </div>
-                    {% endif %}
-                    <div class="form-group">
-                        <input type="password" name="admin_password" class="form-control" placeholder="Admin Password" required>
-                    </div>
-                    <a href="{% url 'forgot_admin_password' %}" class="forgot-password" id="forgotPasswordLink">Forgot Admin Password?</a>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-home" onclick="window.location.href='/'">Home</button>
-                    <button type="submit" class="btn btn-primary">Submit</button>
-                </div>
-            </form>
-        </div>
-    </div>
-</div>
-  <script type="text/javascript">
-      $(document).ready(function() {
-          $('#adminPasswordModal').modal('show');  
-      });
-  </script>
-{% else %}
-<nav class="navbar">
-  <a href="{% url 'index' %}" class="logo">KASI LEDGER</a>
-  <div class="quote_btn-container">
-    {% if user.company_category == 'restaurant' %}
-      <a href="{% url 'sales_analytics' %}" class="sign-up"><span>Sales Analytics</span></a>
-      <a href="{% url 'index' %}" class="sign-up"><span>Home</span></a>
-    {% elif user.company_category == 'clothing_brand' %}
-      <a href="{% url 'subscribed' %}" class="sign-up"><span>POS</span></a>
-      <a href="{% url 'index' %}" class="sign-up"><span>Home</span></a>
-    {% elif user.company_category == 'market' %}
-      <a href="{% url 'subscribed' %}" class="sign-up"><span>POS</span></a>
-      <a href="{% url 'index' %}" class="sign-up"><span>Home</span></a>
-    {% endif %}
-  </div>
-</nav>
 
 <div id="subscriptionModal" class="submodal"></div>
 
@@ -82,6 +30,78 @@
       </p>
       <button class="limit-modal-button" onclick="closeTrialEndedModal()">Got it</button>
   </div>
+</div>
+
+<div id="passwordModal" class="modal" tabindex="-1" role="dialog" style="display: none; background: rgba(0,0,0,0.5);">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <form method="POST">
+                {% csrf_token %}
+                <div class="modal-header">
+                    <h5 class="modal-title">Unlock Transactions</h5>
+                    <button type="button" class="close" onclick="closePasswordModal()">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <p>Enter your PIN to view daily transactions.</p>
+                    
+                    {% if messages %}
+                        {% for message in messages %}
+                            {% if 'Incorrect' in message.message %}
+                                <div class="alert alert-danger">{{ message }}</div>
+                            {% endif %}
+                        {% endfor %}
+                    {% endif %}
+                    
+                    <div class="form-group">
+                        <input 
+                            type="password" 
+                            name="transaction_pin" 
+                            class="form-control" 
+                            placeholder="Enter PIN" 
+                            required
+                            autocomplete="off"
+                            id="pin-input"
+                        >
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" onclick="closePasswordModal()">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Unlock</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<div class="user-info">
+    <p class="user-name"><strong>Hello, {{ user.company_name }}</strong></p>
+        <div class="user-circle" onclick="toggleUserDropdown()">
+            {{ user.company_name|slice:":1" }}
+        </div>
+    <div class="user-dropdown" id="userDropdown">
+        <div class="dropdown-header">
+            <div><strong>{{ user.company_name }}</strong></div>
+            <div class="dropdown-email">{{ user.email }}</div>
+        </div>
+        <div class="dropdown-menu">
+            <a href="{% url 'transaction_pin_settings' %}" class="dropdown-item">
+                <i class="fa-solid fa-lock"></i>
+                Set Admin Password 
+            </a>
+            <a href="{% url 'console' %}" class="dropdown-item">
+                <i class="fa-solid fa-terminal"></i>
+                Console
+            </a>
+            <a href="{% url 'profile' %}" class="dropdown-item">
+                <i class="fa-solid fa-gear"></i>
+                Settings
+            </a>
+            <a href="{% url 'logout' %}" class="dropdown-item logout">
+                <i class="fa-solid fa-right-from-bracket"></i>
+                Logout
+            </a>
+        </div>
+    </div>
 </div>
 
 <div class="container">
@@ -149,7 +169,7 @@
         <li>Ensure you set up you camera on your browser.</li>
         <li>Position the product's barcode in front of your device's camera.</li>
         <li>Hold steady until the scanner recognizes the code.</li>
-        <li>Verify the scanned information in the form<a href="{% url 'guide' %}" class="forgotpassword-link">Read Detailed Guide</a></li>
+        <li>Verify the scanned information in the form <a href="{% url 'guide' %}" class="forgotpassword-link">Read Detailed Guide</a></li>
       </ol>
       <div id="reader" class="scanner-area"></div>
       <div id="result" class="scanner-result"></div>
@@ -161,140 +181,178 @@
   <source src="{% static 'js/BEEP.wav' %}" type="audio/mpeg">
   Your browser does not support the audio element.
 </audio>
-<h1>Daily Transactions</h1>
-<form method="GET" class="search-form">
-<div class="search-filters">
-  <input 
-    type="text" 
-    name="search" 
-    class="form-control search-input" 
-    placeholder="Search by name or barcode..."
-    value="{{ search_query }}"
-  >
-  <select name="category" class="form-control">
-    <option value="">All Categories</option>
-    {% for category in categories %}
-      <option value="{{ category.name }}" {% if category.name == category_filter %}selected{% endif %}>
-        {{ category.name }}
-      </option>
-    {% endfor %}
-  </select>
-  <select name="status" class="form-control">
-    <option value="">All Status</option>
-    <option value="IN" {% if status_filter == 'IN' %}selected{% endif %}>IN</option>
-    <option value="OUT" {% if status_filter == 'OUT' %}selected{% endif %}>OUT</option>
-  </select>
-  <button type="submit" class="btn btn-primary">
-    <i class="fas fa-search"></i>
-  </button>
-  <a href="?" class="btn btn-secondary">
-    <i class="fas fa-times"></i>
-  </a>
-</div>
-</form>
-<div id="product-list">
-  {% if grouped_products %}
-    <ul>
-    </ul>
-    {% for month, month_data in grouped_products.items %}
-    <h2>{{ month|date:"F Y" }}</h2>
-    <p><b>Monthly Totals:</b> 
-        Sales: R{{ month_data.monthly_total.price|floatformat:2|intcomma }} | 
-        Cost: R{{ month_data.monthly_total.cost|floatformat:2|intcomma }} |
-        Profit/Loss: <span class="{% if month_data.monthly_total.profit_loss < 0 %}text-red{% else %}text-green{% endif %}">
-            R{{ month_data.monthly_total.profit_loss|floatformat:2|intcomma }}
-        </span>
-    </p>
-    {% for item in out_of_stock_per_month %}
-        {% if item.month|date:"F Y" == month|date:"F Y" %}
-            <p>{{ item.count }} product{% if item.count != 1 %}s{% endif %} sold out</p>
-        {% endif %}
-    {% endfor %}
-      {% if month_data.dates %}
-        {% for date, data in month_data.dates.items %}
-          <h3>{{ date|date:"d F Y" }}</h3>
-          <p>Number of Transactions Per Day: <span class="product-count">{{ data.total_count }}</span></p>
-          <div class="table-container" data-date="{{ date|date:'Y-m-d' }}">
-          <table class="product-table">
-              <thead>
-                  <tr>
-                  <th>Product Name</th>
-                  <th>Barcode</th>
-                  <th>Status</th>
-                  <th>Category</th>
-                  <th>Quantity</th>
-                  <th>Sales (Total)</th>
-                  <th>Cost (Total)</th>
-                  <th>Date Sold</th>
-                  <th>Date Added</th>
-                  <th>Profit/Loss</th>
-                  </tr>
-              </thead>
-              <tbody>
-                  {% for product in data.products %}
-                  <tr class="product-row" id="product-{{ product.id }}">
-                    <td style="position: relative;">
-                        {{ product.name }} ({{ product.original_quantity }})
-                        <a href="{% url 'delete_product' product.id %}" class="delete-btn" onclick="return confirm('Are you sure you want to delete this product?');">
-                            <i class="fas fa-trash"></i>
-                        </a>
-                    </td>
-                      <td>{{ product.barcode|default:"-" }}</td>
-                      <td>{{ product.status|default:"-" }}</td>
-                      <td>{{ product.category|default:"-" }}</td>
-                      <td>{{ product.quantity }}</td>
-                      <td>R{{ product.price|floatformat:2|intcomma }}</td>
-                      <td>R{{ product.cost|floatformat:2|intcomma }}</td>
-                      <td>
-                      {% if product.status == 'IN' %}
-                          -
-                      {% else %}
-                          {{ product.last_modified|date:"d M Y H:i"|default:"-" }}
-                      {% endif %}
-                      </td>
-                      <td>{{ product.date_added|date:"d M Y H:i" }}</td>
-                      <td class="{% if product.profit_loss < 0 %}text-red{% else %}text-green{% endif %}">
-                          R {{ product.profit_loss_message|intcomma }}
-                      </td>
-                  </tr>
-                  {% endfor %}
-                  <tr class="total-row">
-                  <td colspan="5"><strong>Daily Total</strong></td>
-                  <td style="color: green;"><strong>R{{ data.daily_total.price|floatformat:2|intcomma}}</strong></td>
-                  <td style="color: red;"><strong>R{{ data.daily_total.cost|floatformat:2|intcomma}}</strong></td>
-                  <td colspan="2"></td>
-                  <td style="color: {% if data.daily_total.profit_loss < 0 %} red {% else %} green {% endif %};">
-                      <strong>R{{ data.daily_total.profit_loss|floatformat:2|intcomma }}</strong>
-                  </td>                                                
-                  </tr>
-              </tbody>
-              </table>
-            {% if data.total_count > 10 and not data.show_all %}
-              <div class="pagination">
-                <form method="GET" action="{{ request.path }}">
-                  {% for key, value in request.GET.items %}
-                    {% if key != 'show_all' and key != 'date' %}
-                      <input type="hidden" name="{{ key }}" value="{{ value }}">
-                    {% endif %}
-                  {% endfor %}
-                  <input type="hidden" name="show_all" value="true">
-                  <input type="hidden" name="date" value="{{ date|date:'Y-m-d' }}">
-                  <button type="submit" class="see-all-btn">See all products ({{ data.total_count }})</button>
-                </form>
-              </div>
+
+<div class="transactions-section">
+    <div class="section-header">
+        <h1>Daily Transactions</h1>
+        <div class="lock-control">
+            {% if transactions_unlocked %}
+                <button class="btn btn-lock unlocked" onclick="lockTransactions()" title="Lock Transactions">
+                    <i class="fa-solid fa-lock-open"></i> Lock
+                </button>
+            {% elif has_transaction_pin %}
+                <button class="btn btn-lock locked" onclick="showPasswordModal()" title="Unlock Transactions">
+                    <i class="fa-solid fa-lock"></i> Unlock
+                </button>
+            {% else %}
+                <a href="{% url 'transaction_pin_settings' %}" class="btn btn-lock setup" title="Set up transaction PIN">
+                    <i class="fa-solid fa-key"></i> Setup PIN
+                </a>
             {% endif %}
-          </div>
-        {% endfor %}
-      {% else %}
-        <p>No dates for this month.</p>
-      {% endif %}
-    {% empty %}
-      <p>No months available.</p>
-    {% endfor %}
-  {% else %}
-    <p>No products Uploaded yet.</p>
-  {% endif %}
+        </div>
+    </div>
+
+    {% if transactions_unlocked or not has_transaction_pin %}
+        <!-- Show transactions when unlocked OR when no PIN is set -->
+        <form method="GET" class="search-form">
+            <div class="search-filters">
+                <input 
+                    type="text" 
+                    name="search" 
+                    class="form-control search-input" 
+                    placeholder="Search by name or barcode..."
+                    value="{{ search_query }}"
+                >
+                <select name="category" class="form-control">
+                    <option value="">All Categories</option>
+                    {% for category in categories %}
+                        <option value="{{ category.name }}" {% if category.name == category_filter %}selected{% endif %}>
+                            {{ category.name }}
+                        </option>
+                    {% endfor %}
+                </select>
+                <select name="status" class="form-control">
+                    <option value="">All Status</option>
+                    <option value="IN" {% if status_filter == 'IN' %}selected{% endif %}>IN</option>
+                    <option value="OUT" {% if status_filter == 'OUT' %}selected{% endif %}>OUT</option>
+                </select>
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-search"></i>
+                </button>
+                <a href="?" class="btn btn-secondary">
+                    <i class="fas fa-times"></i>
+                </a>
+            </div>
+        </form>
+        
+        <div id="product-list">
+            {% if grouped_products %}
+                <ul></ul>
+                {% for month, month_data in grouped_products.items %}
+                <h2>{{ month|date:"F Y" }}</h2>
+                <p><b>Monthly Totals:</b> 
+                    Sales: R{{ month_data.monthly_total.price|floatformat:2|intcomma }} | 
+                    Cost: R{{ month_data.monthly_total.cost|floatformat:2|intcomma }} |
+                    Profit/Loss: <span class="{% if month_data.monthly_total.profit_loss < 0 %}text-red{% else %}text-green{% endif %}">
+                        R{{ month_data.monthly_total.profit_loss|floatformat:2|intcomma }}
+                    </span>
+                </p>
+                {% for item in out_of_stock_per_month %}
+                    {% if item.month|date:"F Y" == month|date:"F Y" %}
+                        <p>{{ item.count }} product{% if item.count != 1 %}s{% endif %} sold out</p>
+                    {% endif %}
+                {% endfor %}
+                {% if month_data.dates %}
+                    {% for date, data in month_data.dates.items %}
+                    <h3>{{ date|date:"d F Y" }}</h3>
+                    <p>Number of Transactions Per Day: <span class="product-count">{{ data.total_count }}</span></p>
+                    <div class="table-container" data-date="{{ date|date:'Y-m-d' }}">
+                    <table class="product-table">
+                        <thead>
+                            <tr>
+                            <th>Product Name</th>
+                            <th>Barcode</th>
+                            <th>Status</th>
+                            <th>Category</th>
+                            <th>Quantity</th>
+                            <th>Sales (Total)</th>
+                            <th>Cost (Total)</th>
+                            <th>Date Sold</th>
+                            <th>Date Added</th>
+                            <th>Profit/Loss</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for product in data.products %}
+                            <tr class="product-row" id="product-{{ product.id }}">
+                                <td style="position: relative;">
+                                    {{ product.name }} ({{ product.original_quantity }})
+                                    <a href="{% url 'delete_product' product.id %}" class="delete-btn" onclick="return confirm('Are you sure you want to delete this product?');">
+                                        <i class="fas fa-trash"></i>
+                                    </a>
+                                </td>
+                                <td>{{ product.barcode|default:"-" }}</td>
+                                <td>{{ product.status|default:"-" }}</td>
+                                <td>{{ product.category|default:"-" }}</td>
+                                <td>{{ product.quantity }}</td>
+                                <td>R{{ product.price|floatformat:2|intcomma }}</td>
+                                <td>R{{ product.cost|floatformat:2|intcomma }}</td>
+                                <td>
+                                {% if product.status == 'IN' %}
+                                    -
+                                {% else %}
+                                    {{ product.last_modified|date:"d M Y H:i"|default:"-" }}
+                                {% endif %}
+                                </td>
+                                <td>{{ product.date_added|date:"d M Y H:i" }}</td>
+                                <td class="{% if product.profit_loss < 0 %}text-red{% else %}text-green{% endif %}">
+                                    R {{ product.profit_loss_message|intcomma }}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                            <tr class="total-row">
+                            <td colspan="5"><strong>Daily Total</strong></td>
+                            <td style="color: green;"><strong>R{{ data.daily_total.price|floatformat:2|intcomma}}</strong></td>
+                            <td style="color: red;"><strong>R{{ data.daily_total.cost|floatformat:2|intcomma}}</strong></td>
+                            <td colspan="2"></td>
+                            <td style="color: {% if data.daily_total.profit_loss < 0 %} red {% else %} green {% endif %};">
+                                <strong>R{{ data.daily_total.profit_loss|floatformat:2|intcomma }}</strong>
+                            </td>                                                
+                            </tr>
+                        </tbody>
+                        </table>
+                        {% if data.total_count > 10 and not data.show_all %}
+                        <div class="pagination">
+                            <form method="GET" action="{{ request.path }}">
+                            {% for key, value in request.GET.items %}
+                                {% if key != 'show_all' and key != 'date' %}
+                                <input type="hidden" name="{{ key }}" value="{{ value }}">
+                                {% endif %}
+                            {% endfor %}
+                            <input type="hidden" name="show_all" value="true">
+                            <input type="hidden" name="date" value="{{ date|date:'Y-m-d' }}">
+                            <button type="submit" class="see-all-btn">See all products ({{ data.total_count }})</button>
+                            </form>
+                        </div>
+                        {% endif %}
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <p>No dates for this month.</p>
+                {% endif %}
+                {% empty %}
+                <p>No months available.</p>
+                {% endfor %}
+            {% else %}
+                <p>No products Uploaded yet.</p>
+            {% endif %}
+        </div>
+    {% else %}
+        <!-- Show locked state when PIN is set but not unlocked 
+        <div class="locked-transactions">
+            <div class="locked-placeholder">
+                <i class="fa-solid fa-lock fa-3x"></i>
+                <h3>Transactions Locked</h3>
+                <p>Click the unlock button to view daily transactions</p>
+                <button class="btn btn-primary" onclick="showPasswordModal()">
+                    <i class="fa-solid fa-lock-open"></i> Unlock Transactions
+                </button>
+            </div>
+        </div>-->
+    {% endif %}
 </div>
+
+
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
 <script>
 const ENQUIRE = "{% url 'enquire' %}";
@@ -303,6 +361,35 @@ const CSRF_TOKEN = "{{ csrf_token }}";
 </script>
 <script src="{% static 'js/inventory.js' %}"></script>
 <script src="{% static 'js/jquery-3.4.1.min.js' %}"></script>
+
+<script>
+function showPasswordModal() {
+    document.getElementById('passwordModal').style.display = 'flex';
+    document.getElementById('passwordModal').style.alignItems = 'center';
+    document.getElementById('passwordModal').style.justifyContent = 'center';
+    setTimeout(() => {
+        document.getElementById('pin-input').focus();
+    }, 100);
+}
+
+function closePasswordModal() {
+    document.getElementById('passwordModal').style.display = 'none';
+}
+
+function lockTransactions() {
+    if (confirm('Are you sure you want to lock transactions?')) {
+        window.location.href = '{% url "lock_transactions" %}';
+    }
+}
+
+// Auto-show modal if there's an error message
+{% if messages %}
+    {% for message in messages %}
+        {% if 'Incorrect' in message.message %}
+            showPasswordModal();
+        {% endif %}
+    {% endfor %}
 {% endif %}
+</script>
 </body>
 </html>
