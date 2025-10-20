@@ -5,6 +5,7 @@ asgiref==3.8.1
 boto==2.49.0
 Brotli==1.1.0
 cffi==1.17.1
+celery==5.5.3
 charset-normalizer==3.3.2
 Django==5.2.7
 django_cors_headers==4.9.0
