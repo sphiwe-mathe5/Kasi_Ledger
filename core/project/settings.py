@@ -335,10 +335,12 @@ AXES_RESET_ON_SUCCESS = config('AXES_RESET_ON_SUCCESS', cast=bool)
 AXES_LOCKOUT_PARAMETERS = config('AXES_LOCKOUT_PARAMETERS', cast=Csv())
 
 
+# Trust Railway's reverse proxy headers
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+
 X_FRAME_OPTIONS = 'DENY'
 CSRF_COOKIE_SAMESITE = 'Strict'
 SESSION_EXPIRE_AT_BROWSER_CLOSE = True
-
 
 if not DEBUG:
     CSRF_COOKIE_SECURE = True
@@ -355,12 +357,12 @@ if not DEBUG:
     SESSION_COOKIE_NAME = '__Host-sessionid'
     CSRF_COOKIE_NAME = '__Host-csrftoken'
 else:
-    
     CSRF_COOKIE_SECURE = False
     CSRF_COOKIE_HTTPONLY = False
     SESSION_COOKIE_SECURE = False
     SECURE_SSL_REDIRECT = False
     SECURE_HSTS_SECONDS = 0
+
 
 
 CONTENT_SECURITY_POLICY = {
