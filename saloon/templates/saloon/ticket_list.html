@@ -139,11 +139,17 @@
             overflow: hidden;
             box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
             margin-bottom: 30px;
-        }
+
+
+        overflow-x: auto;    
+            -webkit-overflow-scrolling: touch; 
+            }
+
 
         table {
             width: 100%;
             border-collapse: collapse;
+            min-width: 600px; 
         }
 
         th {
@@ -153,12 +159,14 @@
             text-align: left;
             font-weight: 500;
             font-size: 14px;
+            white-space: nowrap; /* prevents header text from wrapping */
         }
 
         td {
             padding: 12px;
             border-bottom: 1px solid #f1f3f4;
             font-size: 14px;
+            white-space: nowrap; 
         }
 
         tr:hover {
@@ -174,7 +182,7 @@
             color: #6c757d;
             font-style: italic;
         }
-
+        
         .pagination {
             display: flex;
             align-items: center;
@@ -232,28 +240,40 @@
         }
 
         @media (max-width: 768px) {
-            .filter-form {
-                flex-direction: column;
-                align-items: stretch;
-            }
-            
-            .form-group {
-                width: 100%;
-            }
-            
-            table {
-                font-size: 12px;
-            }
-            
-            th, td {
-                padding: 8px 6px;
-            }
-            
-            .header {
-                flex-direction: column;
-                align-items: flex-start;
-                gap: 15px;
-            }
+        .filter-form {
+            flex-direction: column;
+            align-items: stretch;
+        }
+
+        .form-group {
+            width: 100%;
+        }
+
+        /* Slightly smaller font inside table */
+        table {
+            font-size: 12px;
+            min-width: 500px; /* make sure scroll still works */
+        }
+
+        th, td {
+            padding: 8px 6px;
+        }
+
+        .header {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 15px;
+        }
+
+        /* Add a subtle visual cue for scroll */
+        .table-container::after {
+            content: "→ Swipe to scroll →";
+            display: block;
+            text-align: center;
+            font-size: 12px;
+            color: #6c757d;
+            padding: 8px 0;
+        }
         }
     </style>
 </head>
@@ -262,7 +282,7 @@
     <div class="container">
         <!-- Added styled header with back button -->
         <div class="header">
-            <a href="{% url 'saloon:saloon' %}" class="back-btn">← Back to Dashboard</a>
+            <a href="{% url 'saloon:saloon' %}" class="back-btn">← Back</a>
             <h1>Appointment History</h1>
         </div>
 

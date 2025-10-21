@@ -18,6 +18,7 @@ from .models import CampaignImage
 from django.utils.html import escape
 from saloon.subscriptions import check_feature_access
 from .email_utils import send_marketing_email
+from .tasks import send_bulk_emails_task
 
 @login_required
 def emails(request):
@@ -71,25 +72,35 @@ def emails(request):
             return redirect('email_campaigns:emails')
         
         try:
-            # Get the selected template
             template = EmailTemplate.objects.get(id=template_id)
             
-            # Apply AI modifications if prompt provided
+            # Apply AI modifications
             final_html = template.html_content
             if ai_prompt:
                 final_html = apply_ai_editing(template.html_content, ai_prompt, user.company_name or "Our Business")
             
-            # Handle image uploads properly
+            # Handle images
             if images:
                 final_html = handle_images_properly(final_html, images, request)
             
-            # Send emails to all customers
-            sent_count = send_bulk_emails(user, all_customer_emails, template.subject, final_html, images)
+            # Queue emails for background processing
+            send_bulk_emails_task.delay(
+                user_id=user.id,
+                customer_emails=all_customer_emails,
+                subject=template.subject,
+                html_content=final_html,
+                images_data=[]  # Images already handled and in HTML
+            )
             
-            messages.success(request, f'✅ Email sent successfully to {sent_count} customers!')
+            # Return immediately - emails sending in background
+            messages.success(
+                request, 
+                f'✅ Emails are being sent to {customer_emails_count} customers in the background! '
+                f'This may take a few minutes.'
+            )
             
         except Exception as e:
-            messages.error(request, f'Error sending emails: {str(e)}')
+            messages.error(request, f'Error queuing emails: {str(e)}')
     
     context = {
         'customer_emails_count': customer_emails_count,

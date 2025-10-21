@@ -6,3 +6,8 @@ class WebConfig(AppConfig):
 
     def ready(self):
         import core.templatetags.core_filters
+
+
+from .celery import app as celery_app
+
+__all__ = ('celery_app',)

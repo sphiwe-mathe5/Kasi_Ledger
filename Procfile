@@ -1,1 +1,2 @@
-web: python manage.py collectstatic --noinput && python manage.py migrate && gunicorn core.project.wsgi
+web: python manage.py collectstatic --noinput && python manage.py migrate && gunicorn core.project.wsgi --bind 0.0.0.0:$PORT --timeout 120 --workers 2
+worker: celery -A core worker --loglevel=info --concurrency=2
