@@ -327,42 +327,80 @@ def check_product(request):
 
 
 
-logger = logging.getLogger(__name__)
-def send_receipt_email(email, receipt_data, request):
-    user = request.user
-    try:
-        profile = user.profile  
-        company_name = profile.company_name if profile.company_name else ''
-    except Profile.DoesNotExist:
-        company_name = ''
-        return False
+import logging
+from django.core.mail import send_mail
+from django.template.loader import render_to_string
+from django.conf import settings
+from decimal import Decimal
+import json
+from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_exempt
+from django.db import transaction
+from functools import wraps
+import datetime
 
+logger = logging.getLogger(__name__)
+
+def send_receipt_email(email, receipt_data, request):
+    """Send receipt email using system email (Gandi)"""
+    user = request.user
+    
+    # Get company name from CustomUser model
+    company_name = user.company_name or user.username or 'Our Store'
+
+    # Render the HTML email template
     html_content = render_to_string('core/receipt_template.html', {
         'items': receipt_data['items'],
         'total': receipt_data['total'],
         'date': receipt_data['date'],
         'money_rendered': receipt_data['money_rendered'],
         'change': receipt_data['change'],
+        'company_name': company_name,
         'user': {
             'first_name': user.first_name,
             'last_name': user.last_name,
             'email': user.email,
-            'company_name': user.company_name
+            'company_name': company_name
         }
     })
     
+    # Create plain text version
+    plain_text = f"""
+Receipt from {company_name}
+
+Date: {receipt_data['date']}
+Seller: {receipt_data.get('seller', user.username)}
+
+Items:
+"""
+    for item in receipt_data['items']:
+        plain_text += f"- {item['name']} x {item['quantity']} @ R{item['price']:.2f} = R{item['total']:.2f}\n"
+    
+    plain_text += f"""
+Total: R{receipt_data['total']:.2f}
+Money Rendered: R{receipt_data['money_rendered']:.2f}
+Change: R{receipt_data['change']:.2f}
+
+Thank you for your purchase!
+"""
+    
     try:
+        # Send using system email (Gandi) with proper from_email
         send_mail(
-            subject='Your Purchase Receipt',
-            message='Please see the attached receipt for your recent purchase.',
-            from_email=user.email,
+            subject=f'Receipt from {company_name}',
+            message=plain_text,
+            from_email=f"{company_name} <{settings.DEFAULT_FROM_EMAIL}>",  # ✅ Use system email
             recipient_list=[email],
             html_message=html_content,
             fail_silently=False,
         )
+        logger.info(f"✅ Receipt email sent successfully to {email}")
+        print(f"✅ Receipt email sent to {email}")
         return True
+        
     except Exception as e:
-        print(f"Error sending email: {str(e)}")
+        logger.error(f"❌ Error sending receipt email to {email}: {str(e)}")
+        print(f"❌ Error sending email: {str(e)}")
         return False
 
 
@@ -437,8 +475,6 @@ def process_sale(request):
                 # Update product quantity and status
                 product.quantity -= quantity
                 product.status = 'OUT' if product.quantity == 0 else 'IN'
-                
-
                 product.save()
                 
                 product_details.append({
@@ -449,7 +485,6 @@ def process_sale(request):
                     'barcode': product.barcode,
                     'item_code': product.item_code
                 })
-
             
             if money_rendered < total:
                 raise ValueError("Insufficient money rendered")
@@ -465,23 +500,34 @@ def process_sale(request):
                 'seller': request.user.username
             }
             
+            # Send receipt email if customer email provided
             email_sent = False
             if customer_email:
-                email_sent = send_receipt_email(
-                    email=customer_email,
-                    receipt_data=receipt_data,
-                    request=request  
-                )
+                try:
+                    email_sent = send_receipt_email(
+                        email=customer_email,
+                        receipt_data=receipt_data,
+                        request=request
+                    )
+                except Exception as e:
+                    logger.error(f"Failed to send receipt email: {e}")
+                    # Don't fail the sale if email fails
+                    email_sent = False
 
             return JsonResponse({
                 'success': True,
                 'receipt_data': receipt_data,
-                'email_sent': email_sent
+                'email_sent': email_sent,
+                'message': 'Sale processed successfully' + (' and receipt sent' if email_sent else ' but email failed')
             })
 
+    except ValueError as e:
+        logger.error(f"Validation error in sale: {str(e)}")
+        return JsonResponse({'success': False, 'message': str(e)}, status=400)
+        
     except Exception as e:
-        print(f"Error processing sale: {str(e)}")  
-        return JsonResponse({'success': False, 'message': str(e)})
+        logger.error(f"Error processing sale: {str(e)}", exc_info=True)
+        return JsonResponse({'success': False, 'message': 'An error occurred processing your sale'}, status=500)
 
 
 

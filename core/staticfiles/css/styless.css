@@ -207,7 +207,7 @@ a:focus {
   -ms-flex-align: center;
   align-items: center;
   position: relative;
-  background-color: #f9fafa;
+  background-color: white;
 }
 .slider_section .row {
   -webkit-box-align: center;
@@ -351,7 +351,7 @@ a:focus {
   font-size: 15px;
 }
 .about_section {
-  background-color: #f9fafa;
+  background-color: white;
 }
 .about_section .row {
   -webkit-box-align: center;
