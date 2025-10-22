@@ -135,8 +135,6 @@ def queue_bulk_emails(user, customer_emails, subject, html_content):
                 plain_text=plain_text,
                 business_name=business_name,
                 reply_to=user.email,
-                timeout=300,  # This is correct - RQ will handle it
-                job_timeout=300  # Try this instead
             )
             
             queued_count += 1
