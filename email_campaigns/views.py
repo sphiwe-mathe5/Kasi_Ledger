@@ -18,7 +18,8 @@ from .models import CampaignImage
 from django.utils.html import escape
 from saloon.subscriptions import check_feature_access
 from .email_utils import send_marketing_email
-from .tasks import send_single_email_task, create_plain_text_version
+import django_rq
+from .tasks import send_single_email, create_plain_text_version
 
 @login_required
 def emails(request):
@@ -106,11 +107,14 @@ def emails(request):
     return render(request, 'email_campaigns/simple_marketing.html', context)
 
 def queue_bulk_emails(user, customer_emails, subject, html_content):
-    """Queue emails for background processing"""
+    """Queue emails for background processing with Django-RQ"""
     business_name = user.company_name or "Our Business"
     personalized_subject = f"{subject} - {business_name}"
     
     print(f"🔍 DEBUG: Queuing {len(customer_emails)} emails for background processing")
+    
+    # Get the default queue
+    queue = django_rq.get_queue('default')
     
     queued_count = 0
     for email_address in customer_emails:
@@ -122,14 +126,16 @@ def queue_bulk_emails(user, customer_emails, subject, html_content):
             # Create plain text version
             plain_text = create_plain_text_version(personalized_html)
             
-            # Queue the background task
-            send_single_email_task(
+            # Queue the task
+            queue.enqueue(
+                send_single_email,
                 to_email=email_address,
                 subject=personalized_subject,
                 html_content=personalized_html,
                 plain_text=plain_text,
                 business_name=business_name,
-                reply_to=user.email
+                reply_to=user.email,
+                timeout=300  # 5 minutes per email
             )
             
             queued_count += 1

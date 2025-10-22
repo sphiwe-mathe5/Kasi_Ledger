@@ -146,6 +146,15 @@ CACHES = {
     }
 }
 
+
+redis_url = config('REDIS_URL')
+if redis_url:
+    RQ_QUEUES = {
+        'default': {
+            'URL': redis_url,
+            'DEFAULT_TIMEOUT': 360,
+        },
+    }
 # Celery settings
 
 CELERY_BROKER_URL = config('CELERY_BROKER_URL')

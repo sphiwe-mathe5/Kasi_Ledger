@@ -84,6 +84,7 @@ urlpatterns = [
 
     
     path('', include(router.urls)),
+    path('django-rq/', include('django_rq.urls')),
 
     path('ai-stock/', ai_stock_page, name='ai_stock_page'),
     path('api/ai-stock/recognize/', AIRecognizeAPIView.as_view(), name='ai_recognize'),
