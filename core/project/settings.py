@@ -46,7 +46,7 @@ INSTALLED_APPS = [
     'storages',
     'social_django', 
     'csp',
-    'background_task',
+    'django_rq',
     
     
 
