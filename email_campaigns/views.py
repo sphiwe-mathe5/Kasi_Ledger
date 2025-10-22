@@ -126,7 +126,7 @@ def queue_bulk_emails(user, customer_emails, subject, html_content):
             # Create plain text version
             plain_text = create_plain_text_version(personalized_html)
             
-            # Queue the task
+            # Queue the task - timeout is a queue option, not a function parameter
             queue.enqueue(
                 send_single_email,
                 to_email=email_address,
@@ -135,7 +135,8 @@ def queue_bulk_emails(user, customer_emails, subject, html_content):
                 plain_text=plain_text,
                 business_name=business_name,
                 reply_to=user.email,
-                timeout=300  # 5 minutes per email
+                timeout=300,  # This is correct - RQ will handle it
+                job_timeout=300  # Try this instead
             )
             
             queued_count += 1
