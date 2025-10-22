@@ -125,25 +125,25 @@ TEMPLATES = [
 ]
 
 
-#DATABASES = {
-#    'default': {
-#        'ENGINE': config('DATABASE_ENGINE'),
-#        'NAME': config('DATABASE_NAME'),
-#        'USER': config('DATABASE_USER'),
-#        'PASSWORD': config('DATABASE_PASSWORD'),
-#        'HOST': config('DATABASE_HOST'),
-#        'PORT': config('DATABASE_PORT'),
-#    }
-#}
-
-DATABASE_URL = config('DATABASE_URL')
-
 DATABASES = {
-    'default': dj_database_url.config(
-        default=DATABASE_URL,
-        conn_max_age=600
-    )
+    'default': {
+        'ENGINE': config('DATABASE_ENGINE'),
+        'NAME': config('DATABASE_NAME'),
+        'USER': config('DATABASE_USER'),
+        'PASSWORD': config('DATABASE_PASSWORD'),
+        'HOST': config('DATABASE_HOST'),
+        'PORT': config('DATABASE_PORT'),
+    }
 }
+
+#DATABASE_URL = config('DATABASE_URL')
+
+#DATABASES = {
+#    'default': dj_database_url.config(
+#        default=DATABASE_URL,
+#        conn_max_age=600
+#    )
+#}
 
 CACHES = {
     "default": {
