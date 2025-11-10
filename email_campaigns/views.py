@@ -17,9 +17,8 @@ from .models import EmailTemplate
 from .models import CampaignImage
 from django.utils.html import escape
 from saloon.subscriptions import check_feature_access
-from .email_utils import send_marketing_email
-import django_rq
-from .tasks import send_single_email, create_plain_text_version
+from core.models import Product
+from carwash.models import ServiceTicket
 
 @login_required
 def emails(request):
@@ -45,8 +44,25 @@ def emails(request):
     except:
         pass
     
+    # Get all unique customer emails from Product sales
+    product_emails = Product.objects.filter(
+        user=user,
+        customer_email__isnull=False
+    ).exclude(customer_email='').values_list('customer_email', flat=True).distinct()
+    
+    # ✅ NEW: Get all unique customer emails from ServiceTicket (Car Wash)
+    service_ticket_emails = ServiceTicket.objects.filter(
+        created_by=user,
+        customer_email__isnull=False
+    ).exclude(customer_email='').values_list('customer_email', flat=True).distinct()
+    
     # Combine all unique emails
-    all_customer_emails = list(set(list(style_ticket_emails) + list(booking_emails)))
+    all_customer_emails = list(set(
+        list(style_ticket_emails) + 
+        list(booking_emails) + 
+        list(product_emails) +
+        list(service_ticket_emails)  # ✅ NEW: Include car wash emails
+    ))
     customer_emails_count = len(all_customer_emails)
     
     # Get available templates
@@ -85,17 +101,13 @@ def emails(request):
             if images:
                 final_html = handle_images_properly(final_html, images, request)
             
-            # Queue emails in background
-            queued_count = queue_bulk_emails(user, all_customer_emails, template.subject, final_html)
+            # Send emails to all customers
+            sent_count = send_bulk_emails(user, all_customer_emails, template.subject, final_html, images)
             
-            messages.success(
-                request, 
-                f'✅ {queued_count} emails queued successfully! '
-                f'They will be sent in the background over the next few minutes.'
-            )
+            messages.success(request, f'✅ Email sent successfully to {sent_count} customers!')
             
         except Exception as e:
-            messages.error(request, f'Error queuing emails: {str(e)}')
+            messages.error(request, f'Error sending emails: {str(e)}')
     
     context = {
         'customer_emails_count': customer_emails_count,
@@ -105,46 +117,6 @@ def emails(request):
         'access_message': access['message'],
     }
     return render(request, 'email_campaigns/simple_marketing.html', context)
-
-def queue_bulk_emails(user, customer_emails, subject, html_content):
-    """Queue emails for background processing with Django-RQ"""
-    business_name = user.company_name or "Our Business"
-    personalized_subject = f"{subject} - {business_name}"
-    
-    print(f"🔍 DEBUG: Queuing {len(customer_emails)} emails for background processing")
-    
-    # Get the default queue
-    queue = django_rq.get_queue('default')
-    
-    queued_count = 0
-    for email_address in customer_emails:
-        try:
-            # Personalize HTML
-            personalized_html = html_content.replace('[Customer Name]', 'valued customer')
-            personalized_html = personalized_html.replace('[CustomerEmail]', email_address)
-            
-            # Create plain text version
-            plain_text = create_plain_text_version(personalized_html)
-            
-            # Queue the task - timeout is a queue option, not a function parameter
-            queue.enqueue(
-                send_single_email,
-                to_email=email_address,
-                subject=personalized_subject,
-                html_content=personalized_html,
-                plain_text=plain_text,
-                business_name=business_name,
-                reply_to=user.email,
-            )
-            
-            queued_count += 1
-            print(f"✅ Queued email for {email_address}")
-            
-        except Exception as e:
-            print(f"❌ Error queuing for {email_address}: {e}")
-    
-    print(f"📊 DEBUG: Successfully queued {queued_count}/{len(customer_emails)} emails")
-    return queued_count
 
 def apply_ai_editing(original_html, prompt, business_name):
     """Use AI to modify the email content safely and naturally"""
@@ -211,6 +183,156 @@ def apply_ai_editing(original_html, prompt, business_name):
         return original_html
 
 
+def wrap_email_with_professional_styling(html_content, business_name, user):
+    """
+    Wrap the email content in a beautiful, responsive email template
+    """
+    
+    # Extract just the body content if it's a full HTML document
+    if '<body' in html_content.lower():
+        import re
+        body_match = re.search(r'<body[^>]*>(.*?)</body>', html_content, re.DOTALL | re.IGNORECASE)
+        if body_match:
+            html_content = body_match.group(1)
+    
+    # Get business category for color scheme
+    category_colors = {
+        'salon': {'primary': '#E91E63', 'secondary': '#F06292', 'accent': '#FCE4EC'},
+        'car_wash': {'primary': '#2196F3', 'secondary': '#64B5F6', 'accent': '#E3F2FD'},
+        'restaurant': {'primary': '#FF5722', 'secondary': '#FF8A65', 'accent': '#FBE9E7'},
+        'clothing_brand': {'primary': '#9C27B0', 'secondary': '#BA68C8', 'accent': '#F3E5F5'},
+        'spaza': {'primary': '#4CAF50', 'secondary': '#81C784', 'accent': '#E8F5E9'},
+    }
+    
+    colors = category_colors.get(user.company_category, {
+        'primary': '#667eea',
+        'secondary': '#764ba2',
+        'accent': '#f8f9fa'
+    })
+    
+    styled_email = f'''
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>{business_name}</title>
+    <!--[if mso]>
+    <style type="text/css">
+        body, table, td {{font-family: Arial, Helvetica, sans-serif !important;}}
+    </style>
+    <![endif]-->
+</head>
+<body style="margin: 0; padding: 0; background-color: #f4f4f4; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;">
+    
+    <!-- Wrapper Table -->
+    <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background-color: #f4f4f4;">
+        <tr>
+            <td align="center" style="padding: 40px 20px;">
+                
+                <!-- Main Container -->
+                <table role="presentation" width="600" cellspacing="0" cellpadding="0" border="0" 
+                       style="background-color: #ffffff; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.08); overflow: hidden; max-width: 100%;">
+                    
+                    <!-- Header with Gradient -->
+                    <tr>
+                        <td style="background: linear-gradient(135deg, {colors['primary']} 0%, {colors['secondary']} 100%); 
+                                   padding: 40px 30px; text-align: center;">
+                            <h1 style="margin: 0; color: #ffffff; font-size: 28px; font-weight: 700; 
+                                       letter-spacing: -0.5px; text-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+                                {business_name}
+                            </h1>
+                            <p style="margin: 10px 0 0 0; color: rgba(255,255,255,0.95); font-size: 14px; 
+                                      font-weight: 400; letter-spacing: 0.5px;">
+                                Bringing you something special
+                            </p>
+                        </td>
+                    </tr>
+                    
+                    <!-- Main Content Area -->
+                    <tr>
+                        <td style="padding: 40px 30px;">
+                            <!-- Dynamic Content Goes Here -->
+                            {html_content}
+                        </td>
+                    </tr>
+                    
+                    <!-- Divider -->
+                    <tr>
+                        <td style="padding: 0 30px;">
+                            <div style="height: 1px; background: linear-gradient(to right, transparent, {colors['primary']}, transparent);"></div>
+                        </td>
+                    </tr>
+                    
+                    <!-- Call to Action Section -->
+                    <tr>
+                        <td style="padding: 30px; text-align: center; background-color: {colors['accent']};">
+                            <p style="margin: 0 0 20px 0; color: #333; font-size: 16px; font-weight: 500;">
+                                Ready to experience more?
+                            </p>
+                            <a href="tel:{user.phone_number if user.phone_number else ''}" 
+                               style="display: inline-block; background: linear-gradient(135deg, {colors['primary']}, {colors['secondary']}); 
+                                      color: #ffffff; text-decoration: none; padding: 14px 40px; border-radius: 25px; 
+                                      font-weight: 600; font-size: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+                                      transition: transform 0.2s;">
+                                📞 Contact Us
+                            </a>
+                        </td>
+                    </tr>
+                    
+                    <!-- Footer -->
+                    <tr>
+                        <td style="padding: 30px; text-align: center; background-color: #2c3e50; color: #ffffff;">
+                            <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0">
+                                <tr>
+                                    <td style="padding-bottom: 15px;">
+                                        <h3 style="margin: 0 0 10px 0; font-size: 18px; font-weight: 600; color: #ffffff;">
+                                            {business_name}
+                                        </h3>
+                                        {f'<p style="margin: 0; font-size: 14px; color: rgba(255,255,255,0.8);">📞 {user.phone_number}</p>' if user.phone_number else ''}
+                                        <p style="margin: 5px 0 0 0; font-size: 14px; color: rgba(255,255,255,0.8);">
+                                            📧 {user.email}
+                                        </p>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td style="padding-top: 20px; border-top: 1px solid rgba(255,255,255,0.2);">
+                                        <p style="margin: 0; font-size: 12px; color: rgba(255,255,255,0.6); line-height: 1.6;">
+                                            You're receiving this email because you're a valued customer of {business_name}.
+                                        </p>
+                                        <p style="margin: 10px 0 0 0; font-size: 11px; color: rgba(255,255,255,0.5);">
+                                            <a href="mailto:{user.email}?subject=Unsubscribe" 
+                                               style="color: rgba(255,255,255,0.7); text-decoration: underline;">
+                                                Unsubscribe
+                                            </a> | 
+                                            © {business_name} {import_datetime().year}
+                                        </p>
+                                    </td>
+                                </tr>
+                            </table>
+                        </td>
+                    </tr>
+                    
+                </table>
+                
+            </td>
+        </tr>
+    </table>
+    
+</body>
+</html>
+    '''
+    
+    return styled_email
+
+
+def import_datetime():
+    """Helper to get current year"""
+    from datetime import datetime
+    return datetime
+
+
 def handle_images_properly(html_content, images, request):
     """
     Upload images to Google Cloud Storage via CampaignImage model,
@@ -223,11 +345,13 @@ def handle_images_properly(html_content, images, request):
     user = request.user
     print(f"🟢 DEBUG: Handling {len(images)} uploaded images for user {user.username}")
 
-    # Start the HTML section for images
+    # Start the HTML section for images with beautiful styling
     image_section = '''
-    <div style="text-align: center; margin: 30px 0; padding: 20px; background: #f8f9fa; border-radius: 10px;">
-        <h3 style="color: #333; margin-bottom: 15px;">Special Offers</h3>
-        <div style="display: flex; flex-wrap: wrap; justify-content: center; gap: 15px;">
+    <div style="margin: 30px 0; padding: 0;">
+        <h2 style="color: #333; margin: 0 0 20px 0; font-size: 22px; font-weight: 600; text-align: center;">
+            ✨ Special Offers ✨
+        </h2>
+        <div style="display: flex; flex-wrap: wrap; justify-content: center; gap: 20px; margin-top: 25px;">
     '''
 
     for image_file in images:
@@ -246,12 +370,13 @@ def handle_images_properly(html_content, images, request):
             print(f"🔗 DEBUG: Image saved to: {uploaded_image.image.name}")
             print(f"🔗 DEBUG: Public URL: {image_url}")
 
-            # Add image block to HTML
+            # Add image block to HTML with modern card styling
             image_section += f'''
-            <div style="text-align: center;">
+            <div style="background: #ffffff; border-radius: 12px; overflow: hidden; 
+                        box-shadow: 0 2px 12px rgba(0,0,0,0.08); transition: transform 0.2s;
+                        max-width: 280px; margin: 0 auto;">
                 <img src="{image_url}" alt="{uploaded_image.alt_text}"
-                     style="max-width: 200px; height: auto; border-radius: 8px; margin-bottom: 10px; display: block;" />
-                <p style="font-size: 12px; color: #666; margin: 0;">{uploaded_image.alt_text}</p>
+                     style="width: 100%; height: 200px; object-fit: cover; display: block; border: none;" />
             </div>
             '''
 
@@ -265,7 +390,7 @@ def handle_images_properly(html_content, images, request):
     </div>
     '''
 
-    # Insert image section before footer if exists
+    # Insert image section
     if '<div class="footer">' in html_content:
         final_html = html_content.replace('<div class="footer">', image_section + '<div class="footer">')
     elif '</body>' in html_content:
@@ -275,3 +400,103 @@ def handle_images_properly(html_content, images, request):
 
     print("✅ DEBUG: Image section successfully injected into HTML.")
     return final_html
+
+
+import traceback
+import logging
+from datetime import datetime
+
+logger = logging.getLogger(__name__)
+
+def send_bulk_emails(user, customer_emails, subject, html_content, images):
+    """Send beautifully styled marketing emails to all customers using Gmail"""
+    import smtplib
+    from email.mime.multipart import MIMEMultipart
+    from email.mime.text import MIMEText
+    
+    sent_count = 0
+    business_name = user.company_name or user.username or "Our Business"
+    personalized_subject = f"{subject} - {business_name}"
+
+    print(f"🔍 DEBUG: Preparing to send emails via Gmail to {len(customer_emails)} recipients")
+    logger.debug(f"Preparing to send emails to {len(customer_emails)} recipients")
+
+    # Create Gmail SMTP connection
+    try:
+        print(f"🔌 Connecting to Gmail SMTP: {settings.GMAIL_HOST}:{settings.GMAIL_PORT}")
+        server = smtplib.SMTP(settings.GMAIL_HOST, int(settings.GMAIL_PORT), timeout=30)
+        server.starttls()
+        server.login(settings.GMAIL_HOST_USER, settings.GMAIL_HOST_PASSWORD)
+        print(f"✅ Gmail SMTP connection established")
+    except Exception as e:
+        print(f"❌ Failed to connect to Gmail: {e}")
+        logger.error(f"Gmail connection failed: {e}")
+        return 0
+
+    for email_address in customer_emails:
+        try:
+            print(f"📧 DEBUG: Sending email to {email_address}")
+
+            # Personalize HTML content
+            personalized_html = html_content.replace('[Customer Name]', 'valued customer')
+            personalized_html = personalized_html.replace('[CustomerEmail]', email_address)
+            personalized_html = personalized_html.replace('[Your Business Name]', business_name)
+            
+            # Wrap content in professional email template
+            final_html = wrap_email_with_professional_styling(personalized_html, business_name, user)
+            plain_text = create_plain_text_version(personalized_html)
+
+            # Create message
+            msg = MIMEMultipart('alternative')
+            msg['Subject'] = personalized_subject
+            msg['From'] = f"{business_name} <{settings.GMAIL_FROM_EMAIL}>"
+            msg['To'] = email_address
+            msg['Reply-To'] = user.email
+            
+            # Add headers
+            msg['X-Priority'] = '3'
+            msg['Precedence'] = 'bulk'
+            msg['List-Unsubscribe'] = f'<mailto:{user.email}?subject=Unsubscribe>'
+            
+            # Attach plain text and HTML
+            part1 = MIMEText(plain_text, 'plain', 'utf-8')
+            part2 = MIMEText(final_html, 'html', 'utf-8')
+            msg.attach(part1)
+            msg.attach(part2)
+            
+            # Send
+            server.send_message(msg)
+            
+            sent_count += 1
+            print(f"✅ DEBUG: Successfully sent to {email_address}")
+
+            import time
+            time.sleep(0.5)  # Rate limiting
+            
+        except Exception as e:
+            print(f"❌ ERROR sending to {email_address}: {e}")
+            traceback.print_exc()
+            logger.error(f"Error sending to {email_address}: {e}")
+
+    # Close connection
+    try:
+        server.quit()
+        print(f"🔌 Gmail SMTP connection closed")
+    except:
+        pass
+
+    print(f"📊 DEBUG: Finished sending. Successfully sent to {sent_count}/{len(customer_emails)} recipients.")
+    logger.info(f"Finished sending emails via Gmail: {sent_count}/{len(customer_emails)}")
+    return sent_count
+
+
+def create_plain_text_version(html_content):
+    """Create a plain text version for email clients that prefer it"""
+    import re
+    # Remove HTML tags
+    text = re.sub(r'<[^<]+?>', '', html_content)
+    # Replace multiple spaces with single space
+    text = re.sub(r'\s+', ' ', text)
+    # Replace common HTML entities
+    text = text.replace('&nbsp;', ' ').replace('&amp;', '&')
+    return text.strip()

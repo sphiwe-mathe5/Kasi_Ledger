@@ -12,9 +12,7 @@ DEBUG = config('DEBUG', default=False, cast=bool)
 ALLOWED_HOSTS = config('ALLOWED_HOSTS', default='.vercel.app,127.0.0.1,localhost,.com,096351469dad.ngrok-free.app').split(',')
 ADMIN_PATH = config('ADMIN_PATH')
 
-CSRF_TRUSTED_ORIGINS = [
-    "https://096351469dad.ngrok-free.app",
-]
+
 
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -419,8 +417,8 @@ CONTENT_SECURITY_POLICY = {
 
         "connect-src": (
             "'self'",
-            "https://kasialgorithms.co.za",
-            "https://api.kasialgorithms.co.za",
+            "https://kasiledger.com",
+            "https://api.kasiledger.com",
         ),
 
         "form-action": ("'self'",),

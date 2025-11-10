@@ -148,6 +148,7 @@ class Profile(models.Model):
         return f'{self.user.email} Profile'
 
 
+
 class SubscriptionPlan(models.Model):
     name = models.CharField(max_length=100)
     price = models.DecimalField(max_digits=10, decimal_places=2)
@@ -160,36 +161,67 @@ class SubscriptionPlan(models.Model):
     def __str__(self):
         return f"{self.name} - R{self.price}/month"
 
+
 class Subscription(models.Model):
     STATUS_CHOICES = (
         ('active', 'Active'),
         ('cancelled', 'Cancelled'),
         ('past_due', 'Past Due'),
         ('unpaid', 'Unpaid'),
-        ('trialing', 'Trialing'),  # Add a new status for trial
+        ('trialing', 'Trialing'),
     )
 
-    user = models.OneToOneField(CustomUser, on_delete=models.CASCADE)
+    user = models.OneToOneField('CustomUser', on_delete=models.CASCADE)
     plan = models.ForeignKey(SubscriptionPlan, on_delete=models.PROTECT)
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='trialing')
     paystack_subscription_code = models.CharField(max_length=100, blank=True)
     paystack_email_token = models.CharField(max_length=100, blank=True)
     next_payment_date = models.DateTimeField(null=True, blank=True)
     cancelled_at = models.DateTimeField(null=True, blank=True)
-    trial_end_date = models.DateTimeField(null=True, blank=True)  # Add this field
+    trial_end_date = models.DateTimeField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
+    def is_trial_active(self):
+        """Check if trial is currently active"""
+        if self.status == 'trialing' and self.trial_end_date:
+            return self.trial_end_date > timezone.now()
+        return False
+
+    def is_trial_expired(self):
+        """Check if trial has expired"""
+        if self.status == 'trialing' and self.trial_end_date:
+            return self.trial_end_date <= timezone.now()
+        return False
+
+    def is_free_plan(self):
+        """Check if user is on a free plan (not trial)"""
+        return (self.plan.name == 'Free' or self.plan.price == 0) and self.status != 'trialing'
+
+    def is_paid_plan(self):
+        """Check if user is on a paid plan"""
+        return self.plan.price > 0 and self.status == 'active'
+
     def is_active(self):
-        if self.status == 'trialing' and self.trial_end_date > timezone.now():
+        """Check if subscription is active (including active trials)"""
+        # Active trial
+        if self.is_trial_active():
             return True
-        return (
-            self.status == 'active' and 
-            (self.next_payment_date is None or self.next_payment_date > timezone.now())
-        )
+        
+        # Active paid subscription
+        if self.status == 'active':
+            if self.next_payment_date is None:
+                return True
+            return self.next_payment_date > timezone.now()
+        
+        # Free plan is always active
+        if self.is_free_plan():
+            return True
+            
+        return False
 
     def cancel(self):
-        if self.status == 'active':
+        if self.status in ['active', 'trialing']:
             self.status = 'cancelled'
             self.cancelled_at = timezone.now()
             self.save()
@@ -199,6 +231,9 @@ class Subscription(models.Model):
             self.status = 'active'
             self.cancelled_at = None
             self.save()
+
+    def __str__(self):
+        return f"{self.user.company_name} - {self.plan.name} ({self.status})"
 
 class PaymentHistory(models.Model):
     subscription = models.ForeignKey(Subscription, on_delete=models.CASCADE)

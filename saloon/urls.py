@@ -24,4 +24,13 @@ urlpatterns = [
     path('salon/<slug:slug>/', views.salon_profile, name='salon_profile'),
     path('salon/<slug:slug>/book/', views.create_booking, name='create_booking'),
     path('booking/<int:booking_id>/update/', views.update_booking_status, name='update_booking_status'),
+
+    path('bookings/', views.manage_availability, name='manage_availability'),
+    path('availability/slot/create/', views.create_availability_slot, name='create_availability_slot'),
+    path('availability/recurring/create/', views.create_recurring_availability, name='create_recurring_availability'),
+    path('availability/slot/<int:slot_id>/delete/', views.delete_availability_slot, name='delete_availability_slot'),
+    
+    
+    # Public API for customers
+    path('<slug:slug>/available-slots/', views.get_available_slots, name='get_available_slots'),
 ]

@@ -7,6 +7,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     <link rel="icon" href="{% static 'images/kasicon.png' %}">
+    <link rel="stylesheet" href="{% static 'css/messages.css' %}" />
     <title>{{ profile.user.company_name }} - Dashboard</title>
     <style>
         * {
@@ -831,9 +832,134 @@
                 font-weight: 700;
                 color: #007bff;
             }
+            /* Simple loading state without extra HTML */
+            .btn-submit.loading {
+                position: relative;
+                color: transparent;
+            }
+
+            .btn-submit.loading::after {
+                content: "";
+                position: absolute;
+                width: 16px;
+                height: 16px;
+                top: 50%;
+                left: 50%;
+                margin-top: -8px;
+                margin-left: -8px;
+                border: 2px solid transparent;
+                border-top: 2px solid white;
+                border-radius: 50%;
+                animation: spin 1s linear infinite;
+            }
+
+            @keyframes spin {
+                0% { transform: rotate(0deg); }
+                100% { transform: rotate(360deg); }
+            }
+    </style>
+    <style>
+        /* Time Slots Grid Styling */
+        .time-slots-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: 12px;
+            margin-top: 15px;
+        }
+
+        .time-slot {
+            padding: 15px;
+            background: #f8f9fa;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            position: relative;
+        }
+
+        .time-slot:hover {
+            background: #e8f4f8;
+            border-color: #2196F3;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+
+        .time-slot.selected {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-color: #667eea;
+            color: white;
+            font-weight: 600;
+        }
+
+        .time-slot.selected::after {
+            content: '✓';
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            background: white;
+            color: #667eea;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: bold;
+        }
+
+        .time-slot-time {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+
+        .time-slot-worker {
+            font-size: 12px;
+            opacity: 0.8;
+        }
+
+        .btn-submit:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            background: #ccc;
+        }
     </style>
 </head>
 <body>
+<div class="messages-container">
+    {% if messages %}
+        {% for message in messages %}
+            <div class="message {{ message.tags }}" data-message-id="{{ forloop.counter }}">
+                <div class="message-content">
+                    <div class="message-icon">
+                        {% if message.tags == 'success' %}
+                            <svg viewBox="0 0 20 20" fill="currentColor" style="color: #4caf50;">
+                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+                            </svg>
+                        {% elif message.tags == 'error' %}
+                            <svg viewBox="0 0 20 20" fill="currentColor" style="color: #f44336;">
+                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"/>
+                            </svg>
+                        {% elif message.tags == 'warning' %}
+                            <svg viewBox="0 0 20 20" fill="currentColor" style="color: #ff9800;">
+                                <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/>
+                            </svg>
+                        {% else %}
+                            <svg viewBox="0 0 20 20" fill="currentColor" style="color: #2196f3;">
+                                <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"/>
+                            </svg>
+                        {% endif %}
+                    </div>
+                    <div class="message-text">{{ message }}</div>
+                </div>
+                <button class="message-close" onclick="closeMessage(this)">×</button>
+                <div class="progress-bar"></div>
+            </div>
+        {% endfor %}
+    {% endif %}
+</div>
     <div class="container">
         <!-- Header -->
         <div class="header">
@@ -860,7 +986,7 @@
                 <a href="{% url 'saloon:salon_profile' profile.slug %}" 
                 class="booking-url" 
                 target="_blank">
-                kasiledger.co.za/salon/{{ profile.slug }}
+                kasiledger.com/salon/{{ profile.slug }}
                 </a>
                 
                 <!-- Copy Button -->
@@ -870,268 +996,6 @@
             </div>
         </div>
         {% endif %}
-
-        <!-- Dashboard Grid Layout -->
-        <div class="dashboard-grid">
-            <!-- Profile Information (Both Owner & Public) -->
-            <div class="grid-full">
-                <div class="profile-hero">
-                    <h2>{% if is_owner %}Profile Information{% else %}About Us{% endif %}</h2>
-                    <div class="profile-content">
-                        <div class="profile-main">
-                            <p class="profile-bio">{{ profile.bio }}</p>
-                            
-                            <div class="profile-details">
-                                <div class="detail-group">
-                                    <div class="detail-icon">📍</div>
-                                    <div class="detail-text">
-                                        <span class="detail-label">Location</span>
-                                        <span class="detail-value">{{ profile.address }}, {{ profile.city }}</span>
-                                    </div>
-                                </div>
-
-                                <div class="detail-group">
-                                    <div class="detail-icon">💬</div>
-                                    <div class="detail-text">
-                                        <span class="detail-label">WhatsApp</span>
-                                        <span class="detail-value">
-                                            <a href="https://wa.me/{{ profile.whatsapp_number }}" target="_blank">{{ profile.whatsapp_number }}</a>
-                                        </span>
-                                    </div>
-                                </div>
-
-                                {% if profile.facebook_url %}
-                                <div class="detail-group">
-                                    <div class="detail-icon">📘</div>
-                                    <div class="detail-text">
-                                        <span class="detail-label">Facebook</span>
-                                        <span class="detail-value"><a href="{{ profile.facebook_url }}" target="_blank">Visit Page</a></span>
-                                    </div>
-                                </div>
-                                {% endif %}
-
-                                {% if profile.instagram_url %}
-                                <div class="detail-group">
-                                    <div class="detail-icon">📷</div>
-                                    <div class="detail-text">
-                                        <span class="detail-label">Instagram</span>
-                                        <span class="detail-value"><a href="{{ profile.instagram_url }}" target="_blank">Visit Profile</a></span>
-                                    </div>
-                                </div>
-                                {% endif %}
-                            </div>
-                        </div>
-
-                        <div class="profile-sidebar">
-                            <div class="profile-stat">
-                                <div class="profile-stat-value">{{ profile.rating }}</div>
-                                <div class="profile-stat-label">⭐ Rating</div>
-                            </div>
-
-                            <div class="profile-stat">
-                                <div class="profile-stat-value">{{ profile.total_reviews }}</div>
-                                <div class="profile-stat-label">Reviews</div>
-                            </div>
-
-                            {% if is_owner %}
-                            <div class="status-indicator">
-                                {% if profile.is_active %}
-                                <span class="status-dot"></span>
-                                <span>Active</span>
-                                {% else %}
-                                <span>Inactive</span>
-                                {% endif %}
-                            </div>
-                            {% endif %}
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            {% if is_owner %}
-            <!-- Owner Only: Booking Statistics -->
-            <div class="grid-full">
-                <div class="card">
-                    <h2>Booking Statistics</h2>
-                    <div class="stats-grid">
-                        <div class="stat-card">
-                            <div class="label">Total Bookings</div>
-                            <div class="value">{{ total_bookings }}</div>
-                        </div>
-                        <div class="stat-card">
-                            <div class="label">Pending</div>
-                            <div class="value">{{ pending_bookings }}</div>
-                        </div>
-                        <div class="stat-card">
-                            <div class="label">Confirmed</div>
-                            <div class="value">{{ confirmed_bookings }}</div>
-                        </div>
-                        <div class="stat-card">
-                            <div class="label">Completed</div>
-                            <div class="value">{{ completed_bookings }}</div>
-                        </div>
-                        <div class="stat-card">
-                            <div class="label">Cancelled</div>
-                            <div class="value">{{ cancelled_bookings }}</div>
-                        </div>
-                        <div class="stat-card">
-                            <div class="label">Total Revenue</div>
-                            <div class="value">R{{ total_revenue }}</div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            {% endif %}
-
-            <!-- Working Hours (Both Owner & Public) -->
-            <div class="grid-half">
-                <div class="card">
-                    <h2>Working Hours</h2>
-                    <div class="table-container">
-                        <table>
-                            <thead>
-                                <tr>
-                                    <th>Day</th>
-                                    <th>Opening</th>
-                                    <th>Closing</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% for hours in working_hours_list %}
-                                <tr>
-                                    <td>{{ hours.get_day_of_week_display }}</td>
-                                    <td>{{ hours.opening_time }}</td>
-                                    <td>{{ hours.closing_time }}</td>
-                                </tr>
-                                {% empty %}
-                                <tr>
-                                    <td colspan="3" class="empty-state">No working hours set</td>
-                                </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-
-            {% if is_owner %}
-            <!-- Owner Only: Workers -->
-            <div class="grid-half">
-                <div class="card">
-                    <h2>Your Workers</h2>
-                    <div class="table-container">
-                        <table>
-                            <thead>
-                                <tr>
-                                    <th>Name</th>
-                                    <th>Phone</th>
-                                    <th>Completed</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% for worker in workers %}
-                                <tr>
-                                    <td>{{ worker.full_name }}</td>
-                                    <td>{{ worker.phone }}</td>
-                                    <td><strong>{{ worker.styles_completed_count }}</strong></td>
-                                </tr>
-                                {% empty %}
-                                <tr>
-                                    <td colspan="3" class="empty-state">No workers added yet</td>
-                                </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-            {% else %}
-            <!-- Public View: Our Team -->
-            <div class="grid-half">
-                <div class="card">
-                    <h2>Our Team</h2>
-                    <div class="table-container">
-                        <table>
-                            <thead>
-                                <tr>
-                                    <th>Name</th>
-                                    <th>Experience</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% for worker in workers %}
-                                <tr>
-                                    <td>{{ worker.full_name }}</td>
-                                    <td>{{ worker.styles_completed_count }} styles completed</td>
-                                </tr>
-                                {% empty %}
-                                <tr>
-                                    <td colspan="2" class="empty-state">Team information coming soon</td>
-                                </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-            {% endif %}
-
-            <!-- Services (Both Owner & Public) -->
-            <div class="grid-full">
-                <div class="card">
-                    <h2>{% if is_owner %}Your Services{% else %}Our Services{% endif %}</h2>
-                    <div class="table-container">
-                        <table>
-                            <thead>
-                                <tr>
-                                    <th>Service Name</th>
-                                    <th>Price</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% for style in styles %}
-                                {% if is_owner or style.is_active %}
-                                <tr>
-                                    <td>{{ style.name }}</td>
-                                    <td><strong>R{{ style.price }}</strong></td>
-                                </tr>
-                                {% endif %}
-                                {% empty %}
-                                <tr>
-                                    <td colspan="{% if is_owner %}4{% else %}3{% endif %}" class="empty-state">
-                                        {% if is_owner %}No services added yet{% else %}Services coming soon{% endif %}
-                                    </td>
-                                </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-
-            {% if not is_owner %}
-            <div class="grid-full">
-                <div class="card">
-                    <h2>Customer Reviews</h2>
-                    {% if reviews %}
-                    <div class="reviews-container">
-                        {% for review in reviews %}
-                        <div class="review-card">
-                            <div class="review-header">
-                                <strong>{{ review.customer_name }}</strong>
-                                <span class="review-rating">{{ review.rating }}⭐</span>
-                            </div>
-                            <p class="review-comment">{{ review.comment }}</p>
-                            <span class="review-date">{{ review.created_at|date:"d M Y" }}</span>
-                        </div>
-                        {% endfor %}
-                    </div>
-                    {% else %}
-                    <p class="empty-state">No reviews yet. Be the first to leave a review!</p>
-                    {% endif %}
-                </div>
-            </div>
-            {% endif %}
 
             {% if is_owner %}
             <!-- Owner Only: Recent Bookings -->
@@ -1251,7 +1115,323 @@
                 </div>
             </div>
         </div>
-    {% endif %}
+        {% endif %}
+            {% endif %}
+        <br><br>    
+
+
+        <!-- Dashboard Grid Layout -->
+        <div class="dashboard-grid">
+            <!-- Profile Information (Both Owner & Public) -->
+            <div class="grid-full">
+                <div class="profile-hero">
+                    <h2>{% if is_owner %}Profile Information{% else %}About Us{% endif %}</h2>
+                    <div class="profile-content">
+                        <div class="profile-main">
+                            <p class="profile-bio">{{ profile.bio }}</p>
+                            
+                            <div class="profile-details">
+                                <div class="detail-group">
+                                    <div class="detail-icon">📍</div>
+                                    <div class="detail-text">
+                                        <span class="detail-label">Location</span>
+                                        <span class="detail-value">{{ profile.address }}, {{ profile.city }}</span>
+                                    </div>
+                                </div>
+
+                                <div class="detail-group">
+                                    <div class="detail-icon">💬</div>
+                                    <div class="detail-text">
+                                        <span class="detail-label">WhatsApp</span>
+                                        <span class="detail-value">
+                                            <a href="https://wa.me/{{ profile.whatsapp_number }}" target="_blank">{{ profile.whatsapp_number }}</a>
+                                        </span>
+                                    </div>
+                                </div>
+
+                                {% if profile.facebook_url %}
+                                <div class="detail-group">
+                                    <div class="detail-icon">📘</div>
+                                    <div class="detail-text">
+                                        <span class="detail-label">Facebook</span>
+                                        <span class="detail-value"><a href="{{ profile.facebook_url }}" target="_blank">Visit Page</a></span>
+                                    </div>
+                                </div>
+                                {% endif %}
+
+                                {% if profile.instagram_url %}
+                                <div class="detail-group">
+                                    <div class="detail-icon">📷</div>
+                                    <div class="detail-text">
+                                        <span class="detail-label">Instagram</span>
+                                        <span class="detail-value"><a href="{{ profile.instagram_url }}" target="_blank">Visit Profile</a></span>
+                                    </div>
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <div class="profile-sidebar">
+                            <div class="profile-stat">
+                                <div class="profile-stat-value">{{ profile.rating }}</div>
+                                <div class="profile-stat-label">⭐ Rating</div>
+                            </div>
+
+                            <div class="profile-stat">
+                                <div class="profile-stat-value">{{ profile.total_reviews }}</div>
+                                <div class="profile-stat-label">Reviews</div>
+                            </div>
+
+                            {% if is_owner %}
+                            <div class="status-indicator">
+                                {% if profile.is_active %}
+                                <span class="status-dot"></span>
+                                <span>Active</span>
+                                {% else %}
+                                <span>Inactive</span>
+                                {% endif %}
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {% if is_owner %}
+            <!-- Owner Only: Booking Statistics -->
+            <div class="grid-full">
+                <div class="card">
+                    <h2>Booking Statistics</h2>
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <div class="label">Total Bookings</div>
+                            <div class="value">{{ total_bookings }}</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="label">Pending</div>
+                            <div class="value">{{ pending_bookings }}</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="label">Confirmed</div>
+                            <div class="value">{{ confirmed_bookings }}</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="label">Completed</div>
+                            <div class="value">{{ completed_bookings }}</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="label">Cancelled</div>
+                            <div class="value">{{ cancelled_bookings }}</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="label">Total Revenue</div>
+                            <div class="value">R{{ total_revenue }}</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Working Hours (Both Owner & Public) -->
+            <div class="grid-half">
+                <!--  <div class="card">
+                    <h2>Working Hours</h2>
+                    <div class="table-container">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Day</th>
+                                    <th>Opening</th>
+                                    <th>Closing</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for hours in working_hours_list %}
+                                <tr>
+                                    <td>{{ hours.get_day_of_week_display }}</td>
+                                    <td>{{ hours.opening_time }}</td>
+                                    <td>{{ hours.closing_time }}</td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="3" class="empty-state">No working hours set</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div> -->
+            </div>
+
+            {% if is_owner %}
+            <!-- Owner Only: Workers -->
+            <div class="grid-half">
+                <div class="card">
+                    <h2>Your Workers</h2>
+                    <div class="table-container">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Phone</th>
+                                    <th>Completed</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for worker in workers %}
+                                <tr>
+                                    <td>{{ worker.full_name }}</td>
+                                    <td>{{ worker.phone }}</td>
+                                    <td><strong>{{ worker.styles_completed_count }}</strong></td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="3" class="empty-state">No workers added yet</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            {% else %}
+            <!-- Public View: Our Team -->
+            <div class="grid-half">
+                <!--<div class="card">
+                    <h2>Our Team</h2>
+                    <div class="table-container">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Experience</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for worker in workers %}
+                                <tr>
+                                    <td>{{ worker.full_name }}</td>
+                                    <td>{{ worker.styles_completed_count }} styles completed</td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="2" class="empty-state">Team information coming soon</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div> -->
+            </div>
+            {% endif %}
+
+            <!-- Services (Both Owner & Public) -->
+            <div class="grid-full">
+                <div class="card">
+                    <h2>{% if is_owner %}Your Services{% else %}Our Services{% endif %}</h2>
+                    <div class="table-container">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Service Name</th>
+                                    <th>Price</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for style in styles %}
+                                {% if is_owner or style.is_active %}
+                                <tr>
+                                    <td>{{ style.name }}</td>
+                                    <td><strong>R{{ style.price }}</strong></td>
+                                </tr>
+                                {% endif %}
+                                {% empty %}
+                                <tr>
+                                    <td colspan="{% if is_owner %}4{% else %}3{% endif %}" class="empty-state">
+                                        {% if is_owner %}No services added yet{% else %}Services coming soon{% endif %}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            {% if not is_owner %}
+            <div class="grid-full">
+                <div class="card">
+                    <h2>Customer Reviews</h2>
+                    {% if reviews %}
+                    <div class="reviews-container">
+                        {% for review in reviews %}
+                        <div class="review-card">
+                            <div class="review-header">
+                                <strong>{{ review.customer_name }}</strong>
+                                <span class="review-rating">{{ review.rating }}⭐</span>
+                            </div>
+                            <p class="review-comment">{{ review.comment }}</p>
+                            <span class="review-date">{{ review.created_at|date:"d M Y" }}</span>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <p class="empty-state">No reviews yet. Be the first to leave a review!</p>
+                    {% endif %}
+                </div>
+            </div>
+            {% endif %}
+
+            {% if is_owner %}
+            <!-- Owner Only: Recent Bookings -->
+             {% if can_view_bookings %}
+            <div class="grid-full" id="recent-bookings">
+
+            </div>
+                {% else %}
+        <!-- Owner without Business Pro: Show Upgrade Notice -->
+        <div class="grid-full" id="recent-bookings">
+            <div class="card booking-upgrade-notice">
+                <div class="notice-header">
+                    <span class="notice-icon">📊</span>
+                    <h2>Bookings Management Locked</h2>
+                </div>
+                
+                <div class="notice-content">
+                    <p>View and manage all your customer bookings by upgrading to <strong>Business Pro</strong> plan.</p>
+                    
+                    <div class="upgrade-benefits">
+                        <h3>Business Pro Includes:</h3>
+                        <ul>
+                            <li>✓ Full booking management dashboard</li>
+                            <li>✓ Unlimited appointments per month</li>
+                            <li>✓ AI chatbot assistant</li>
+                            <li>✓ Advanced analytics</li>
+                            <li>✓ Priority support</li>
+                        </ul>
+                    </div>
+
+                    <div class="current-plan">
+                        <p><strong>Current Plan:</strong> 
+                            {% if booking_restriction_reason == 'Business Pro only' %}
+                                Growth Plan - Limited features
+                            {% elif booking_restriction_reason == 'Trial expired' %}
+                                Free Trial Expired
+                            {% elif booking_restriction_reason == 'Subscription expired' %}
+                                Subscription Expired
+                            {% else %}
+                                No Active Subscription
+                            {% endif %}
+                        </p>
+                    </div>
+
+                    <a href="{% url 'subscription_plans' %}" class="btn btn-primary btn-upgrade">
+                        Upgrade to Business Pro - R199.99/month
+                    </a>
+                </div>
+            </div>
+        </div>
+        {% endif %}
             {% endif %}
         </div>
     </div>
@@ -1263,65 +1443,97 @@
             <h2>Book an Appointment</h2>
             <p class="subtitle">Fill in the details below to schedule your visit</p>
             
-            <form method="POST" action=" {% url 'saloon:create_booking' profile.slug %} ">
-                {% csrf_token %}
-                
-                <!-- Wrapped form fields in grid container for 3-column layout -->
-                <div class="form-grid">
-                    <div class="form-group">
-                        <label for="customer_name">Your Name <span class="required">*</span></label>
-                        <input type="text" id="customer_name" name="customer_name" placeholder="Enter your full name" required>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="customer_phone">Phone Number <span class="required">*</span></label>
-                        <input type="tel" id="customer_phone" name="customer_phone" placeholder="e.g., 0712345678" required>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="customer_email">Email <span class="optional-tag">(optional)</span></label>
-                        <input type="email" id="customer_email" name="customer_email" placeholder="your.email@example.com">
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="style">Select Service <span class="required">*</span></label>
-                        <select id="style" name="style" required>
-                            <option value="">Choose a service...</option>
-                            {% for style in styles %}
-                            {% if style.is_active %}
-                            <option value="{{ style.id }}" data-price="{{ style.price }}">{{ style.name }} - R{{ style.price }}</option>
-                            {% endif %}
-                            {% endfor %}
-                        </select>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="worker">Select Worker <span class="optional-tag">(optional)</span></label>
-                        <select id="worker" name="worker">
-                            <option value="">Any available worker</option>
-                            {% for worker in workers %}
-                            <option value="{{ worker.id }}">{{ worker.full_name }}</option>
-                            {% endfor %}
-                        </select>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="booking_date">Select Date <span class="required">*</span></label>
-                        <input type="date" id="booking_date" name="booking_date" required min="{{ today }}">
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="booking_time">Select Time <span class="required">*</span></label>
-                        <input type="time" id="booking_time" name="booking_time" required>
-                    </div>
-                    
-                    <div class="form-group form-group-full">
-                        <label for="customer_notes">Additional Notes <span class="optional-tag">(optional)</span></label>
-                        <textarea id="customer_notes" name="customer_notes" rows="3" placeholder="Any special requests or preferences..."></textarea>
-                    </div>
+        <form method="POST" action="{% url 'saloon:create_booking' profile.slug %}" id="bookingForm">
+            {% csrf_token %}
+            
+            <div class="form-grid">
+                <!-- Customer Information -->
+                <div class="form-group">
+                    <label for="customer_name">Your Name <span class="required">*</span></label>
+                    <input type="text" id="customer_name" name="customer_name" placeholder="Enter your full name" required>
                 </div>
-                <button type="submit" class="btn-submit">Book Appointment</button>
-            </form>
+                
+                <div class="form-group">
+                    <label for="customer_phone">Phone Number <span class="required">*</span></label>
+                    <input type="tel" id="customer_phone" name="customer_phone" placeholder="e.g., 0712345678" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="customer_email">Email <span class="required">*</span></label>
+                    <input type="email" id="customer_email" name="customer_email" placeholder="your.email@example.com" required>
+                </div>
+                
+                <!-- Service Selection -->
+                <div class="form-group">
+                    <label for="style">Select Service <span class="required">*</span></label>
+                    <select id="style" name="style" required>
+                        <option value="">Choose a service...</option>
+                        {% for style in styles %}
+                        {% if style.is_active %}
+                        <option value="{{ style.id }}" data-price="{{ style.price }}">
+                            {{ style.name }} - R{{ style.price }}
+                        </option>
+                        {% endif %}
+                        {% endfor %}
+                    </select>
+                </div>
+                
+                <!-- Worker Selection (Optional) -->
+                <div class="form-group">
+                    <label for="worker_filter">Prefer a specific stylist? <span class="optional-tag">(optional)</span></label>
+                    <select id="worker_filter" name="worker_filter">
+                        <option value="">Any stylist worker</option>
+                        {% for worker in workers %}
+                        <option value="{{ worker.id }}">{{ worker.full_name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                
+                <!-- Date Selection -->
+                <div class="form-group">
+                    <label for="booking_date">Select Date <span class="required">*</span></label>
+                    <input type="date" id="booking_date" name="booking_date" required min="{{ today }}">
+                </div>
+                
+                <!-- Available Time Slots (NEW) -->
+                <div class="form-group form-group-full">
+                    <label for="slot_id">Select Time Slot <span class="required">*</span></label>
+                    
+                    <div id="slotsLoadingMessage" style="display: none; padding: 20px; text-align: center; color: #666;">
+                        <span style="font-size: 20px;">⏳</span> Loading available times...
+                    </div>
+                    
+                    <div id="noSlotsMessage" style="display: none; padding: 20px; background: #fff3cd; border-left: 4px solid #ffc107; border-radius: 4px;">
+                        <p style="margin: 0; color: #856404;">
+                            <strong>⚠️ No available slots for this date.</strong><br>
+                            Please select a different date or contact us directly.
+                        </p>
+                    </div>
+                    
+                    <div id="slotsContainer" style="display: none;">
+                        <input type="hidden" id="slot_id" name="slot_id" required>
+                        <div id="timeSlotsList" class="time-slots-grid">
+                            <!-- Time slots will be dynamically loaded here -->
+                        </div>
+                    </div>
+                    
+                    <p style="font-size: 13px; color: #666; margin-top: 10px;">
+                        ℹ️ Select a date to see available time slots
+                    </p>
+                </div>
+                
+                <!-- Additional Notes -->
+                <div class="form-group form-group-full">
+                    <label for="customer_notes">Additional Notes <span class="optional-tag">(optional)</span></label>
+                    <textarea id="customer_notes" name="customer_notes" rows="3" 
+                              placeholder="Any special requests or preferences..."></textarea>
+                </div>
+            </div>
+            
+            <button type="submit" class="btn-submit" id="submitBtn" disabled>
+                Book Appointment
+            </button>
+        </form>
             {% else %}
                 <!-- Booking Form Disabled -->
                 <div class="booking-disabled-notice">
@@ -1357,5 +1569,167 @@ function copyBookingUrl() {
     });
 }
 </script>
+
+<style>
+/* Time Slots Grid Styling */
+.time-slots-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: 12px;
+    margin-top: 15px;
+}
+
+.time-slot {
+    padding: 15px;
+    background: #f8f9fa;
+    border: 2px solid #e0e0e0;
+    border-radius: 8px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    position: relative;
+}
+
+.time-slot:hover {
+    background: #e8f4f8;
+    border-color: #2196F3;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+.time-slot.selected {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-color: #667eea;
+    color: white;
+    font-weight: 600;
+}
+
+.time-slot.selected::after {
+    content: '✓';
+    position: absolute;
+    top: 5px;
+    right: 5px;
+    background: white;
+    color: #667eea;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    font-weight: bold;
+}
+
+.time-slot-time {
+    font-size: 16px;
+    font-weight: 600;
+    margin-bottom: 5px;
+}
+
+.time-slot-worker {
+    font-size: 12px;
+    opacity: 0.8;
+}
+
+.btn-submit:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    background: #ccc;
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const dateInput = document.getElementById('booking_date');
+    const workerFilter = document.getElementById('worker_filter');
+    const slotsContainer = document.getElementById('slotsContainer');
+    const timeSlotsList = document.getElementById('timeSlotsList');
+    const slotsLoading = document.getElementById('slotsLoadingMessage');
+    const noSlotsMessage = document.getElementById('noSlotsMessage');
+    const slotIdInput = document.getElementById('slot_id');
+    const submitBtn = document.getElementById('submitBtn');
+    
+    // Fetch available slots when date or worker changes
+    function fetchAvailableSlots() {
+        const selectedDate = dateInput.value;
+        const selectedWorker = workerFilter.value;
+        
+        if (!selectedDate) {
+            slotsContainer.style.display = 'none';
+            noSlotsMessage.style.display = 'none';
+            return;
+        }
+        
+        // Show loading
+        slotsLoading.style.display = 'block';
+        slotsContainer.style.display = 'none';
+        noSlotsMessage.style.display = 'none';
+        timeSlotsList.innerHTML = '';
+        slotIdInput.value = '';
+        submitBtn.disabled = true;
+        
+        // Build URL with query parameters
+        const url = new URL('{% url "saloon:get_available_slots" profile.slug %}', window.location.origin);
+        url.searchParams.append('date', selectedDate);
+        if (selectedWorker) {
+            url.searchParams.append('worker_id', selectedWorker);
+        }
+        
+        // Fetch slots
+        fetch(url)
+            .then(response => response.json())
+            .then(data => {
+                slotsLoading.style.display = 'none';
+                
+                if (data.success && data.slots.length > 0) {
+                    // Display available slots
+                    slotsContainer.style.display = 'block';
+                    
+                    data.slots.forEach(slot => {
+                        const slotDiv = document.createElement('div');
+                        slotDiv.className = 'time-slot';
+                        slotDiv.dataset.slotId = slot.id;
+                        slotDiv.innerHTML = `
+                            <div class="time-slot-time">${slot.start_time}</div>
+                            <div class="time-slot-worker">${slot.worker_name}</div>
+                        `;
+                        
+                        slotDiv.addEventListener('click', function() {
+                            // Deselect all slots
+                            document.querySelectorAll('.time-slot').forEach(s => {
+                                s.classList.remove('selected');
+                            });
+                            
+                            // Select this slot
+                            slotDiv.classList.add('selected');
+                            slotIdInput.value = slot.id;
+                            submitBtn.disabled = false;
+                        });
+                        
+                        timeSlotsList.appendChild(slotDiv);
+                    });
+                } else {
+                    // No slots available
+                    noSlotsMessage.style.display = 'block';
+                }
+            })
+            .catch(error => {
+                console.error('Error fetching slots:', error);
+                slotsLoading.style.display = 'none';
+                noSlotsMessage.style.display = 'block';
+            });
+    }
+    
+    // Event listeners
+    dateInput.addEventListener('change', fetchAvailableSlots);
+    workerFilter.addEventListener('change', fetchAvailableSlots);
+});
+// Simple usage
+document.getElementById('bookingForm').addEventListener('submit', function() {
+    document.getElementById('submitBtn').classList.add('loading');
+});
+</script>
+<script src="{% static 'js/messages.js' %}"></script>
 </body>
 </html>

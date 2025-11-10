@@ -469,17 +469,28 @@ def process_sale(request):
                 if product.quantity < quantity:
                     raise ValueError(f"Insufficient stock for product: {product.name}")
                 
-                item_total = product.unit_price * quantity
+                # Use product.price (unit price) multiplied by quantity sold
+                item_total = product.price * quantity
                 total += item_total
+                
+                # ✅ NEW: Store customer email in the product when sold
+                if customer_email:
+                    product.customer_email = customer_email
+                    product.sale_date = timezone.now()
                 
                 # Update product quantity and status
                 product.quantity -= quantity
                 product.status = 'OUT' if product.quantity == 0 else 'IN'
                 product.save()
+
+                Product.objects.filter(pk=product.pk).update(
+                    quantity=product.quantity,
+                    status=product.status
+                )
                 
                 product_details.append({
                     'name': product.name,
-                    'price': float(product.unit_price),
+                    'price': float(product.price),  # Unit price
                     'quantity': float(quantity),
                     'total': float(item_total),
                     'barcode': product.barcode,
@@ -760,17 +771,10 @@ def contact(request):
 
     
     for product in products:
-        try:
-            product.profit_loss = product.price - product.cost
-            product.profit_loss_message = f"{product.profit_loss:.2f}"
-        except Exception as e:
-            print(f"Error calculating profit/loss for product {product.name}: {str(e)}")
-            product.profit_loss_message = "Error calculating profit/loss"
-            product.profit_loss = Decimal('0.00')
-
         grouped_products[product.month][product.date].append(product)
-        monthly_totals[product.month]['price'] += product.price
-        monthly_totals[product.month]['cost'] += product.cost
+        # Use the @property methods for totals
+        monthly_totals[product.month]['price'] += product.total_price
+        monthly_totals[product.month]['cost'] += product.total_cost
         monthly_totals[product.month]['profit_loss'] += product.profit_loss
 
     
@@ -792,8 +796,8 @@ def contact(request):
                 show_all_flag = False
 
             daily_total = {
-                'price': sum(p.price for p in products_to_show),
-                'cost': sum(p.cost for p in products_to_show),
+                'price': sum(p.total_price for p in products_to_show),
+                'cost': sum(p.total_cost for p in products_to_show),
                 'profit_loss': sum(p.profit_loss for p in products_to_show)
             }
 
@@ -1947,6 +1951,7 @@ class AICommitAPIView(APIView):
                                 "profile": user_profile,  # Explicitly set profile
                                 "item_code": item_code,  # Set generated item code
                                 "quantity": qty,
+                                "original_quantity": qty,
                                 "category": category_obj,
                                 "price": price if price is not None else Decimal("0"),
                                 "cost": cost if cost is not None else Decimal("0"),
@@ -2025,6 +2030,7 @@ class AICommitAPIView(APIView):
                             "name": product.name,
                             "item_code": product.item_code,
                             "quantity": product.quantity,
+                            "original_quantity": product.quantity,
                             "price": str(product.price),
                             "cost": str(product.cost),
                             "category": product.category.name if product.category else "",

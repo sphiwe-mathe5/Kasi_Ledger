@@ -40,69 +40,71 @@ class Product(models.Model):
     barcode = models.CharField(max_length=100, unique=True, null=True, blank=True, default=None)
     item_code = models.CharField(max_length=50, unique=False, null=True, blank=True, default=None)
     name = models.CharField(max_length=200)
-    status = models.CharField(max_length=10,
-                              choices=[('IN', 'In Stock'),
-                                       ('OUT', 'Out of Stock')],
-                              default='IN')
-    price = models.DecimalField(max_digits=10,
-                                decimal_places=2,
-                                default='12345')
-    cost = models.DecimalField(max_digits=10,
-                               decimal_places=2,
-                               default='12345')
-    category = models.ForeignKey(Category,
-                                 on_delete=models.SET_NULL,
-                                 null=True,
-                                 blank=True)
+    status = models.CharField(max_length=10,choices=[('IN', 'In Stock'),('OUT', 'Out of Stock')],default='IN')
+    price = models.DecimalField(max_digits=10,decimal_places=2,default='12345')
+    cost = models.DecimalField(max_digits=10,decimal_places=2,default='12345')
+    category = models.ForeignKey(Category,on_delete=models.SET_NULL,null=True,blank=True)
     last_modified = models.DateTimeField(auto_now=True)
     date_added = models.DateTimeField(default=timezone.now)
     quantity = models.IntegerField(default=0)
     original_quantity = models.IntegerField(default=0)
     unit_price = models.DecimalField(max_digits=10, decimal_places=2, default=0)
-    profile = models.ForeignKey(Profile,
-                                on_delete=models.CASCADE,
-                                null=True,
-                                blank=True)
-    user = models.ForeignKey(CustomUser,
-                             on_delete=models.CASCADE,
-                             null=True,
-                             blank=True)
+    profile = models.ForeignKey(Profile,on_delete=models.CASCADE,null=True,blank=True)
+    user = models.ForeignKey(CustomUser,on_delete=models.CASCADE,null=True,blank=True)
+    profit_loss = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    profit_loss_message = models.CharField(max_length=100, blank=True, null=True)
+
+    customer_email = models.EmailField(blank=True, null=True)
+    sale_date = models.DateTimeField(blank=True, null=True)
 
     def __str__(self):
         return f"{self.name} ({self.barcode}) - {self.status}"
 
     def save(self, *args, **kwargs):
-        if not self.id:  
-            self.unit_price = self.price / self.quantity if self.quantity else 0
+        # Only set original_quantity and calculate totals on FIRST save (creation)
+        if not self.pk:  # This means it's a new product
+            self.original_quantity = self.quantity
+            
+            # Calculate TOTAL price and TOTAL cost
+            total_price = self.price * self.quantity
+            total_cost = self.cost * self.quantity
+            
+            # Calculate total profit/loss
+            self.profit_loss = total_price - total_cost
+            
+            # Calculate profit/loss message
+            if self.profit_loss > 0:
+                self.profit_loss_message = f"Profit: R{self.profit_loss:.2f}"
+            elif self.profit_loss < 0:
+                self.profit_loss_message = f"Loss: R{abs(self.profit_loss):.2f}"
+            else:
+                self.profit_loss_message = "No Profit No Loss"
+                
+            # Calculate unit price
+            if self.quantity > 0:
+                self.unit_price = self.price / self.quantity
+            else:
+                self.unit_price = 0
+            
         super().save(*args, **kwargs)
-
+        
     @property
     def total_price(self):
-        return self.price * self.quantity
+        # Use original_quantity for display, not current quantity
+        return self.price * self.original_quantity
 
     @property
     def total_cost(self):
-        return self.cost * self.quantity
+        # Use original_quantity for display, not current quantity
+        return self.cost * self.original_quantity
 
-#    @property
-#    def profit_loss_message(self):
-#        return f"{self.profit_loss:.2f}"
-    
-#    @property
-#    def profit_loss(self):
-        return (self.price - self.cost) * self.quantity
-    
-    def calculate_profit_loss(self):
-        profit_loss = self.price - self.cost
-        if profit_loss > 0:
-            return f"Profit: {profit_loss}"
-        elif profit_loss < 0:
-            return f"Loss: {-profit_loss}"
-        else:
-            return "No Profit No Loss"
+    @property
+    def profit_loss_percentage(self):
+        if self.cost > 0:
+            return ((self.price - self.cost) / self.cost) * 100
+        return 0
 
     def update_status(self, new_status):
-
         self.status = new_status
         if new_status == 'OUT':
             self.last_modified = timezone.now()

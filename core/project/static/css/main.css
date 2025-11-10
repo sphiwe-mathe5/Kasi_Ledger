@@ -1,6 +1,6 @@
 body {
   font-family: "Poppins", sans-serif;
-  background-color: #ffffff;
+  background-color: #f8f9fa;
   line-height: 1.6;
   text-decoration: none;
 }
@@ -150,12 +150,13 @@ forgotpassword-link {
 }
 #product-list {
   margin: 20px;
-  font-family: Arial, sans-serif;
+  font-family: "Poppins", sans-serif;
 }
 .product-table {
   width: 100%;
   border-collapse: collapse;
   margin-top: 10px;
+  background: white;
 }
 .product-table th,
 .product-table td {
@@ -249,45 +250,47 @@ forgotpassword-link {
   color: var(--secondary-color);
 }
 h1 {
-  color: #2c3e50;
+  color: #4169E1;
   text-align: center;
   margin-bottom: 30px;
 }
 h2 {
-  color: #3498db;
-  border-bottom: 2px solid #3498db;
+  color: #4169E1;
+  border-bottom: 2px solid #e9ecef;
   padding-bottom: 10px;
   margin-top: 40px;
 }
 h3 {
-  color: #2980b9;
+  color: #4169E1;
   margin-top: 30px;
 }
 .product-table {
   width: 100%;
   border-collapse: collapse;
   margin-bottom: 30px;
-  background-color: #fff;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  border-radius: 8px;
+  background: white;
+  overflow: hidden;
 }
 .product-table th,
 .product-table td {
   padding: 12px;
   text-align: left;
-  border-bottom: 1px solid #e0e0e0;
+  border-bottom: 1px solid #e9ecef;
 }
 .product-table th {
-  background-color: #0056a0;
-  color: #fff;
-  font-weight: bold;
-  text-transform: uppercase;
-  font-size: 0.9em;
+    background: #4169E1;
+    color: white;
+    padding: 1rem 0.75rem;
+    text-align: left;
+    font-weight: 600;
+    font-size: 0.9rem;
 }
 .product-table tr:nth-child(even) {
   background-color: #f8f8f8;
 }
 .product-table tr:hover {
-  background-color: #e8f4f8;
+  background: #f8f9ff;
 }
 .product-count {
   font-weight: bold;
@@ -320,7 +323,7 @@ h3 {
   margin-top: 20px;
 }
 .see-all-btn {
-  background-color: #3498db;
+  background-color: #4169E1;
   color: #fff;
   border: none;
   padding: 10px 20px;
@@ -1157,3 +1160,62 @@ input[type="password"]:focus {
     align-items: center;     /* Centers vertically if needed */
     margin-top: 1rem;        /* Optional spacing */
 }
+
+        .subscription-section {
+            padding: 12px 16px;
+            background: #f8f9fa;
+            border-bottom: 1px solid #e9ecef;
+        }
+
+        .subscription-info {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .plan-trial, .plan-free, .plan-paid {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+
+        .plan-name {
+            font-size: 14px;
+            font-weight: 600;
+            color: #2c3e50;
+        }
+
+        .plan-price, .plan-status, .trial-countdown {
+            font-size: 12px;
+            color: #6c757d;
+        }
+
+        .trial-countdown {
+            color: #e67e22;
+            font-weight: 500;
+        }
+
+        .plan-status {
+            color: #27ae60;
+        }
+
+        .upgrade-btn-mini {
+            color: #3498db;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+            white-space: nowrap;
+        }
+
+
+
+        .dropdown-divider {
+            height: 1px;
+            background: #e9ecef;
+            margin: 4px 0;
+        }

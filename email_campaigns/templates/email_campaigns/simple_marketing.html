@@ -7,7 +7,8 @@
     <link rel="icon" href="{% static 'images/kasicon.png' %}">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-    <title>{{ user.company_name }}</title>
+    <link rel="stylesheet" href="{% static 'css/messages.css' %}" />
+    <title>{{ user.company_name }} Marketing</title>
     <title>Email Marketing</title>
     <style>
         * {
@@ -271,6 +272,38 @@
 </head>
 <body>
 <div class="email-marketing-container">
+    <div class="messages-container">
+        {% if messages %}
+            {% for message in messages %}
+                <div class="message {{ message.tags }}" data-message-id="{{ forloop.counter }}">
+                    <div class="message-content">
+                        <div class="message-icon">
+                            {% if message.tags == 'success' %}
+                                <svg viewBox="0 0 20 20" fill="currentColor" style="color: #4caf50;">
+                                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+                                </svg>
+                            {% elif message.tags == 'error' %}
+                                <svg viewBox="0 0 20 20" fill="currentColor" style="color: #f44336;">
+                                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"/>
+                                </svg>
+                            {% elif message.tags == 'warning' %}
+                                <svg viewBox="0 0 20 20" fill="currentColor" style="color: #ff9800;">
+                                    <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/>
+                                </svg>
+                            {% else %}
+                                <svg viewBox="0 0 20 20" fill="currentColor" style="color: #2196f3;">
+                                    <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"/>
+                                </svg>
+                            {% endif %}
+                        </div>
+                        <div class="message-text">{{ message }}</div>
+                    </div>
+                    <button class="message-close" onclick="closeMessage(this)">×</button>
+                    <div class="progress-bar"></div>
+                </div>
+            {% endfor %}
+        {% endif %}
+    </div>
     <h1>
         <a href="javascript:history.back()" style="text-decoration:none; color:inherit;">
             <i class="fa fa-arrow-left" aria-hidden="true"></i>
@@ -304,15 +337,7 @@
                 Send professional email campaigns to all your customers
             </p>
         </div>
-            {% if messages %}
-            <div class="messages">
-                {% for message in messages %}
-                <div class="message {{ message.tags }}">
-                    {{ message }}
-                </div>
-                {% endfor %}
-            </div>
-            {% endif %}
+
         <!-- Show disabled form as preview -->
         <div style="opacity: 0.4; pointer-events: none; user-select: none;">
             <div class="step">
@@ -377,8 +402,9 @@
             </div>
 
             <div class="action">
-                <button type="submit" class="send-button">
-                    🚀 Send to {{ customer_emails_count }} Customers
+                <button type="submit" class="send-button btn-loader">
+                    <span class="btn-text">🚀 Send to {{ customer_emails_count }} Customers</span>
+                    <div class="spinner"></div>
                 </button>
             </div>
         </form>
@@ -405,5 +431,6 @@
             </ol>
         </div>
     </div>
+    <script src="{% static 'js/messages.js' %}"></script>
 </body>
 </html>

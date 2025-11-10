@@ -69,13 +69,16 @@
             overflow: hidden;
             transform: translateY(20px);
             opacity: 0;
-            animation: fadeIn 0.3s ease-out forwards;
+            visibility: hidden; /* Add this */
+            pointer-events: none; /* Add this - prevents clicks when hidden */
+            transition: all 0.3s ease-out; /* Use transition instead of animation */
         }
 
         .user-dropdown.show {
             opacity: 1;
-            visibility: visible;
+            visibility: visible; /* Add this */
             transform: translateY(0);
+            pointer-events: auto; /* Add this - allows clicks when visible */
         }
 
         .dropdown-header {
@@ -669,39 +672,158 @@
             background-color: #5a6268;
             transform: none;
         }
+
+        .subscription-section {
+            padding: 12px 16px;
+            background: #f8f9fa;
+            border-bottom: 1px solid #e9ecef;
+        }
+
+        .subscription-info {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .plan-trial, .plan-free, .plan-paid {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+
+        .plan-name {
+            font-size: 14px;
+            font-weight: 600;
+            color: #2c3e50;
+        }
+
+        .plan-price, .plan-status, .trial-countdown {
+            font-size: 12px;
+            color: #6c757d;
+        }
+
+        .trial-countdown {
+            color: #e67e22;
+            font-weight: 500;
+        }
+
+        .plan-status {
+            color: #27ae60;
+        }
+
+        .upgrade-btn-mini {
+            color: #3498db;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+            white-space: nowrap;
+        }
+
+        .upgrade-btn-mini:hover {
+
+        }
+
+        .dropdown-divider {
+            height: 1px;
+            background: #e9ecef;
+            margin: 4px 0;
+        }
     </style>
 </head>
 <body>
     <div class="container">
         
-        <div class="user-info">
-            <p class="user-name"><strong>Hello, {{ user.company_name }}</strong></p>
-                <div class="user-circle" onclick="toggleUserDropdown()">
-                    {{ user.company_name|slice:":1" }}
-                </div>
-            <div class="user-dropdown" id="userDropdown">
-                <div class="dropdown-header">
-                    <div><strong>{{ user.company_name }}</strong></div>
-                    <div class="dropdown-email">{{ user.username }}</div>
-                </div>
-                <div class="dropdown-menu">
-                    {% if user.company_category == "spaza" %}
-                    <a href="{% url 'email_campaigns:emails' %}" class="dropdown-item">
-                        <i class="fa-solid fa-square-envelope"></i>
-                        Marketing Console
-                    </a>
-                    {% endif %}
-                    <a href="{% url 'subscription_plans' %}" class="dropdown-item">
-                        <i class="fa-solid fa-circle-chevron-up"></i>
-                        Upgrade Plan
-                    </a>
-                    <a href="{% url 'logout' %}" class="dropdown-item logout">
-                        <i class="fa-solid fa-right-from-bracket"></i>
-                        Logout
-                    </a>
-                </div>
+    <div class="user-info">
+        <p class="user-name"><strong>Hello, {{ user.company_name }}</strong></p>
+        <div class="user-circle" onclick="toggleUserDropdown()">
+            {{ user.company_name|slice:":1" }}
+        </div>
+
+        <div class="user-dropdown" id="userDropdown">
+            <div class="dropdown-header">
+                <div><strong>{{ user.company_name }}</strong></div>
+                <div class="dropdown-email">{{ user.email }}</div>
+            </div>
+            
+            <!-- Subscription Plan Section -->
+            <div class="subscription-section">
+                {% if user.subscription %}
+                    {% with sub=user.subscription %}
+                    <div class="subscription-info">
+                        {% if sub.is_trial_active %}
+                            <!-- Active Trial -->
+                            <div class="plan-trial">
+                                <div class="plan-name">Free Trial</div>
+                                <div class="trial-countdown">{{ sub.trial_end_date|timeuntil }} left</div>
+                            </div>
+                            <button class="upgrade-btn-mini" onclick="showUpgradePlans()">Upgrade</button>
+                        
+                        {% elif sub.is_trial_expired %}
+                            <!-- Trial Expired -->
+                            <div class="plan-expired">
+                                <div class="plan-name">Trial Expired</div>
+                                <div class="trial-countdown">Please upgrade</div>
+                            </div>
+                            <button class="upgrade-btn-mini" onclick="showUpgradePlans()">Upgrade</button>
+                        
+                        {% elif sub.is_paid_plan %}
+                            <!-- Paid Plan -->
+                            <div class="plan-paid">
+                                <div class="plan-name">{{ sub.plan.name }}</div>
+                                <div class="plan-price">R{{ sub.plan.price }}/month</div>
+                            </div>
+                            <button class="upgrade-btn-mini" onclick="showUpgradePlans()">Details</button>
+                        
+                        {% else %}
+                            <!-- Free Plan -->
+                            <div class="plan-free">
+                                <div class="plan-name">{{ sub.plan.name }} Plan</div>
+                                <div class="plan-status">Active</div>
+                            </div>
+                            <button class="upgrade-btn-mini" onclick="showUpgradePlans()">Upgrade</button>
+                        {% endif %}
+                    </div>
+                    {% endwith %}
+                {% else %}
+                    <!-- No subscription -->
+                    <div class="subscription-info">
+                        <div class="plan-free">
+                            <div class="plan-name">Free Plan</div>
+                            <div class="plan-status">Active</div>
+                        </div>
+                        <button class="upgrade-btn-mini" onclick="showUpgradePlans()">Upgrade</button>
+                    </div>
+                {% endif %}
+            </div>
+            
+            <div class="dropdown-divider"></div>
+
+            <div class="dropdown-menu">
+                <a href="{% url 'email_campaigns:emails' %}" class="dropdown-item">
+                    <i class="fa-solid fa-square-envelope"></i>
+                    Marketing Console
+                </a>
+                <div class="dropdown-divider"></div>
+                
+                <a href="{% url 'profile' %}" class="dropdown-item">
+                    <i class="fa-solid fa-gear"></i>
+                    Settings
+                </a>
+                
+                <div class="dropdown-divider"></div>
+                
+                <a href="{% url 'logout' %}" class="dropdown-item logout">
+                    <i class="fa-solid fa-right-from-bracket"></i>
+                    Logout
+                </a>
             </div>
         </div>
+    </div>
         
         {% if user.company_category == "spaza" %}
             <div class="ai-section">
@@ -1306,7 +1428,11 @@ function removeTypingIndicator() {
     }
 }
 </script>
-
+<script>
+function showUpgradePlans() {
+    window.location.href = "{% url 'subscription_plans' %}";
+}
+</script>
 
 <style>
 /* Minimal styles for typing indicator - add to your existing CSS */

@@ -108,6 +108,128 @@
             padding: 2rem 1rem;
         }
     }
+        .ai-section {
+            padding: 2.5rem 2rem;
+            font-family: "Poppins", sans-serif;
+            background: white;
+            margin: 2rem 0;
+        }
+
+        .ai-container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .ai-header {
+            text-align: center;
+            margin-bottom: 2rem;
+            font-family: "Poppins", sans-serif;
+        }
+
+        .ai-header h2 {
+            font-size: 1.5rem;
+            color: #4169E1;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+            font-family: "Poppins", sans-serif;
+        }
+
+        .ai-header p {
+            font-size: 0.9rem;
+            color: #6c757d;
+            line-height: 1.5;
+            max-width: 700px;
+            margin: 0 auto;
+            font-family: "Poppins", sans-serif;
+        }
+
+        .ai-features-title {
+            text-align: center;
+            font-size: 1.2rem;
+            color: #333;
+            margin: 2rem 0 1.5rem;
+            font-weight: 600;
+            font-family: "Poppins", sans-serif;
+        }
+
+        .ai-features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.25rem;
+            margin-bottom: 2rem;
+        }
+
+        .ai-feature-card {
+            background: #f8f9fa;
+            padding: 1.25rem;
+            border-radius: 10px;
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+        }
+
+        .ai-feature-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(65, 105, 225, 0.12);
+            border-color: #4169E1;
+        }
+
+        .ai-feature-icon {
+            font-size: 2rem;
+            margin-bottom: 0.75rem;
+        }
+
+        .ai-feature-card h3 {
+            font-size: 1rem;
+            color: #4169E1;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+        }
+
+        .ai-feature-card p {
+            color: #6c757d;
+            line-height: 1.5;
+            margin-bottom: 0.25rem;
+            font-size: 0.85rem;
+        }
+
+        .ai-closing {
+            background: #4169E1;
+            padding: 1.5rem 1.5rem;
+            border-radius: 12px;
+            text-align: center;
+            color: white;
+        }
+
+        .ai-closing h3 {
+            font-size: 1.2rem;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+        }
+
+        .ai-closing p {
+            font-size: 0.9rem;
+            line-height: 1.5;
+            max-width: 700px;
+            margin: 0 auto;
+        }
+
+        @media (max-width: 768px) {
+            .ai-header h2 {
+                font-size: 1.3rem;
+            }
+
+            .ai-features-title {
+                font-size: 1.1rem;
+            }
+
+            .ai-features-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .ai-section {
+                padding: 1.5rem 1rem;
+            }
+        }
 </style>
 
 <body>
@@ -160,6 +282,13 @@
                               <p class="user-email">{{ user.email }}</p>
 
                               <ol class="popup-menu">
+
+                                <li>
+                                  <a href="{% url 'console' %}" class="menu-item">
+                                      <i class="fa-solid fa-terminal"></i>
+                                      Console
+                                  </a>
+                                </li>
                                 <li>
                                   <a href="{% url 'subscription_plans' %}" class="menu-item">
                                     <i class="fa-solid fa-circle-chevron-up"></i>
@@ -357,6 +486,49 @@
           <li data-target="#customCarousel" data-slide-to="3"></li>
         </ol>
       </div>
+    </section>
+
+        <section class="ai-section">
+        <div class="ai-container">
+            <div class="ai-header">
+                <h2>💡 Smart AI for Your Business Growth</h2>
+                <p>Kasi Ledger is more than just a management tool — it's powered by Artificial Intelligence to help you work smarter, not harder. Our built-in AI assistants simplify your daily business tasks and give you real-time insights that help you make better decisions.</p>
+            </div>
+
+            <h3 class="ai-features-title">🤖 AI Features That Work for You</h3>
+
+            <div class="ai-features-grid">
+                <div class="ai-feature-card">
+                    <div class="ai-feature-icon">🧠</div>
+                    <h3>AI Business Assistant</h3>
+                    <p>Ask questions like "How much did I make yesterday?" or "Which product sells the most?" — and get instant answers.</p>
+                    <p>No reports, no confusion — just talk or type, and the AI does the rest.</p>
+                </div>
+
+                <div class="ai-feature-card">
+                    <div class="ai-feature-icon">📸</div>
+                    <h3>AI Stock Recognition</h3>
+                    <p>No barcode scanner? No problem! Simply take a photo of your products, and our AI automatically identifies and records your stock.</p>
+                </div>
+
+                <div class="ai-feature-card">
+                    <div class="ai-feature-icon">📅</div>
+                    <h3>AI Scheduling & Bookings</h3>
+                    <p>For salons and car washes, our AI helps avoid double bookings and predicts your busiest days — so you can plan ahead and serve more customers.</p>
+                </div>
+
+                <div class="ai-feature-card">
+                    <div class="ai-feature-icon">📊</div>
+                    <h3>AI Insights & Predictions</h3>
+                    <p>Track your sales trends, see your top-performing products, and get future forecasts to help you restock wisely and grow faster.</p>
+                </div>
+            </div>
+
+            <div class="ai-closing">
+                <h3>🌍 Built for Every Business</h3>
+                <p>Whether you run a spaza shop, restaurant, salon, car wash, or clothing brand, Kasi Ledger's AI adapts to your business — helping you save time, increase profits, and stay ahead.</p>
+            </div>
+        </div>
     </section>
 
 <!-- Car Wash Management Features -->

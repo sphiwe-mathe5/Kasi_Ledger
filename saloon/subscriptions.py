@@ -4,6 +4,7 @@ from datetime import timedelta
 from .models import StyleTicket, Booking
 from submit.models import Subscription
 from core.models import StockImage
+from carwash.models import ServiceTicket
 
 def get_user_subscription_status(user):
     """
@@ -76,6 +77,7 @@ def check_feature_access(user, feature):
     - 'salon_profile': Access salon profile
     - 'email_marketing': Send marketing emails
     - 'ai_image_recognition': Use AI image recognition
+    - 'service_ticket': Create service tickets (car wash) 
     
     Returns: {'allowed': bool, 'message': str, 'limit': int|None, 'current': int|None}
     """
@@ -133,6 +135,33 @@ def check_feature_access(user, feature):
             return {
                 'allowed': True,
                 'message': f'Free plan: {limit - month_count} appointments remaining this month.',
+                'feature': feature,
+                'limit': limit,
+                'current': month_count,
+            }
+        
+        elif feature == 'service_ticket':  # ✅ Service ticket for free plan
+            # Free: 20 service tickets per month limit
+            start_of_month = now.replace(day=1)
+            month_count = ServiceTicket.objects.filter(
+                created_by=user,
+                created_at__gte=start_of_month
+            ).count()
+            
+            limit = 20
+            if month_count >= limit:
+                return {
+                    'allowed': False,
+                    'message': f'You\'ve reached the {limit} service ticket limit for this month.',
+                    'feature': feature,
+                    'limit': limit,
+                    'current': month_count,
+                    'reason': 'limit_exceeded'
+                }
+            
+            return {
+                'allowed': True,
+                'message': f'Free plan: {limit - month_count} service tickets remaining this month.',
                 'feature': feature,
                 'limit': limit,
                 'current': month_count,
@@ -222,8 +251,16 @@ def check_feature_access(user, feature):
     
     # GROWTH PLAN FEATURES
     elif effective_plan == 'growth_plan':
+
+        if feature == 'service_ticket':  # ✅ Unlimited service tickets for growth plan
+            return {
+                'allowed': True,
+                'message': 'Unlimited service tickets available.',
+                'feature': feature,
+                'unlimited': True
+            }
         
-        if feature == 'chatbot':
+        elif feature == 'chatbot':
             return {'allowed': True, 'message': 'AI Chatbot available.', 'feature': feature}
         
         elif feature == 'email_marketing':
@@ -234,10 +271,10 @@ def check_feature_access(user, feature):
         
         elif feature == 'bookings_view':
             return {
-                'allowed': False,
-                'message': 'Bookings management requires Business Pro plan.',
+                'allowed': True,
+                'message': 'Bookings management available.',
                 'feature': feature,
-                'reason': 'plan_restriction'
+                #'reason': 'plan_restriction'
             }
         
         elif feature == 'advanced_analytics':
@@ -262,19 +299,28 @@ def check_feature_access(user, feature):
     
     # BUSINESS PRO FEATURES - Full access
     elif effective_plan == 'business_pro':
-        return {
-            'allowed': True,
-            'message': 'Feature available. Full access granted.',
-            'feature': feature
-        }
-
-    elif effective_plan == 'business_pro':
-        if feature == 'ai_image_recognition':
+        
+        if feature == 'service_ticket':  # ✅ Unlimited service tickets for business pro
+            return {
+                'allowed': True,
+                'message': 'Unlimited service tickets available.',
+                'feature': feature,
+                'unlimited': True
+            }
+        
+        elif feature == 'ai_image_recognition':
             return {
                 'allowed': True,
                 'message': 'Unlimited image recognition available.',
                 'feature': feature,
                 'unlimited': True
+            }
+        
+        else:
+            return {
+                'allowed': True,
+                'message': 'Feature available. Full access granted.',
+                'feature': feature
             }
     
     return {

@@ -7,6 +7,7 @@
     <link rel="icon" href="{% static 'images/kasicon.png' %}">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link rel="stylesheet" href="{% static 'css/messages.css' %}" />
     <title>{{ user.company_name }}</title>
     <style>
         * {
@@ -891,6 +892,66 @@
             font-weight: bold;
             font-size: 1rem;
         }
+        .subscription-section {
+            padding: 12px 16px;
+            background: #f8f9fa;
+            border-bottom: 1px solid #e9ecef;
+        }
+
+        .subscription-info {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .plan-trial, .plan-free, .plan-paid {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+
+        .plan-name {
+            font-size: 14px;
+            font-weight: 600;
+            color: #2c3e50;
+        }
+
+        .plan-price, .plan-status, .trial-countdown {
+            font-size: 12px;
+            color: #6c757d;
+        }
+
+        .trial-countdown {
+            color: #e67e22;
+            font-weight: 500;
+        }
+
+        .plan-status {
+            color: #27ae60;
+        }
+
+        .upgrade-btn-mini {
+            color: #3498db;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+            white-space: nowrap;
+        }
+
+        .upgrade-btn-mini:hover {
+
+        }
+
+        .dropdown-divider {
+            height: 1px;
+            background: #e9ecef;
+            margin: 4px 0;
+        }
         .section-header {
             display: flex;
             justify-content: space-between;
@@ -939,6 +1000,39 @@
     </style>
 </head>
 <body>
+
+<div class="messages-container">
+    {% if messages %}
+        {% for message in messages %}
+            <div class="message {{ message.tags }}" data-message-id="{{ forloop.counter }}">
+                <div class="message-content">
+                    <div class="message-icon">
+                        {% if message.tags == 'success' %}
+                            <svg viewBox="0 0 20 20" fill="currentColor" style="color: #4caf50;">
+                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+                            </svg>
+                        {% elif message.tags == 'error' %}
+                            <svg viewBox="0 0 20 20" fill="currentColor" style="color: #f44336;">
+                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"/>
+                            </svg>
+                        {% elif message.tags == 'warning' %}
+                            <svg viewBox="0 0 20 20" fill="currentColor" style="color: #ff9800;">
+                                <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/>
+                            </svg>
+                        {% else %}
+                            <svg viewBox="0 0 20 20" fill="currentColor" style="color: #2196f3;">
+                                <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"/>
+                            </svg>
+                        {% endif %}
+                    </div>
+                    <div class="message-text">{{ message }}</div>
+                </div>
+                <button class="message-close" onclick="closeMessage(this)">×</button>
+                <div class="progress-bar"></div>
+            </div>
+        {% endfor %}
+    {% endif %}
+</div>
 <div class="container">
     <div class="user-info">
         <p class="user-name"><strong>Hello, {{ user.company_name }}</strong></p>
@@ -951,15 +1045,69 @@
                 <div><strong>{{ user.company_name }}</strong></div>
                 <div class="dropdown-email">{{ user.email }}</div>
             </div>
+            
+            <!-- Subscription Plan Section -->
+            <div class="subscription-section">
+                {% if user.subscription %}
+                    {% with sub=user.subscription %}
+                    <div class="subscription-info">
+                        {% if sub.is_trial_active %}
+                            <!-- Active Trial -->
+                            <div class="plan-trial">
+                                <div class="plan-name">Free Trial</div>
+                                <div class="trial-countdown">{{ sub.trial_end_date|timeuntil }} left</div>
+                            </div>
+                            <button class="upgrade-btn-mini" onclick="showUpgradePlans()">Upgrade</button>
+                        
+                        {% elif sub.is_trial_expired %}
+                            <!-- Trial Expired -->
+                            <div class="plan-expired">
+                                <div class="plan-name">Trial Expired</div>
+                                <div class="trial-countdown">Please upgrade</div>
+                            </div>
+                            <button class="upgrade-btn-mini" onclick="showUpgradePlans()">Upgrade</button>
+                        
+                        {% elif sub.is_paid_plan %}
+                            <!-- Paid Plan -->
+                            <div class="plan-paid">
+                                <div class="plan-name">{{ sub.plan.name }}</div>
+                                <div class="plan-price">R{{ sub.plan.price }}/month</div>
+                            </div>
+                            <button class="upgrade-btn-mini" onclick="showUpgradePlans()">Details</button>
+                        
+                        {% else %}
+                            <!-- Free Plan -->
+                            <div class="plan-free">
+                                <div class="plan-name">{{ sub.plan.name }} Plan</div>
+                                <div class="plan-status">Active</div>
+                            </div>
+                            <button class="upgrade-btn-mini" onclick="showUpgradePlans()">Upgrade</button>
+                        {% endif %}
+                    </div>
+                    {% endwith %}
+                {% else %}
+                    <!-- No subscription -->
+                    <div class="subscription-info">
+                        <div class="plan-free">
+                            <div class="plan-name">Free Plan</div>
+                            <div class="plan-status">Active</div>
+                        </div>
+                        <button class="upgrade-btn-mini" onclick="showUpgradePlans()">Upgrade</button>
+                    </div>
+                {% endif %}
+            </div>
+            
+            <div class="dropdown-divider"></div>
+
             <div class="dropdown-menu">
-                <a href="{% url 'email_campaigns:emails' %}" class="dropdown-item">
-                    <i class="fa-solid fa-square-envelope"></i>
-                    Marketing Console
+                <a href="{% url 'saloon:manage_availability' %}" class="dropdown-item">
+                    <i class="fa-solid fa-calendar-days"></i>
+                    Slots Availability
                 </a>
                 {% if user.salon_profile %}
                     <a href="{% url 'saloon:salon_profile' user.salon_profile.slug %}" class="dropdown-item">
                         <i class="fa-solid fa-store"></i>
-                        View Profile
+                        Bookings Management
                     </a>
                 {% else %}
                     <a href="{% url 'saloon:create_salon_profile' %}" class="dropdown-item">
@@ -967,6 +1115,14 @@
                         Add Profile
                     </a>
                 {% endif %}
+
+                <a href="{% url 'email_campaigns:emails' %}" class="dropdown-item">
+                    <i class="fa-solid fa-square-envelope"></i>
+                    Marketing Console
+                </a>
+                
+                <div class="dropdown-divider"></div>
+                
                 <a href="{% url 'console' %}" class="dropdown-item">
                     <i class="fa-solid fa-terminal"></i>
                     Console
@@ -975,6 +1131,9 @@
                     <i class="fa-solid fa-gear"></i>
                     Settings
                 </a>
+                
+                <div class="dropdown-divider"></div>
+                
                 <a href="{% url 'logout' %}" class="dropdown-item logout">
                     <i class="fa-solid fa-right-from-bracket"></i>
                     Logout
@@ -983,10 +1142,12 @@
         </div>
     </div>
 
+
+
     <div id="employeeFormModal" class="modal-overlays">
         <div class="modal-contents">
             <div class="modal-header">
-                <h2 class="modal-title">Add New Stylist</h2>
+                <h2 class="modal-title">Add New Hair Stylist</h2>
                 <button type="button" class="close-btn" id="closeEmployeeForm">&times;</button>
             </div>
             
@@ -1018,7 +1179,10 @@
 
                 <div class="button-groups">
                     <button type="button" class="btn btn-secondary" id="cancelBtn">Cancel</button>
-                    <button type="submit" class="btn btn-primary">Save Stylist</button>
+                    <button type="submit" class="btn btn-primary btn-loader" id="saveStylistBtn">
+                        <span class="btn-text">Save Stylist</span>
+                        <div class="spinner"></div>
+                    </button>
                 </div>
             </form>
         </div>
@@ -1027,7 +1191,7 @@
     <div id="serviceModal" class="modal-overlay">
         <div class="modal-content">
             <div class="modal-header">
-                <h2>Manage Styles & Services</h2>
+                <h2>Manage Hair Styles</h2>
                 <button id="closeServiceModal" class="close-btn">×</button>
             </div>
 
@@ -1037,7 +1201,7 @@
                     <button type="submit" class="search-btn">Search</button>
                 </form>
 
-                <h3>Available Styles & Services</h3>
+                <h3>Available Hair Styles</h3>
                 <table class="services-table">
                     <thead>
                         <tr>
@@ -1057,7 +1221,7 @@
                             </tr>
                         {% empty %}
                             <tr>
-                                <td colspan="4">No styles found.</td>
+                                <td colspan="4">No Hair styles found.</td>
                             </tr>
                         {% endfor %}
                     </tbody>
@@ -1080,11 +1244,11 @@
                 <hr>
 
                 <div class="form-section">
-                    <h3>Add New Style/Service</h3>
+                    <h3>Add New Hair Style</h3>
                     <form method="POST" action="{% url 'saloon:style_create' %}">
                         {% csrf_token %}
                         <div class="form-group">
-                            <label for="id_name">Style/Service Name:</label>
+                            <label for="id_name">Hair Style</label>
                             <input type="text" id="id_name" name="name" class="form-input" required>
                             <span class="error-message" style="display: none;">This field is required.</span>
                         </div>
@@ -1094,7 +1258,10 @@
                             <input type="number" step="0.01" id="id_price" name="price" class="form-input" required>
                             <span class="error-message" style="display: none;">This field is required.</span>
                         </div>
-                        <button type="submit" class="save-btn">Save Style</button>
+                        <button type="submit" class="save-btn btn-loader" id="saveStyleBtn">
+                            <span class="btn-text">Save Style</span>
+                            <div class="spinner"></div>
+                        </button>
                     </form>
                 </div>
             </div>
@@ -1104,7 +1271,7 @@
     <div id="ticketFormModal" class="modal-overlay">
         <div class="modal-container">
             <div class="modal-header">
-                <h2>Create Style Appointment</h2>
+                <h2>Create Hair Appointment</h2>
                 <button type="button" class="close-btn" id="closeTicketForm">&times;</button>
             </div>
             
@@ -1131,7 +1298,7 @@
                     </div>
                     
                     <div class="form-group">
-                        <label for="id_style">Style/Service:</label>
+                        <label for="id_style">Hair Style:</label>
                         <select id="id_style" name="style" class="form-input" required>
                             {% for style in styles %}
                                 <option value="{{ style.id }}">{{ style.name }} - R{{ style.price }}</option>
@@ -1140,7 +1307,7 @@
                     </div>
                     
                     <div class="form-group">
-                        <label for="id_worker">Stylist:</label>
+                        <label for="id_worker">Hair Stylist:</label>
                         <select id="id_worker" name="worker" class="form-input" required>
                             {% for worker in workers %}
                                 <option value="{{ worker.id }}">{{ worker.name }} {{ worker.surname }}</option>
@@ -1151,7 +1318,10 @@
                     
 
                     <div class="button-group">
-                        <button type="submit" class="btn btn-primary">Create Appointment</button>
+                        <button type="submit" class="btn btn-primary btn-loader" id="createAppointmentBtn">
+                            <span class="btn-text">Create Appointment</span>
+                            <div class="spinner"></div>
+                        </button>
                         <button type="button" class="btn btn-secondary" id="closeTicketForm">Cancel</button>
                     </div>
                 </form>
@@ -1162,8 +1332,8 @@
     <section class="quick-links">
         <ul class="nav-grid">
             <li class="nav-card"><a href="#" id="openTicketForm">Create Appointments</a></li>
-            <li class="nav-card"><a href="#" id="employeesLink">Add Stylist</a></li>
-            <li class="nav-card"><a href="#" id="openServiceModal">Add Styles</a></li>
+            <li class="nav-card"><a href="#" id="employeesLink">Add Hair Stylist</a></li>
+            <li class="nav-card"><a href="#" id="openServiceModal">Add Hair Styles</a></li>
             <li class="nav-card"><a href="{% url 'saloon:salon_report' %}">View Reports</a></li>
         </ul>
     </section>
@@ -1172,11 +1342,11 @@
         <section class="stats-card">
             <h2>Overview</h2>
             <div class="stat-item">
-                <span class="stat-label">Total Stylists:</span>
+                <span class="stat-label">Total Hair Stylists:</span>
                 <span class="stat-value">{{ active_workers }}</span>
             </div>
             <div class="stat-item">
-                <span class="stat-label">Total Styles:</span>
+                <span class="stat-label">Total Hair Styles:</span>
                 <span class="stat-value">{{ styless }}</span>
             </div>
             <div class="stat-item">
@@ -1312,7 +1482,6 @@
                         Today's Summary:
                         • {{ today_tickets_count }} appointments
                         • R{{ today_revenue }} revenue
-                        • {{ pending_tickets }} pending style tickets
                         • {{ pending_bookings }} pending bookings
                         <br>
                         Ask me about appointments, revenue, or stylist performance!
@@ -2026,14 +2195,14 @@ function toggleUserDropdown() {
 }
 
 // Close dropdown if clicking outside
-window.addEventListener("click", function(event) {
-    const dropdown = document.getElementById("userDropdown");
-    const userInfo = document.querySelector(".user-info");
-
-    if (!userInfo.contains(event.target)) {
-        dropdown.classList.remove("show");
-    }
-});
+    document.addEventListener('click', function(event) {
+        const dropdown = document.getElementById('userDropdown');
+        const circle = document.querySelector('.user-circle');
+        
+        if (!dropdown.contains(event.target) && !circle.contains(event.target)) {
+            dropdown.classList.remove('show');
+        }
+    });
 </script>
 
 <script>
@@ -2152,5 +2321,13 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 });
 </script>
+<script src="{% static 'js/messages.js' %}"></script>
+<link rel="stylesheet" href="{% static 'css/messages.css' %}" />
+<script>
+function showUpgradePlans() {
+    window.location.href = "{% url 'subscription_plans' %}";
+}
+</script>
+
 </body>
 </html>

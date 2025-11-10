@@ -161,12 +161,15 @@
         margin-right: 30rem;
         opacity: 0;
         animation: fadeIn 0.3s ease-out forwards;
+        visibility: hidden;
+        pointer-events: none;
     }
 
     .user-dropdown.show {
         opacity: 1;
         visibility: visible;
         transform: translateY(0);
+        pointer-events: auto;
     }
 
     .dropdown-header {
@@ -537,20 +540,127 @@
             }
         }
 
-        /* Loading Animation */
-        .loading {
-            display: inline-block;
-            width: 20px;
-            height: 20px;
-            border: 3px solid #f3f3f3;
-            border-top: 3px solid #4169E1;
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
+
+        /* AI-style 3 dots loader */
+        .ai-loader {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
         }
 
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
+        .ai-message {
+            color: #4169E1;
+            font-weight: 500;
+            font-size: 14px;
+        }
+
+        .ai-dots {
+            display: flex;
+            gap: 4px;
+            align-items: center;
+        }
+
+        .ai-dots .dot {
+            width: 8px;
+            height: 8px;
+            background: #4169E1;
+            border-radius: 50%;
+            animation: ai-dot-bounce 1.4s ease-in-out infinite both;
+        }
+
+        .ai-dots .dot:nth-child(1) {
+            animation-delay: -0.32s;
+        }
+
+        .ai-dots .dot:nth-child(2) {
+            animation-delay: -0.16s;
+        }
+
+        .ai-dots .dot:nth-child(3) {
+            animation-delay: 0s;
+        }
+
+        @keyframes ai-dot-bounce {
+            0%, 80%, 100% {
+                transform: translateY(0);
+                opacity: 0.5;
+            }
+            40% {
+                transform: translateY(-8px);
+                opacity: 1;
+            }
+        }
+
+        /* Button loader state */
+        .btn-loader.loading .btn-text {
+            opacity: 0.7;
+        }
+
+        /* Status styles */
+        .status {
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-size: 14px;
+        }
+
+        .status.loading {
+            background: #f0f4ff;
+            color: #4169E1;
+        }
+
+        .status.error {
+            background: #fef2f2;
+            color: #dc2626;
+            border-left: 3px solid #dc2626;
+        }
+
+        .status.success {
+            background: #f0f9f4;
+            color: #059669;
+            border-left: 3px solid #059669;
+        }
+
+        /* Button spinner */
+        .btn-loader .spinner.dots {
+            display: none;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            gap: 4px;
+        }
+
+        .btn-loader.loading .spinner.dots {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .btn-loader .spinner.dots .dot {
+            width: 6px;
+            height: 6px;
+            background: white;
+            border-radius: 50%;
+            animation: ai-dot-bounce 1.4s ease-in-out infinite both;
+        }
+
+        .btn-loader .spinner.dots .dot:nth-child(1) {
+            animation-delay: -0.32s;
+        }
+
+        .btn-loader .spinner.dots .dot:nth-child(2) {
+            animation-delay: -0.16s;
+        }
+
+        .btn-loader .spinner.dots .dot:nth-child(3) {
+            animation-delay: 0s;
+        }
+
+        /* Disable button when loading */
+        .btn-loader.loading {
+            pointer-events: none;
+            background-color: #3a5bcc !important;
         }
 
 
@@ -672,74 +782,241 @@
             color: white;
             text-decoration: none;
         }
+
+
+        .enhanced-success {
+            background: #f0f9f4 !important;
+            color: #059669 !important;
+            border: 1px solid #a7f3d0 !important;
+            border-radius: 8px !important;
+            padding: 12px 16px !important;
+            transition: all 0.5s ease !important;
+        }
+
+        .success-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .success-text {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex: 1;
+            font-weight: 500;
+        }
+
+        .view-items-btn {
+            background: #059669;
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 4px;
+            font-size: 13px;
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+        .subscription-section {
+            padding: 12px 16px;
+            background: #f8f9fa;
+            border-bottom: 1px solid #e9ecef;
+        }
+
+        .subscription-info {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .plan-trial, .plan-free, .plan-paid {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+
+        .plan-name {
+            font-size: 14px;
+            font-weight: 600;
+            color: #2c3e50;
+        }
+
+        .plan-price, .plan-status, .trial-countdown {
+            font-size: 12px;
+            color: #6c757d;
+        }
+
+        .trial-countdown {
+            color: #e67e22;
+            font-weight: 500;
+        }
+
+        .plan-status {
+            color: #27ae60;
+        }
+
+        .upgrade-btn-mini {
+            color: #3498db;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+            white-space: nowrap;
+        }
+
+        .dropdown-divider {
+            height: 1px;
+            background: #e9ecef;
+            margin: 4px 0;
+        }
   </style>
 </head>
 <body>
   
-<div class="user-info">
-    <p class="user-name"><strong>Hello, {{ user.company_name }}</strong></p>
+    <div class="user-info">
+        <p class="user-name"><strong>Hello, {{ user.company_name }}</strong></p>
         <div class="user-circle" onclick="toggleUserDropdown()">
             {{ user.company_name|slice:":1" }}
         </div>
-    <div class="user-dropdown" id="userDropdown">
-        <div class="dropdown-header">
-            <div><strong>{{ user.company_name }}</strong></div>
-            <div class="dropdown-email">{{ user.email }}</div>
-        </div>
-        <div class="dropdown-menu">
-            <a href="{% url 'console' %}" class="dropdown-item">
-                <i class="fa-solid fa-terminal"></i>
-                Console
-            </a>
-            <a href="{% url 'profile' %}" class="dropdown-item">
-                <i class="fa-solid fa-gear"></i>
-                Settings
-            </a>
-            <a href="{% url 'logout' %}" class="dropdown-item logout">
-                <i class="fa-solid fa-right-from-bracket"></i>
-                Logout
-            </a>
+
+        <div class="user-dropdown" id="userDropdown">
+            <div class="dropdown-header">
+                <div><strong>{{ user.company_name }}</strong></div>
+                <div class="dropdown-email">{{ user.email }}</div>
+            </div>
+            
+            <!-- Subscription Plan Section -->
+            <div class="subscription-section">
+                {% if user.subscription %}
+                    {% with sub=user.subscription %}
+                    <div class="subscription-info">
+                        {% if sub.is_trial_active %}
+                            <!-- Active Trial -->
+                            <div class="plan-trial">
+                                <div class="plan-name">Free Trial</div>
+                                <div class="trial-countdown">{{ sub.trial_end_date|timeuntil }} left</div>
+                            </div>
+                            <a href="{% url 'subscription_plans' %}" class="upgrade-btn-mini" onclick="showUpgradePlans(); return false;">Upgrade</a>
+                        
+                        {% elif sub.is_trial_expired %}
+                            <!-- Trial Expired -->
+                            <div class="plan-expired">
+                                <div class="plan-name">Trial Expired</div>
+                                <div class="trial-countdown">Please upgrade</div>
+                            </div>
+                            <button class="upgrade-btn-mini" onclick="showUpgradePlans()">Upgrade</button>
+                        
+                        {% elif sub.is_paid_plan %}
+                            <!-- Paid Plan -->
+                            <div class="plan-paid">
+                                <div class="plan-name">{{ sub.plan.name }}</div>
+                                <div class="plan-price">R{{ sub.plan.price }}/month</div>
+                            </div>
+                        
+                        {% else %}
+                            <!-- Free Plan -->
+                            <div class="plan-free">
+                                <div class="plan-name">{{ sub.plan.name }} Plan</div>
+                                <div class="plan-status">Active</div>
+                            </div>
+                            <button class="upgrade-btn-mini" onclick="showUpgradePlans()">Upgrade</button>
+                        {% endif %}
+                    </div>
+                    {% endwith %}
+                {% else %}
+                    <!-- No subscription -->
+                    <div class="subscription-info">
+                        <div class="plan-free">
+                            <div class="plan-name">Free Plan</div>
+                            <div class="plan-status">Active</div>
+                        </div>
+                        <a href="{% url 'subscription_plans' %}" class="upgrade-btn-mini" onclick="showUpgradePlans(); return false;">Upgrade</a>
+                    </div>
+                {% endif %}
+            </div>
+            
+            <div class="dropdown-divider"></div>
+
+            <div class="dropdown-menu">
+                <a href="{% url 'contact' %}" class="dropdown-item">
+                    <i class="fa-solid fa-boxes-stacked"></i>
+                    Stock
+                </a>
+                <div class="dropdown-divider"></div>
+                
+                <a href="{% url 'console' %}" class="dropdown-item">
+                    <i class="fa-solid fa-terminal"></i>
+                    Console
+                </a>
+                <a href="{% url 'profile' %}" class="dropdown-item">
+                    <i class="fa-solid fa-gear"></i>
+                    Settings
+                </a>
+                
+                <div class="dropdown-divider"></div>
+                
+                <a href="{% url 'logout' %}" class="dropdown-item logout">
+                    <i class="fa-solid fa-right-from-bracket"></i>
+                    Logout
+                </a>
+            </div>
         </div>
     </div>
-</div>
 
-    <div class="container">
 
-    <div class="card">
-        <h3>
-            1) Take or Upload a Picture
-            {% if not image_recognition_access.allowed %}
-                <span class="premium-badge">PREMIUM</span>
+<div class="container">
+
+<div class="card">
+    <h3>
+        1) Take or Upload a Picture
+        {% if not image_recognition_access.allowed %}
+            <span class="premium-badge">PREMIUM</span>
+        {% endif %}
+    </h3>
+    
+    {% if image_recognition_access.allowed %}
+        <!-- Show upload form for users with access -->
+        <form id="uploadForm">
+            <div class="file-input-container">
+                <input type="file" id="image" name="image" accept="image/*" capture="environment" required />
+            </div>
+            
+            <!-- Usage info for free plan users -->
+            {% if image_recognition_access.limit %}
+            <div class="usage-info">
+                <p class="usage-text">
+                    {{ image_recognition_access.current }}/{{ image_recognition_access.limit }} used this month
+                </p>
+                <div class="usage-bar">
+                    <div class="usage-progress" style="width: {{ image_recognition_access.current|divisibleby:image_recognition_access.limit|multiply:100 }}%"></div>
+                </div>
+            </div>
             {% endif %}
-        </h3>
-        
-        {% if image_recognition_access.allowed %}
-            <!-- Show upload form for users with access -->
-            <form id="uploadForm">
-                <div class="file-input-container">
-                    <input type="file" id="image" name="image" accept="image/*" capture="environment" required />
-                </div>
-                
-                <!-- Usage info for free plan users -->
-                {% if image_recognition_access.limit %}
-                <div class="usage-info">
-                    <p class="usage-text">
-                        {{ image_recognition_access.current }}/{{ image_recognition_access.limit }} used this month
-                    </p>
-                    <div class="usage-bar">
-                        <div class="usage-progress" style="width: {{ image_recognition_access.current|divisibleby:image_recognition_access.limit|multiply:100 }}%"></div>
-                    </div>
-                </div>
-                {% endif %}
-                
-                <div class="actions">
-                    <button class="btn primary" type="submit" id="recognizeBtn">
+            
+            <div class="actions">
+                <button class="btn primary btn-loader" type="submit" id="recognizeBtn">
+                    <span class="btn-text">
                         <i class="fas fa-eye"></i>
                         Recognize Items
-                    </button>
-                </div>
-            </form>
-            <div id="recognizeStatus"></div>
+                    </span>
+                    <div class="spinner dots">
+                        <span class="dot"></span>
+                        <span class="dot"></span>
+                        <span class="dot"></span>
+                    </div>
+                </button>
+            </div>
+        </form>
+        <div id="recognizeStatus"></div>
+
         {% else %}
             <!-- Show upgrade message for users without access -->
             <div class="upgrade-required">
@@ -806,9 +1083,9 @@
             <div id="saveStatus"></div>
         </div>
 
-        <h1>AI Stock Transactions</h1>
+         <h1>AI Stock Transactions</h1>
 
-        <!-- Search & Filters -->
+        Search & Filters
         <form method="GET" class="search-form">
             <div class="search-filters">
                 <input 
@@ -844,7 +1121,7 @@
             </div>
         </form>
 
-        <!-- Transactions List -->
+         Transactions List
         <div id="ai-product-list">
             {% if grouped_products %}
                 {% for month, month_data in grouped_products %}
@@ -853,10 +1130,14 @@
                     <p><b>Monthly Totals:</b> 
                         Sales: <span class="text-green">R{{ month_data.monthly_total.price|floatformat:2 }}</span> | 
                         Cost: <span class="text-red">R{{ month_data.monthly_total.cost|floatformat:2 }}</span> |
-                        Profit/Loss: 
-                        <span class="{% if month_data.monthly_total.profit_loss < 0 %}text-red{% else %}text-green{% endif %}">
-                            R{{ month_data.monthly_total.profit_loss|floatformat:2 }}
-                        </span>
+                    <span class="{% if month_data.monthly_total.profit_loss < 0 %}text-red{% else %}text-green{% endif %}">
+                        {{ month_data.monthly_total.profit_loss|floatformat:2|intcomma }} 
+                        {% if month_data.monthly_total.profit_loss < 0 %}
+                            Loss
+                        {% else %}
+                            Profit
+                        {% endif %}
+                    </span>
                     </p>
 
                     {% for date, data in month_data.dates.items %}
@@ -883,7 +1164,7 @@
                                     {% for product in data.products %}
                                     <tr class="product-row" id="product-{{ product.id }}">
                                         <td style="position: relative;">
-                                            {{ product.name }}
+                                            {{ product.name }} ({{ product.original_quantity }})
                                             <a href="{% url 'delete_product' product.id %}" 
                                                class="delete-btn" 
                                                onclick="return confirm('Are you sure you want to delete this product?');">
@@ -894,8 +1175,8 @@
                                         <td>{{ product.status|default:"-" }}</td>
                                         <td>{{ product.category|default:"-" }}</td>
                                         <td>{{ product.quantity }}</td>
-                                        <td class="text-green">R{{ product.price|floatformat:2 }}</td>
-                                        <td class="text-red">R{{ product.cost|floatformat:2 }}</td>
+                                        <td>R{{ product.total_price|floatformat:2|intcomma }}</td>  <!-- price × quantity -->
+                                        <td>R{{ product.total_cost|floatformat:2|intcomma }}</td>  
                                         <td>
                                             {% if product.status == 'IN' %}
                                                 -
@@ -904,13 +1185,13 @@
                                             {% endif %}
                                         </td>
                                         <td>{{ product.date_added|date:"d M Y H:i" }}</td>
-                                        <td class="{% if product.total_price|profit_loss:product.total_cost < 0 %}text-red{% else %}text-green{% endif %}">
-                                            R{{ product.total_price|profit_loss:product.total_cost|floatformat:2 }}
+                                        <td class="{% if product.profit_loss < 0 %}text-red{% else %}text-green{% endif %}">
+                                            {{ product.profit_loss_message }}
                                         </td>
                                     </tr>
                                     {% endfor %}
 
-                                    <!-- Daily Totals -->
+                                     Daily Totals 
                                     <tr class="total-row">
                                         <td colspan="5"><strong>Daily Total</strong></td>
                                         <td class="text-green"><strong>R{{ data.daily_total.price|floatformat:2 }}</strong></td>
@@ -982,6 +1263,19 @@
     return String(text || '').replace(/[&<>"']/g, m => map[m]);
   }
 
+  function showAILoader(element, message = "AI is analyzing the image") {
+    element.innerHTML = `
+      <div class="ai-loader">
+        <div class="ai-message">${message}</div>
+        <div class="ai-dots">
+          <span class="dot"></span>
+          <span class="dot"></span>
+          <span class="dot"></span>
+        </div>
+      </div>
+    `;
+  }
+
   // Form submission handler
   uploadForm.addEventListener("submit", async (e) => {
     e.preventDefault();
@@ -1006,9 +1300,8 @@
       return;
     }
 
-    recognizeBtn.disabled = true;
-    recognizeBtn.textContent = "Processing...";
-    showStatus(recognizeStatus, "AI is analyzing the image and recognizing items...", 'loading');
+    recognizeBtn.classList.add('loading');
+    showAILoader(recognizeStatus, "AI is analyzing the image and recognizing items");
     clearStatus(saveStatus);
 
     const formData = new FormData();
@@ -1196,14 +1489,10 @@
         throw new Error(data.detail || `Save failed: ${response.status} ${response.statusText}`);
       }
 
-      showStatus(saveStatus, `Successfully saved! Created: ${data.created} items, Updated: ${data.updated} items.`, 'success');
+      showEnhancedSuccessMessage(saveStatus, data.created, data.updated);
       
       // Optionally clear the form after successful save
-      setTimeout(() => {
-        if (confirm('Items saved successfully! Would you like to clear the form for new items?')) {
-          clearForm();
-        }
-      }, 1500);
+
 
     } catch (error) {
       console.error('Save error:', error);
@@ -1221,6 +1510,42 @@
     }
   });
 
+// Simpler version without countdown bar
+    function showEnhancedSuccessMessage(element, created, updated) {
+    const messageId = 'success-message-' + Date.now();
+    
+    element.innerHTML = `
+        <div id="${messageId}" class="status success enhanced-success">
+        <div class="success-content">
+            <div class="success-text">
+            <i class="fas fa-check-circle"></i>
+            Successfully saved! Created: ${created} items, Updated: ${updated} items.
+            </div>
+            <button class="view-items-btn" onclick="handleViewItems()">
+            <i class="fas fa-eye"></i>
+            View Items
+            </button>
+        </div>
+        </div>
+    `;
+
+    // Remove message after 15 seconds
+    setTimeout(() => {
+        const messageElement = document.getElementById(messageId);
+        if (messageElement) {
+        messageElement.style.opacity = '0';
+        setTimeout(() => {
+            if (messageElement.parentElement) {
+            messageElement.remove();
+            }
+        }, 500);
+        }
+    }, 15000);
+    }
+    function handleViewItems() {
+    // Navigate to the inventory page using the URL name 'contact'
+    window.location.href = "/inventory/";
+    }
   function clearForm() {
     recognizedItems = [];
     itemsTableBody.innerHTML = "";

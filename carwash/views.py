@@ -35,8 +35,10 @@ def dashboard(request):
     # Check subscription access for tickets and chatbot
     from saloon.subscriptions import check_feature_access
     
-    ticket_access = check_feature_access(user, 'appointments')  # Reusing appointments for tickets
+    # ✅ FIX: Use 'service_ticket' instead of 'appointments'
+    ticket_access = check_feature_access(user, 'service_ticket')  # Changed from 'appointments'
     chatbot_access = check_feature_access(user, 'chatbot')
+    can_create_ticket = ticket_access['allowed']
     
     # Get all the same data as the regular dashboard
     total_employees = Employee.objects.filter(is_active=True, created_by=user).count()
@@ -98,7 +100,7 @@ def dashboard(request):
         'current_time': timezone.now(),
         # Subscription access
         'ticket_access': ticket_access,
-        'can_create_ticket': ticket_access['allowed'],
+        'can_create_ticket': can_create_ticket,
     }
 
     return render(request, 'carwash/dashboard.html', context)
@@ -298,6 +300,11 @@ def ticket_list_create(request):
             ticket = form.save(commit=False)
             ticket.created_by = user
             ticket.save()
+
+            # ✅ NEW: Same pattern as StyleTicket - Update user email if customer email provided and user doesn't have email
+            if ticket.customer_email and not user.email:
+                user.email = ticket.customer_email
+                user.save()
 
             # ✅ Send receipt email (if email exists)
             if ticket.customer_email:

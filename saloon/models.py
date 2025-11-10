@@ -3,6 +3,8 @@ from django.db import models
 from django.contrib.auth.models import User
 from django.utils import timezone
 from decimal import Decimal
+from django.core.exceptions import ValidationError
+from datetime import datetime, timedelta, time
 from core.models import CustomUser
 
 class Worker(models.Model):
@@ -184,8 +186,142 @@ class TimeOff(models.Model):
         return f"{self.salon.user.company_name} - {self.date}"
 
 
+class AvailabilitySlot(models.Model):
+    """
+    Represents available time slots that salon owners create.
+    When a booking is made, the slot is marked as booked.
+    """
+    salon = models.ForeignKey(SalonProfile, on_delete=models.CASCADE, related_name='availability_slots')
+    worker = models.ForeignKey(Worker, on_delete=models.CASCADE, null=True, blank=True, related_name='availability_slots')
+    
+    # Date and time
+    date = models.DateField()
+    start_time = models.TimeField()
+    end_time = models.TimeField()
+    duration_minutes = models.IntegerField(default=60)  # How long each slot is
+    
+    # Status
+    is_booked = models.BooleanField(default=False)
+    booking = models.OneToOneField('Booking', on_delete=models.SET_NULL, null=True, blank=True, related_name='availability_slot')
+    
+    # Metadata
+    created_at = models.DateTimeField(auto_now_add=True)
+    created_by = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
+    
+    class Meta:
+        ordering = ['date', 'start_time']
+        unique_together = ['salon', 'worker', 'date', 'start_time']
+    
+    def clean(self):
+        # Validate that end_time is after start_time
+        if self.end_time <= self.start_time:
+            raise ValidationError('End time must be after start time')
+        
+        # Validate date is not in the past
+        if self.date < timezone.now().date():
+            raise ValidationError('Cannot create slots for past dates')
+    
+    def __str__(self):
+        worker_name = self.worker.full_name if self.worker else "Any Worker"
+        status = "Booked" if self.is_booked else "Available"
+        salon_name = self.salon.user.company_name if hasattr(self.salon, 'user') else "Salon"
+        return f"{salon_name} - {worker_name} - {self.date} {self.start_time} [{status}]"
+    
+    @property
+    def is_available(self):
+        """Check if slot is available for booking"""
+        return not self.is_booked and self.date >= timezone.now().date()
+
+
+class RecurringAvailability(models.Model):
+    """
+    Template for creating recurring availability slots (e.g., every Monday 9am-5pm)
+    """
+    WEEKDAY_CHOICES = [
+        (0, 'Monday'),
+        (1, 'Tuesday'),
+        (2, 'Wednesday'),
+        (3, 'Thursday'),
+        (4, 'Friday'),
+        (5, 'Saturday'),
+        (6, 'Sunday'),
+    ]
+    
+    salon = models.ForeignKey('SalonProfile', on_delete=models.CASCADE, related_name='recurring_availability')
+    worker = models.ForeignKey('Worker', on_delete=models.CASCADE, null=True, blank=True, related_name='recurring_availability')
+    
+    # Recurrence settings
+    weekday = models.IntegerField(choices=WEEKDAY_CHOICES)
+    start_time = models.TimeField()
+    end_time = models.TimeField()
+    slot_duration_minutes = models.IntegerField(default=60)
+    
+    # Date range for recurrence
+    start_date = models.DateField()
+    end_date = models.DateField(null=True, blank=True, help_text="Leave blank for indefinite")
+    
+    # Status
+    is_active = models.BooleanField(default=True)
+    
+    # Metadata
+    created_at = models.DateTimeField(auto_now_add=True)
+    created_by = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
+    
+    class Meta:
+        ordering = ['weekday', 'start_time']
+    
+    def __str__(self):
+        worker_name = self.worker.full_name if self.worker else "Any Worker"
+        salon_name = self.salon.user.company_name if hasattr(self.salon, 'user') else "Salon"
+        return f"{salon_name} - {worker_name} - {self.get_weekday_display()} {self.start_time}-{self.end_time}"
+    
+    def generate_slots_for_date_range(self, start_date, end_date):
+        """Generate individual availability slots based on this recurring template"""
+        from datetime import timedelta
+        
+        current_date = start_date
+        slots_created = 0
+        
+        while current_date <= end_date:
+            # Check if current date matches our weekday
+            if current_date.weekday() == self.weekday:
+                # Generate time slots for this day
+                current_time = datetime.combine(current_date, self.start_time)
+                end_datetime = datetime.combine(current_date, self.end_time)
+                
+                while current_time < end_datetime:
+                    slot_end_time = (current_time + timedelta(minutes=self.slot_duration_minutes)).time()
+                    
+                    # Don't create slot if it goes past end_time
+                    if slot_end_time > self.end_time:
+                        break
+                    
+                    # Create slot if it doesn't exist
+                    slot, created = AvailabilitySlot.objects.get_or_create(
+                        salon=self.salon,
+                        worker=self.worker,
+                        date=current_date,
+                        start_time=current_time.time(),
+                        defaults={
+                            'end_time': slot_end_time,
+                            'duration_minutes': self.slot_duration_minutes,
+                            'created_by': self.created_by
+                        }
+                    )
+                    
+                    if created:
+                        slots_created += 1
+                    
+                    current_time += timedelta(minutes=self.slot_duration_minutes)
+            
+            current_date += timedelta(days=1)
+        
+        return slots_created
+
+
+# Update the existing Booking model
 class Booking(models.Model):
-    """Main booking model"""
+    """Updated booking model with availability slot link"""
     STATUS_CHOICES = [
         ('pending', 'Pending'),
         ('confirmed', 'Confirmed'),
@@ -195,9 +331,9 @@ class Booking(models.Model):
     ]
 
     booking_number = models.CharField(max_length=20, unique=True, blank=True)
-    salon = models.ForeignKey(SalonProfile, on_delete=models.CASCADE, related_name='bookings')
-    style = models.ForeignKey(Style, on_delete=models.CASCADE, related_name='bookings')
-    worker = models.ForeignKey(Worker, on_delete=models.SET_NULL, null=True, blank=True, related_name='bookings')
+    salon = models.ForeignKey('SalonProfile', on_delete=models.CASCADE, related_name='bookings')
+    style = models.ForeignKey('Style', on_delete=models.CASCADE, related_name='bookings')
+    worker = models.ForeignKey('Worker', on_delete=models.SET_NULL, null=True, blank=True, related_name='bookings')
     
     # Customer info
     customer_name = models.CharField(max_length=100)
@@ -207,7 +343,7 @@ class Booking(models.Model):
     # Booking details
     booking_date = models.DateField()
     booking_time = models.TimeField()
-    duration_minutes = models.IntegerField(default=60)  # Default 1 hour
+    duration_minutes = models.IntegerField(default=60)
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
     
     # Pricing
@@ -234,7 +370,13 @@ class Booking(models.Model):
             self.booking_number = self.generate_booking_number()
         if not self.price:
             self.price = self.style.price
+        
+        # Mark availability slot as booked when booking is created
+        is_new = self.pk is None
         super().save(*args, **kwargs)
+        
+        if is_new and self.status in ['pending', 'confirmed']:
+            self.mark_slot_as_booked()
 
     def generate_booking_number(self):
         from datetime import datetime
@@ -250,6 +392,38 @@ class Booking(models.Model):
             new_number = 1
         
         return f'BK{today}{new_number:04d}'
+    
+    def mark_slot_as_booked(self):
+        """Mark the corresponding availability slot as booked"""
+        try:
+            slot = AvailabilitySlot.objects.get(
+                salon=self.salon,
+                worker=self.worker,
+                date=self.booking_date,
+                start_time=self.booking_time,
+                is_booked=False
+            )
+            slot.is_booked = True
+            slot.booking = self
+            slot.save()
+        except AvailabilitySlot.DoesNotExist:
+            # Slot doesn't exist, which is fine for backwards compatibility
+            pass
+    
+    def release_slot(self):
+        """Release the availability slot when booking is cancelled"""
+        try:
+            slot = AvailabilitySlot.objects.get(booking=self)
+            slot.is_booked = False
+            slot.booking = None
+            slot.save()
+        except AvailabilitySlot.DoesNotExist:
+            pass
+    
+    def delete(self, *args, **kwargs):
+        """Release slot when booking is deleted"""
+        self.release_slot()
+        super().delete(*args, **kwargs)
 
     @property
     def end_time(self):
@@ -259,28 +433,39 @@ class Booking(models.Model):
         return end.time()
 
     def is_conflicting(self):
-        """Check if this booking conflicts with others"""
-        from datetime import datetime, timedelta
-        
-        start = datetime.combine(self.booking_date, self.booking_time)
-        end = start + timedelta(minutes=self.duration_minutes)
-        
-        conflicting = Booking.objects.filter(
-            salon=self.salon,
-            worker=self.worker,
-            booking_date=self.booking_date,
-            status__in=['pending', 'confirmed']
-        ).exclude(id=self.id)
-        
-        for booking in conflicting:
-            other_start = datetime.combine(booking.booking_date, booking.booking_time)
-            other_end = other_start + timedelta(minutes=booking.duration_minutes)
+        """Check if this booking conflicts with others - now uses availability slots"""
+        # Check if there's an available slot for this time
+        try:
+            slot = AvailabilitySlot.objects.get(
+                salon=self.salon,
+                worker=self.worker,
+                date=self.booking_date,
+                start_time=self.booking_time
+            )
+            # Conflict if slot is already booked by someone else
+            return slot.is_booked and slot.booking != self
+        except AvailabilitySlot.DoesNotExist:
+            # If no slot exists, check traditional way
+            from datetime import datetime, timedelta
             
-            # Check if times overlap
-            if (start < other_end and end > other_start):
-                return True
-        
-        return False
+            start = datetime.combine(self.booking_date, self.booking_time)
+            end = start + timedelta(minutes=self.duration_minutes)
+            
+            conflicting = Booking.objects.filter(
+                salon=self.salon,
+                worker=self.worker,
+                booking_date=self.booking_date,
+                status__in=['pending', 'confirmed']
+            ).exclude(id=self.id)
+            
+            for booking in conflicting:
+                other_start = datetime.combine(booking.booking_date, booking.booking_time)
+                other_end = other_start + timedelta(minutes=booking.duration_minutes)
+                
+                if (start < other_end and end > other_start):
+                    return True
+            
+            return False
 
     def __str__(self):
         return f"{self.booking_number} - {self.customer_name} on {self.booking_date}"

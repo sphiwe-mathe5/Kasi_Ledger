@@ -1,0 +1,1767 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <link rel="icon" href="{% static 'images/kasicon.png' %}">
+    <title>{{ user.company_name }} - Dashboard</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{% static 'css/messages.css' %}" />
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: #f5f5f5;
+            color: #333;
+        }
+
+        .availability-management-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        /* Back Button */
+        .header-with-back {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+
+        .back-button {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 40px;
+            height: 40px;
+            background-color: #4169E1;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 20px;
+            transition: background-color 0.3s ease;
+        }
+
+        .back-button:hover {
+            background-color: #2d4cc6;
+        }
+
+        .header-with-back h1 {
+            font-size: 28px;
+            color: #333;
+        }
+
+        .subtitle {
+            font-size: 14px;
+            color: #666;
+            margin-bottom: 20px;
+        }
+
+        /* Quick Actions */
+        .quick-actions {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 10px 16px;
+            border: none;
+            border-radius: 6px;
+            font-family: 'Poppins', sans-serif;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary {
+            background-color: #4169E1;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background-color: #2d4cc6;
+        }
+
+        .btn-secondary {
+            background-color: white;
+            color: #4169E1;
+            border: 2px solid #4169E1;
+        }
+
+        .btn-secondary:hover {
+            background-color: #f0f4ff;
+        }
+
+        /* Section */
+        .section {
+            background-color: white;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        }
+
+        .section h2 {
+            font-size: 18px;
+            color: #333;
+            margin-bottom: 15px;
+        }
+
+        /* Recurring Rules */
+        .recurring-rules-list {
+            display: grid;
+            gap: 12px;
+        }
+
+        .recurring-rule-card {
+            border: 1px solid #e0e0e0;
+            border-radius: 6px;
+            padding: 15px;
+            background-color: #fafafa;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .rule-header {
+            flex: 1;
+            min-width: 150px;
+        }
+
+        .rule-header h3 {
+            font-size: 14px;
+            color: #333;
+            margin-bottom: 5px;
+        }
+
+        .rule-time {
+            font-size: 13px;
+            color: #4169E1;
+            font-weight: 600;
+        }
+
+        .rule-details {
+            flex: 1;
+            min-width: 200px;
+        }
+
+        .rule-details p {
+            font-size: 12px;
+            color: #666;
+            line-height: 1.6;
+        }
+
+        .btn-delete {
+            background-color: #fff3cd;
+            border: 1px solid #ffc107;
+            color: #856404;
+            padding: 6px 12px;
+            border-radius: 4px;
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-delete:hover {
+            background-color: #ffc107;
+        }
+
+        /* Filters */
+        .filters {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 15px;
+        }
+
+        .filters label {
+            font-size: 13px;
+            color: #666;
+            font-weight: 500;
+        }
+
+        .filters select {
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-family: 'Poppins', sans-serif;
+            font-size: 12px;
+            cursor: pointer;
+        }
+
+        /* Slots Grid */
+        .slots-grid {
+            display: grid;
+            gap: 15px;
+        }
+
+        .date-section {
+            border: 1px solid #e0e0e0;
+            border-radius: 6px;
+            padding: 15px;
+            background-color: #fafafa;
+        }
+
+        .date-header {
+            font-size: 14px;
+            color: #333;
+            margin-bottom: 10px;
+            font-weight: 600;
+        }
+
+        .slot-count {
+            font-size: 12px;
+            color: #666;
+            font-weight: 400;
+        }
+
+        .slots-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+            gap: 10px;
+        }
+
+        .slot-card {
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            padding: 12px;
+            background-color: white;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+
+        .slot-card.available {
+            border-color: #4169E1;
+            background-color: #f0f4ff;
+        }
+
+        .slot-card.booked {
+            border-color: #e0e0e0;
+            background-color: #f5f5f5;
+            opacity: 0.7;
+        }
+
+        .slot-time {
+            font-size: 14px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 5px;
+        }
+
+        .slot-worker {
+            font-size: 11px;
+            color: #666;
+            margin-bottom: 8px;
+        }
+
+        .slot-status {
+            font-size: 11px;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .available-badge {
+            color: #4169E1;
+        }
+
+        .booked-badge {
+            color: #999;
+        }
+
+        .booked-badge small {
+            display: block;
+            font-size: 10px;
+            font-weight: 400;
+            color: #999;
+        }
+
+        .btn-delete-small {
+            background-color: transparent;
+            border: none;
+            color: #999;
+            cursor: pointer;
+            font-size: 14px;
+            padding: 2px;
+        }
+
+        .btn-delete-small:hover {
+            color: #666;
+        }
+
+        /* No Data */
+        .no-data {
+            text-align: center;
+            font-size: 13px;
+            color: #999;
+            padding: 20px;
+        }
+
+        /* Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+        }
+
+        .modal-content {
+            background-color: white;
+            margin: 5% auto;
+            padding: 25px;
+            border-radius: 8px;
+            max-width: 500px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+        }
+
+        .close {
+            color: #999;
+            float: right;
+            font-size: 24px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: color 0.3s ease;
+        }
+
+        .close:hover {
+            color: #333;
+        }
+
+        .modal-content h2 {
+            font-size: 18px;
+            color: #333;
+            margin-bottom: 15px;
+            margin-top: 10px;
+        }
+
+        /* Form */
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 13px;
+            color: #333;
+            margin-bottom: 6px;
+            font-weight: 600;
+        }
+
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-family: 'Poppins', sans-serif;
+            font-size: 13px;
+            transition: border-color 0.3s ease;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: #4169E1;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .header-with-back {
+                margin-bottom: 20px;
+            }
+
+            .header-with-back h1 {
+                font-size: 22px;
+            }
+
+            .quick-actions {
+                flex-direction: column;
+            }
+
+            .btn {
+                width: 100%;
+            }
+
+            .recurring-rule-card {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .slots-row {
+                grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+            }
+
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+
+            .modal-content {
+                margin: 20% auto;
+                width: 90%;
+            }
+        }
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(12, 1fr);
+            gap: 30px;
+            margin-bottom: 40px;
+        }
+
+        .grid-full {
+            grid-column: span 12;
+        }
+
+        .grid-half {
+            grid-column: span 6;
+        }
+
+        .grid-third {
+            grid-column: span 4;
+        }
+
+        .card {
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            border: 1px solid #e0e0e0;
+        }
+
+        .card h2 {
+            font-size: 20px;
+            color: #1a1a1a;
+            margin-bottom: 24px;
+            font-weight: 600;
+        }
+
+        /* Removed green border, using neutral gray */
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+        }
+
+        .info-item {
+            padding: 16px;
+            background: #f8f9fa;
+            border-radius: 6px;
+            border-left: 3px solid #1a1a1a;
+        }
+
+        .info-item strong {
+            display: block;
+            color: #666;
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 6px;
+            font-weight: 600;
+        }
+
+        .info-item span {
+            color: #1a1a1a;
+            font-size: 15px;
+        }
+
+        .info-item a {
+            color: #1a1a1a;
+            text-decoration: none;
+        }
+
+        .info-item a:hover {
+            text-decoration: underline;
+        }
+
+        /* Stats grid with neutral colors */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+            gap: 20px;
+        }
+
+        .stat-card {
+            background: #f8f9fa;
+            padding: 24px;
+            border-radius: 8px;
+            text-align: center;
+            border: 1px solid #e0e0e0;
+        }
+
+        .stat-card .label {
+            color: #666;
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+
+        .stat-card .value {
+            color: #1a1a1a;
+            font-size: 32px;
+            font-weight: 700;
+        }
+
+        /* Table Styles */
+        .table-container {
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        thead {
+            background: #f8f9fa;
+        }
+
+        th {
+            padding: 14px 16px;
+            text-align: left;
+            font-weight: 600;
+            color: #1a1a1a;
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            border-bottom: 2px solid #e0e0e0;
+        }
+
+        td {
+            padding: 16px;
+            border-bottom: 1px solid #f0f0f0;
+            color: #555;
+        }
+
+        tbody tr:hover {
+            background: #f8f9fa;
+        }
+
+        tbody tr:last-child td {
+            border-bottom: none;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: #999;
+        }
+
+        /* Status Badges */
+        .status-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: capitalize;
+        }
+
+        .status-active {
+            background: #e8f5e9;
+            color: #2e7d32;
+        }
+
+        .status-inactive {
+            background: #ffebee;
+            color: #c62828;
+        }
+
+        .status-pending {
+            background: #fff3e0;
+            color: #ef6c00;
+        }
+
+        .status-confirmed {
+            background: #e3f2fd;
+            color: #1565c0;
+        }
+
+        .status-completed {
+            background: #e8f5e9;
+            color: #2e7d32;
+        }
+
+        .status-cancelled {
+            background: #ffebee;
+            color: #c62828;
+        }
+
+        /* Updated button colors to remove green */
+        .action-buttons {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 6px 14px;
+            border: none;
+            border-radius: 6px;
+            font-size: 13px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-confirm {
+            background: #1a1a1a;
+            color: white;
+        }
+
+        .btn-confirm:hover {
+            background: #333;
+        }
+
+        .btn-cancel {
+            background: #f44336;
+            color: white;
+        }
+
+        .btn-cancel:hover {
+            background: #da190b;
+        }
+
+        .btn-complete {
+            background: #2196F3;
+            color: white;
+        }
+
+        .btn-complete:hover {
+            background: #0b7dda;
+        }
+
+        /* Updated view all link to remove green */
+        .view-all {
+            display: inline-block;
+            margin-top: 20px;
+            color: #1a1a1a;
+            text-decoration: none;
+            font-weight: 500;
+            padding: 10px 20px;
+            border: 2px solid #1a1a1a;
+            border-radius: 6px;
+            transition: all 0.3s;
+        }
+
+        .view-all:hover {
+            background: #1a1a1a;
+            color: white;
+        }
+
+        /* Profile Hero Styles */
+        .profile-hero {
+            background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+            padding: 50px;
+            border-radius: 12px;
+            color: white;
+            box-shadow: 0 2px 4px rgba(59, 130, 246, 0.2);
+            margin-bottom: 30px;
+        }
+
+        .profile-hero h2 {
+            font-size: 28px;
+            margin-bottom: 30px;
+            font-weight: 700;
+            color: white;
+        }
+
+        .profile-content {
+            display: flex;
+            gap: 40px;
+            align-items: flex-start;
+        }
+
+        .profile-main {
+            flex: 1;
+        }
+
+        .profile-bio {
+            font-size: 16px;
+            line-height: 1.8;
+            margin-bottom: 30px;
+            opacity: 0.95;
+        }
+
+        .profile-details {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 30px;
+        }
+
+        .detail-group {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .detail-icon {
+            width: 40px;
+            height: 40px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+        }
+
+        .detail-text {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .detail-label {
+            font-size: 12px;
+            opacity: 0.8;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .detail-value {
+            font-size: 15px;
+            font-weight: 600;
+        }
+
+        .detail-value a {
+            color: white;
+            text-decoration: none;
+        }
+
+        .detail-value a:hover {
+            text-decoration: underline;
+        }
+
+        .profile-sidebar {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .profile-stat {
+            background: rgba(255, 255, 255, 0.15);
+            padding: 24px;
+            border-radius: 10px;
+            text-align: center;
+            backdrop-filter: blur(10px);
+        }
+
+        .profile-stat-value {
+            font-size: 36px;
+            font-weight: 700;
+            margin-bottom: 5px;
+        }
+
+        .profile-stat-label {
+            font-size: 13px;
+            opacity: 0.9;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .status-indicator {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(255, 255, 255, 0.2);
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #4ade80;
+            animation: pulse 2s infinite;
+        }
+
+        .booking-container {
+            max-width: 1200px; /* Increased max-width for 3-column layout on large screens */
+            margin: 0 auto;
+        }
+
+        .booking-card {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        }
+
+        h2 {
+            font-size: 28px;
+            font-weight: 700;
+            color: #1a1a1a;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 14px;
+        }
+
+        .form-group {
+            margin-bottom: 24px;
+        }
+
+        label {
+            display: block;
+            font-size: 14px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 8px;
+        }
+
+        input[type="text"],
+        input[type="tel"],
+        input[type="email"],
+        input[type="date"],
+        input[type="time"],
+        select,
+        textarea {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 15px;
+            font-family: inherit;
+            transition: all 0.3s ease;
+            background: #fafafa;
+        }
+
+        input:focus,
+        select:focus,
+        textarea:focus {
+            outline: none;
+            border-color: #667eea;
+            background: white;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        select {
+            cursor: pointer;
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23333' d='M6 9L1 4h10z'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 16px center;
+            padding-right: 40px;
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+
+        .btn-submit {
+            width: 100%;
+            padding: 16px;
+            background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 10px;
+        }
+
+        .btn-submit:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-submit:active {
+            transform: translateY(0);
+        }
+
+        .required {
+            color: #e74c3c;
+            margin-left: 2px;
+        }
+
+        .optional-tag {
+            color: #999;
+            font-weight: 400;
+            font-size: 12px;
+            margin-left: 4px;
+        }
+
+        /* Added form grid layout for responsive columns */
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 24px;
+        }
+
+        .copy-btn {
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 18px;
+            color: #333;
+            transition: color 0.2s;
+        }
+
+        .copy-btn:hover {
+            color: #007bff;
+        }
+
+        @media (min-width: 768px) {
+            .form-grid {
+                grid-template-columns: repeat(3, 1fr);
+            }
+        }
+
+        .form-group-full {
+            grid-column: 1 / -1;
+        }
+
+        @media (max-width: 640px) {
+            .booking-card {
+                padding: 30px 20px;
+            }
+
+            h2 {
+                font-size: 24px;
+            }
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        @media (max-width: 1024px) {
+            .grid-half,
+            .grid-third {
+                grid-column: span 12;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 20px 15px;
+            }
+
+            .header {
+                grid-template-columns: 1fr;
+            }
+
+            .header h1 {
+                font-size: 24px;
+            }
+
+            .card {
+                padding: 20px;
+            }
+
+            .dashboard-grid {
+                gap: 20px;
+            }
+
+            table {
+                font-size: 14px;
+            }
+
+            th, td {
+                padding: 10px 8px;
+            }
+
+            .profile-hero {
+                padding: 30px 20px;
+            }
+
+            .profile-content {
+                flex-direction: column;
+                gap: 30px;
+            }
+
+            .profile-details {
+                flex-direction: column;
+                gap: 20px;
+            }
+        }
+
+        .booking-disabled-notice,
+            .booking-upgrade-notice {
+                background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+                border-radius: 12px;
+                padding: 40px;
+                text-align: center;
+                border: 2px solid #dee2e6;
+            }
+
+            .booking-disabled-notice .notice-icon,
+            .booking-upgrade-notice .notice-icon {
+                font-size: 48px;
+                margin-bottom: 20px;
+            }
+
+            .booking-disabled-notice h2,
+            .booking-upgrade-notice h2 {
+                color: #212529;
+                margin-bottom: 15px;
+                font-size: 24px;
+            }
+
+            .booking-disabled-notice .notice-message {
+                color: #6c757d;
+                font-size: 16px;
+                margin-bottom: 20px;
+            }
+
+            .booking-disabled-notice .contact-info {
+                background: white;
+                padding: 15px;
+                border-radius: 8px;
+                margin-top: 20px;
+                font-size: 16px;
+            }
+
+            .notice-header {
+                display: flex;
+                align-items: center;
+                gap: 15px;
+                margin-bottom: 25px;
+            }
+
+            .notice-content {
+                text-align: left;
+            }
+
+            .upgrade-benefits {
+                background: white;
+                padding: 20px;
+                border-radius: 8px;
+                margin: 20px 0;
+            }
+
+            .upgrade-benefits h3 {
+                margin-bottom: 15px;
+                color: #212529;
+            }
+
+            .upgrade-benefits ul {
+                list-style: none;
+                padding: 0;
+            }
+
+            .upgrade-benefits li {
+                padding: 10px 0;
+                color: #495057;
+                font-size: 15px;
+            }
+
+            .current-plan {
+                background: #fff3cd;
+                padding: 15px;
+                border-radius: 8px;
+                margin: 20px 0;
+            }
+
+            .btn-upgrade {
+                background: #007bff;
+                color: white;
+                padding: 12px 30px;
+                text-decoration: none;
+                border-radius: 8px;
+                display: inline-block;
+                margin-top: 15px;
+                transition: background 0.3s;
+            }
+
+            .btn-upgrade:hover {
+                background: #0056b3;
+            }
+
+            .status-badge {
+                padding: 6px 12px;
+                border-radius: 20px;
+                font-size: 12px;
+                font-weight: 600;
+            }
+
+            .status-pending {
+                background: #fff3cd;
+                color: #856404;
+            }
+
+            .status-confirmed {
+                background: #d1ecf1;
+                color: #0c5460;
+            }
+
+            .status-completed {
+                background: #d4edda;
+                color: #155724;
+            }
+
+            .status-cancelled {
+                background: #f8d7da;
+                color: #721c24;
+            }
+
+            .stats-grid {
+                display: grid;
+                grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+                gap: 15px;
+                margin-top: 25px;
+            }
+
+            .stat-card {
+                background: white;
+                padding: 15px;
+                border-radius: 8px;
+                text-align: center;
+                border: 1px solid #dee2e6;
+            }
+
+            .stat-label {
+                font-size: 12px;
+                color: #6c757d;
+                text-transform: uppercase;
+                margin-bottom: 8px;
+            }
+
+            .stat-value {
+                font-size: 24px;
+                font-weight: 700;
+                color: #007bff;
+            }
+            .spinner {
+                display: inline-block;
+                width: 14px;
+                height: 14px;
+                border: 2px solid rgba(255, 255, 255, 0.3);
+                border-top: 2px solid white;
+                border-radius: 50%;
+                animation: spin 0.6s linear infinite;
+                margin-right: 8px;
+                vertical-align: middle;
+            }
+
+            @keyframes spin {
+                0% { transform: rotate(0deg); }
+                100% { transform: rotate(360deg); }
+            }
+            .slot-date {
+                font-size: 11px;
+                color: #999;
+                margin-bottom: 4px;
+                font-weight: 500;
+            }
+
+            .modal {
+                display: none;
+                position: fixed;
+                z-index: 1000;
+                left: 0;
+                top: 0;
+                width: 100%;
+                height: 100%;
+                background-color: rgba(0,0,0,0.5);
+                overflow: auto;
+            }
+
+            .modal-content {
+                background-color: white;
+                margin: 3% auto;
+                padding: 30px;
+                border-radius: 12px;
+                width: 90%;
+                max-width: 1000px;
+                max-height: 85vh;
+                overflow-y: auto;
+            }
+
+            .close {
+                color: #aaa;
+                font-size: 32px;
+                font-weight: bold;
+                cursor: pointer;
+                line-height: 1;
+            }
+
+            .close:hover {
+                color: #000;
+            }
+    </style>
+</head>
+<body>
+    <div class="messages-container">
+    {% if messages %}
+        {% for message in messages %}
+            <div class="message {{ message.tags }}" data-message-id="{{ forloop.counter }}">
+                <div class="message-content">
+                    <div class="message-icon">
+                        {% if message.tags == 'success' %}
+                            <svg viewBox="0 0 20 20" fill="currentColor" style="color: #4caf50;">
+                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+                            </svg>
+                        {% elif message.tags == 'error' %}
+                            <svg viewBox="0 0 20 20" fill="currentColor" style="color: #f44336;">
+                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"/>
+                            </svg>
+                        {% elif message.tags == 'warning' %}
+                            <svg viewBox="0 0 20 20" fill="currentColor" style="color: #ff9800;">
+                                <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/>
+                            </svg>
+                        {% else %}
+                            <svg viewBox="0 0 20 20" fill="currentColor" style="color: #2196f3;">
+                                <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"/>
+                            </svg>
+                        {% endif %}
+                    </div>
+                    <div class="message-text">{{ message }}</div>
+                </div>
+                <button class="message-close" onclick="closeMessage(this)">×</button>
+                <div class="progress-bar"></div>
+            </div>
+        {% endfor %}
+    {% endif %}
+</div>
+<div class="availability-management-container">
+    <!-- Header with Back Button -->
+    <div class="header-with-back">
+        <button class="back-button" onclick="history.back()">←</button>
+        <div>
+            <h1>Manage Availability</h1>
+            <p class="subtitle">Set your available time slots for customer bookings</p>
+        </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="quick-actions">
+        <button class="btn btn-primary" onclick="openSingleSlotModal()">Add Time Slot</button>
+        <button class="btn btn-primary" onclick="window.location.href='{% url 'saloon:salon_profile' salon.slug %}'">
+    Manage Bookings
+</button>
+    </div>
+    
+
+<div class="section">
+    <h2>Available Time Slots (Next 30 Days)</h2>
+    
+    <!-- Filter -->
+    <div class="filters">
+        <label>Filter by Worker:</label>
+        <select id="workerFilter" onchange="filterSlots()">
+            <option value="">All Workers</option>
+            {% for worker in workers %}
+            <option value="{{ worker.id }}">{{ worker.full_name }}</option>
+            {% endfor %}
+        </select>
+    </div>
+    
+    <!-- Single Container for All Slots -->
+    <div class="slots-grid">
+        <div class="date-section">
+            <div class="slots-row" id="slotsPreview">
+                {% for slot in slots|slice:":6" %}
+                <div class="slot-card {% if slot.is_booked %}booked{% else %}available{% endif %}" 
+                     data-worker-id="{{ slot.worker.id|default:'' }}"
+                     data-date="{{ slot.date|date:'Y-m-d' }}"
+                     data-time="{{ slot.start_time|time:'H:i' }}">
+                    
+                    <div class="slot-date" style="font-size: 11px; color: #999; margin-bottom: 4px;">
+                        {{ slot.date|date:"D, M j" }}
+                    </div>
+                    <div class="slot-time">{{ slot.start_time|time:"H:i" }}</div>
+                    <div class="slot-worker">{{ slot.worker.full_name|default:"Any" }}</div>
+                    
+                    {% if slot.is_booked %}
+                        <div class="slot-status booked-badge">
+                            ✓ Booked
+                            <small>{{ slot.booking.customer_name }}</small>
+                        </div>
+                    {% else %}
+                        <div class="slot-status available-badge">Available</div>
+                        <button class="btn-delete-small" onclick="deleteSlot({{ slot.id }})">
+                            🗑️
+                        </button>
+                    {% endif %}
+                </div>
+                {% endfor %}
+            </div>
+            
+            {% if slots.count > 6 %}
+            <div style="text-align: center; margin-top: 20px;">
+                <button onclick="openAllSlotsModal()" class="btn btn-secondary">
+                    📅 View All {{ slots.count }} Slots
+                </button>
+            </div>
+            {% endif %}
+        </div>
+        
+        {% if slots.count == 0 %}
+        <p class="no-data">No availability slots created yet. Use the buttons above to get started!</p>
+        {% endif %}
+    </div>
+</div>
+
+<!-- All Slots Modal -->
+<div id="allSlotsModal" class="modal">
+    <div class="modal-content" style="max-width: 1000px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+            <h2 style="margin: 0;">All Availability Slots</h2>
+            <span class="close" onclick="closeAllSlotsModal()">&times;</span>
+        </div>
+        
+        <!-- Filter in Modal -->
+        <div class="filters" style="margin-bottom: 20px;">
+            <label>Filter:</label>
+            <select id="modalWorkerFilter" onchange="filterModalSlots()">
+                <option value="">All Workers</option>
+                {% for worker in workers %}
+                <option value="{{ worker.id }}">{{ worker.full_name }}</option>
+                {% endfor %}
+            </select>
+            
+            <label style="margin-left: 15px;">Status:</label>
+            <select id="modalStatusFilter" onchange="filterModalSlots()">
+                <option value="">All</option>
+                <option value="available">Available Only</option>
+                <option value="booked">Booked Only</option>
+            </select>
+        </div>
+        
+        <div id="allSlotsContainer" class="slots-row" style="max-height: 60vh; overflow-y: auto;">
+            {% for slot in slots %}
+            <div class="slot-card {% if slot.is_booked %}booked{% else %}available{% endif %} modal-slot" 
+                 data-worker-id="{{ slot.worker.id|default:'' }}"
+                 data-status="{% if slot.is_booked %}booked{% else %}available{% endif %}"
+                 data-date="{{ slot.date|date:'Y-m-d' }}"
+                 data-time="{{ slot.start_time|time:'H:i' }}">
+                
+                <div class="slot-date" style="font-size: 11px; color: #999; margin-bottom: 4px;">
+                    {{ slot.date|date:"D, M j" }}
+                </div>
+                <div class="slot-time">{{ slot.start_time|time:"H:i" }}</div>
+                <div class="slot-worker">{{ slot.worker.full_name|default:"Any" }}</div>
+                
+                {% if slot.is_booked %}
+                    <div class="slot-status booked-badge">
+                        ✓ Booked
+                        <small>{{ slot.booking.customer_name }}</small>
+                    </div>
+                {% else %}
+                    <div class="slot-status available-badge">Available</div>
+                    <button class="btn-delete-small" onclick="deleteSlot({{ slot.id }})">
+                        🗑️
+                    </button>
+                {% endif %}
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+
+
+<div id="singleSlotModal" class="modal">
+    <div class="modal-content">
+        <span class="close" onclick="closeSingleSlotModal()">&times;</span>
+        <h2>Add Single Time Slot</h2>
+        <form id="singleSlotForm">
+            {% csrf_token %}
+            <div class="form-group">
+                <label>Date:</label>
+                <input type="date" name="date" min="{{ today }}" required>
+            </div>
+            
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Start Time:</label>
+                    <input type="time" name="start_time" required>
+                </div>
+                <div class="form-group">
+                    <label>End Time:</label>
+                    <input type="time" name="end_time" required>
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label>Duration (minutes):</label>
+                <input type="number" name="duration_minutes" value="60" min="15" step="15" required>
+            </div>
+            
+            <div class="form-group">
+                <label>Stylist (optional):</label>
+                <select name="worker_id">
+                    <option value="">Any Stylist</option>
+                    {% for worker in workers %}
+                    <option value="{{ worker.id }}">{{ worker.full_name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            
+            <button type="submit" class="btn btn-primary" id="slotSubmitBtn" style="width: 100%;">
+                <span id="slotSpinner" class="spinner" style="display: none;"></span>
+                Add Slot
+            </button>
+        </form>
+    </div>
+</div>
+</div>
+
+
+
+<script>
+// Modal functions
+function openRecurringModal() {
+    document.getElementById('recurringModal').style.display = 'block';
+}
+
+function closeRecurringModal() {
+    document.getElementById('recurringModal').style.display = 'none';
+}
+
+function openSingleSlotModal() {
+    document.getElementById('singleSlotModal').style.display = 'block';
+}
+
+function closeSingleSlotModal() {
+    document.getElementById('singleSlotModal').style.display = 'none';
+}
+
+// Handle recurring form submission
+
+
+// Handle single slot form submission
+document.getElementById('singleSlotForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    
+    const formData = new FormData(this);
+    const data = {
+        date: formData.get('date'),
+        start_time: formData.get('start_time'),
+        end_time: formData.get('end_time'),
+        duration_minutes: formData.get('duration_minutes'),
+        worker_id: formData.get('worker_id') || null
+    };
+    
+    console.log('Creating slot with data:', data);
+    
+    // Show loader
+    const submitBtn = this.querySelector('button[type="submit"]');
+    const originalText = submitBtn.textContent;
+    submitBtn.disabled = true;
+    submitBtn.textContent = '⏳ Creating...';
+    
+    fetch('{% url "saloon:create_availability_slot" %}', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': '{{ csrf_token }}'
+        },
+        body: JSON.stringify(data)
+    })
+    .then(response => {
+        if (!response.ok) {
+            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        }
+        return response.json();
+    })
+    .then(data => {
+        if (data.success) {
+            submitBtn.textContent = '✅ Created!';
+            setTimeout(() => {
+                closeSingleSlotModal();
+                location.reload();
+            }, 500);
+        } else {
+            submitBtn.disabled = false;
+            submitBtn.textContent = originalText;
+            alert('Error: ' + data.message);
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        submitBtn.disabled = false;
+        submitBtn.textContent = originalText;
+        alert('Error creating slot: ' + error.message);
+    });
+});
+
+// Delete slot
+
+
+// Filter slots by worker
+function filterSlots() {
+    const workerId = document.getElementById('workerFilter').value;
+    const slots = document.querySelectorAll('.slot-card');
+    
+    slots.forEach(slot => {
+        if (!workerId || slot.dataset.workerId === workerId || slot.dataset.workerId === '') {
+            slot.style.display = 'block';
+        } else {
+            slot.style.display = 'none';
+        }
+    });
+}
+
+document.getElementById('recurringForm').addEventListener('submit', function(e) {
+    const spinner = document.getElementById('recurringSpinner');
+    const btn = document.getElementById('recurringSubmitBtn');
+    spinner.style.display = 'inline-block';
+    btn.disabled = true;
+});
+
+document.getElementById('singleSlotForm').addEventListener('submit', function(e) {
+    const spinner = document.getElementById('slotSpinner');
+    const btn = document.getElementById('slotSubmitBtn');
+    spinner.style.display = 'inline-block';
+    btn.disabled = true;
+});
+
+function showAllSlotsModal(type) {
+    const modal = document.getElementById('allSlotsModal');
+    const modalTitle = document.getElementById('modalTitle');
+    const modalContent = document.getElementById('modalSlotsContent');
+    
+    // Set modal title
+    modalTitle.textContent = type === 'available' ? 'All Available Slots' : 'All Booked Slots';
+    
+    // Clear previous content
+    modalContent.innerHTML = '';
+    
+    // Get slots data (you might need to pass this via data attributes or AJAX)
+    const slots = type === 'available' ? availableSlotsData : bookedSlotsData;
+    
+    // Populate modal with all slots
+    slots.forEach(slot => {
+        const slotCard = document.createElement('div');
+        slotCard.className = `slot-card ${type === 'available' ? 'available' : 'booked'}`;
+        
+        if (type === 'available') {
+            slotCard.innerHTML = `
+                <div class="slot-time">${slot.start_time}</div>
+                <div class="slot-date">${slot.date}</div>
+                <div class="slot-worker">${slot.worker_name}</div>
+                <div class="slot-status available-badge">Available</div>
+                <button class="btn-delete-small" onclick="deleteSlot(${slot.id})">🗑️</button>
+            `;
+        } else {
+            slotCard.innerHTML = `
+                <div class="slot-time">${slot.start_time}</div>
+                <div class="slot-date">${slot.date}</div>
+                <div class="slot-worker">${slot.worker_name}</div>
+                <div class="slot-status booked-badge">
+                    ✓ Booked
+                    <small>${slot.customer_name}</small>
+                </div>
+            `;
+        }
+        
+        modalContent.appendChild(slotCard);
+    });
+    
+    // Show modal
+    modal.style.display = 'flex';
+}
+
+function closeAllSlotsModal() {
+    document.getElementById('allSlotsModal').style.display = 'none';
+}
+
+// Close modal when clicking outside
+document.getElementById('allSlotsModal').addEventListener('click', function(e) {
+    if (e.target === this) {
+        closeAllSlotsModal();
+    }
+});
+</script>
+
+<script>
+// Get current date and time
+const now = new Date();
+const currentDate = now.toISOString().split('T')[0]; // YYYY-MM-DD
+const currentTime = now.getHours() * 60 + now.getMinutes(); // Minutes since midnight
+
+// Hide past booked slots on page load
+document.addEventListener('DOMContentLoaded', function() {
+    hidePastBookedSlots();
+});
+
+function hidePastBookedSlots() {
+    const slots = document.querySelectorAll('.slot-card.booked');
+    
+    slots.forEach(slot => {
+        const slotDate = slot.dataset.date;
+        const slotTime = slot.dataset.time;
+        
+        // Parse slot time (HH:MM)
+        const [hours, minutes] = slotTime.split(':').map(Number);
+        const slotMinutes = hours * 60 + minutes;
+        
+        // Check if slot is in the past
+        if (slotDate < currentDate || (slotDate === currentDate && slotMinutes < currentTime)) {
+            slot.style.display = 'none';
+        }
+    });
+}
+
+// Open modal
+function openAllSlotsModal() {
+    document.getElementById('allSlotsModal').style.display = 'block';
+    hidePastBookedSlots(); // Also hide in modal
+}
+
+// Close modal
+function closeAllSlotsModal() {
+    document.getElementById('allSlotsModal').style.display = 'none';
+}
+
+// Close on outside click
+window.onclick = function(event) {
+    const modal = document.getElementById('allSlotsModal');
+    if (event.target === modal) {
+        modal.style.display = 'none';
+    }
+}
+
+// Filter slots in main view
+function filterSlots() {
+    const workerId = document.getElementById('workerFilter').value;
+    const slots = document.querySelectorAll('#slotsPreview .slot-card');
+    
+    slots.forEach(slot => {
+        const slotWorkerId = slot.dataset.workerId;
+        
+        if (!workerId || slotWorkerId === workerId || slotWorkerId === '') {
+            slot.style.display = 'block';
+        } else {
+            slot.style.display = 'none';
+        }
+    });
+}
+
+// Filter slots in modal
+function filterModalSlots() {
+    const workerId = document.getElementById('modalWorkerFilter').value;
+    const status = document.getElementById('modalStatusFilter').value;
+    const slots = document.querySelectorAll('.modal-slot');
+    
+    slots.forEach(slot => {
+        const slotWorkerId = slot.dataset.workerId;
+        const slotStatus = slot.dataset.status;
+        const slotDate = slot.dataset.date;
+        const slotTime = slot.dataset.time;
+        
+        // Parse slot time
+        const [hours, minutes] = slotTime.split(':').map(Number);
+        const slotMinutes = hours * 60 + minutes;
+        
+        // Check if past booked slot
+        const isPastBooked = slotStatus === 'booked' && 
+                            (slotDate < currentDate || 
+                             (slotDate === currentDate && slotMinutes < currentTime));
+        
+        let show = true;
+        
+        // Hide past booked slots
+        if (isPastBooked) {
+            show = false;
+        }
+        
+        // Worker filter
+        if (show && workerId && slotWorkerId !== workerId && slotWorkerId !== '') {
+            show = false;
+        }
+        
+        // Status filter
+        if (show && status && slotStatus !== status) {
+            show = false;
+        }
+        
+        slot.style.display = show ? 'block' : 'none';
+    });
+}
+
+// Delete slot function (keep your existing one, just ensure it works)
+function deleteSlot(slotId) {
+    if (!confirm('Are you sure you want to delete this time slot?')) return;
+    
+    const loader = document.createElement('div');
+    loader.id = 'deleteLoader';
+    loader.innerHTML = `
+        <div style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
+                    background: rgba(0,0,0,0.7); display: flex; align-items: center; 
+                    justify-content: center; z-index: 9999;">
+            <div style="background: white; padding: 30px; border-radius: 12px; text-align: center;">
+                <div style="font-size: 40px; margin-bottom: 15px;">⏳</div>
+                <p style="margin: 0; font-size: 16px; color: #333;">Deleting slot...</p>
+            </div>
+        </div>
+    `;
+    document.body.appendChild(loader);
+    
+    // Use Django URL reverse - this will be generated server-side
+    const deleteUrl = "{% url 'saloon:delete_availability_slot' slot_id=999 %}".replace('999', slotId);
+    console.log('Delete URL:', deleteUrl);
+    
+    fetch(deleteUrl, {
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': '{{ csrf_token }}',
+            'Content-Type': 'application/json'
+        }
+    })
+    .then(response => {
+        console.log('Response status:', response.status);
+        if (!response.ok) {
+            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        }
+        return response.json();
+    })
+    .then(data => {
+        if (data.success) {
+            loader.querySelector('div > div').innerHTML = `
+                <div style="font-size: 40px; margin-bottom: 15px;">✅</div>
+                <p style="margin: 0; font-size: 16px; color: #333;">Slot deleted!</p>
+            `;
+            setTimeout(() => location.reload(), 500);
+        } else {
+            document.body.removeChild(loader);
+            alert('Error: ' + data.message);
+        }
+    })
+    .catch(error => {
+        console.error('Delete error:', error);
+        document.body.removeChild(loader);
+        alert('Error deleting slot: ' + error.message);
+    });
+}
+</script>
+<script src="{% static 'js/messages.js' %}"></script>
+</body>
+</html>

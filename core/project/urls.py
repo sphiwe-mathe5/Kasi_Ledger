@@ -6,7 +6,7 @@ from django_otp.plugins.otp_totp.admin import TOTPDeviceAdmin
 from core.models import Product, IncomeStatement, Category, EmailTemplate, SentEmail, POSProduct
 from submit.models import Profile, CustomUser, SubscriptionPlan, Subscription
 from carwash.models import Employee, Service, ServiceTicket
-from saloon.models import Worker, Style, StyleTicket
+from saloon.models import Worker, Style, StyleTicket, AvailabilitySlot, RecurringAvailability
 from email_campaigns.models import EmailTemplate, CustomerEmail, EmailCampaign, CampaignRecipient, CampaignImage
 from django.contrib.auth.admin import UserAdmin
 from django.contrib.auth import views as auth_views
@@ -38,6 +38,8 @@ admin_site.register(Subscription)
 admin_site.register(Worker)
 admin_site.register(Style)
 admin_site.register(StyleTicket)
+admin_site.register(AvailabilitySlot)
+admin_site.register(RecurringAvailability)
 admin_site.register(Employee)
 admin_site.register(Service)
 admin_site.register(ServiceTicket)

@@ -505,7 +505,7 @@ def delete_account(request):
 @login_required
 def subscription_plans(request):
     # Delete expired free trial subscriptions for the current user
-    delete_expired_free_trials(request.user)
+    #delete_expired_free_trials(request.user)
 
     # Exclude the free plan (if price == 0)
     plans = SubscriptionPlan.objects.filter(is_active=True).exclude(price=0)
