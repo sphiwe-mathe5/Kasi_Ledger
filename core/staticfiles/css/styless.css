@@ -1256,3 +1256,23 @@ margin: 0 -2rem;
   color: #666;
   margin: 0 0 20px;
 }
+
+@media (max-width: 768px) {
+  .pricing-container {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .pricing-card {
+    width: 90%; /* Take most of the screen width */
+    max-width: 400px;
+  }
+}
+
+/* Optional: slightly tighter layout on very small screens */
+@media (max-width: 480px) {
+  .pricing-card {
+    width: 100%;
+    padding: 1.5rem;
+  }
+}
