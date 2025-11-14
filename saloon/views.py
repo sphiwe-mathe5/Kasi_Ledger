@@ -35,7 +35,8 @@ from django.db.models import ExpressionWrapper, DecimalField, IntegerField
 import logging
 logger = logging.getLogger(__name__)
 
-
+def guides(request):
+    return render(request, 'saloon/guides.html')
 
 @login_required
 #@subscription_required()
