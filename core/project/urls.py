@@ -83,6 +83,7 @@ router.register(r'products', ProductViewSet)
 
 urlpatterns = [
     path('', index, name='index'),
+    path('lebo/', views.law, name='law'),
 
     
     path('', include(router.urls)),

@@ -92,6 +92,10 @@ def index(request):
     return render(request, 'core/index.html', {
         'RECAPTCHA_PUBLIC_KEY': settings.RECAPTCHA_PUBLIC_KEY,
     })
+    
+def law(request):
+
+    return render(request, 'core/law.html')
 
 @login_required
 def console(request):
